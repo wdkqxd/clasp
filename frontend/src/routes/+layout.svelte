@@ -1,0 +1,27 @@
+<script lang="ts">
+	import '../app.css';
+	import favicon from '$lib/assets/favicon.svg';
+	import { getSearchSettings, type FontChoice } from '$lib/components/settings/searchSettings.svelte';
+
+	let { children } = $props();
+
+	const settings = getSearchSettings();
+
+	const FONT_STACKS: Record<FontChoice, string> = {
+		jetbrains: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+		system:
+			"ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Cascadia Mono', monospace"
+	};
+
+	$effect(() => {
+		document.documentElement.style.setProperty('--font-mono', FONT_STACKS[settings.font]);
+	});
+</script>
+
+<svelte:head>
+	<link rel="icon" href={favicon} />
+</svelte:head>
+
+<div class="min-h-screen bg-base-950 text-[#d0d0d0] antialiased font-mono">
+	{@render children()}
+</div>
