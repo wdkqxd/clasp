@@ -1,6 +1,9 @@
 <script lang="ts">
 	import type { ImageResult } from '../../types';
 	import { getSearchSettings } from '../settings/searchSettings.svelte';
+	import chevronLeftIcon from 'pixelarticons/svg/chevron-left.svg?raw';
+	import chevronRightIcon from 'pixelarticons/svg/chevron-right.svg?raw';
+	import closeIcon from 'pixelarticons/svg/close.svg?raw';
 
 	const settings = getSearchSettings();
 
@@ -42,29 +45,29 @@
 	<!-- Header: nav + close -->
 	<div class="flex items-center justify-between px-4 py-3 border-b border-[#ffffff0f] flex-shrink-0">
 		<span class="text-[13px] text-[#5c5c5c]">{index + 1} / {total}</span>
-		<div class="flex gap-1.5">
+		<div class="flex gap-3">
 			<button
-				class="w-[30px] h-[30px] rounded-md bg-[#1a1a1a] text-[#5c5c5c] flex items-center justify-center hover:bg-[#252525] hover:text-[#888] transition-colors duration-100 cursor-pointer disabled:opacity-30"
+				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-100 cursor-pointer disabled:opacity-30"
 				disabled={index <= 0}
 				onclick={onprev}
 				aria-label="Previous image"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+				<span class="icon">{@html chevronLeftIcon}</span>
 			</button>
 			<button
-				class="w-[30px] h-[30px] rounded-md bg-[#1a1a1a] text-[#5c5c5c] flex items-center justify-center hover:bg-[#252525] hover:text-[#888] transition-colors duration-100 cursor-pointer disabled:opacity-30"
+				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-100 cursor-pointer disabled:opacity-30"
 				disabled={index >= total - 1}
 				onclick={onnext}
 				aria-label="Next image"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+				<span class="icon">{@html chevronRightIcon}</span>
 			</button>
 			<button
-				class="w-[30px] h-[30px] rounded-md bg-[#1a1a1a] text-[#5c5c5c] flex items-center justify-center hover:bg-[#252525] hover:text-[#888] transition-colors duration-100 cursor-pointer"
+				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-100 cursor-pointer"
 				onclick={onclose}
 				aria-label="Close detail panel"
 			>
-				<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></svg>
+				<span class="icon">{@html closeIcon}</span>
 			</button>
 		</div>
 	</div>
@@ -75,7 +78,7 @@
 			<img
 				src={image.thumbnail}
 				alt={image.title}
-				class="w-full max-h-[45vh] object-contain rounded"
+				class="w-full max-h-[70vh] object-contain rounded"
 			/>
 		</div>
 
