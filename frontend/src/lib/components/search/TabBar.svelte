@@ -121,6 +121,24 @@
 						</div>
 					</div>
 
+					{#if active === 'Images'}
+						<div class="border-t border-[#292929] pt-3">
+							<button
+								type="button"
+								class="flex w-full items-center justify-between text-left text-[12px] text-[#9b9b9b]"
+								onclick={() => {
+									settings.hideAIImages = !settings.hideAIImages;
+									saveSearchSettings();
+								}}
+							>
+								<span>hide AI images</span>
+								<span class="relative h-3.5 w-6 rounded-full transition-colors {settings.hideAIImages ? 'bg-[#777]' : 'bg-[#292929]'}">
+									<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform {settings.hideAIImages ? 'translate-x-3' : 'translate-x-0.5'}"></span>
+								</span>
+							</button>
+						</div>
+					{/if}
+
 					<button
 						type="button"
 						onclick={() => goto('/?settings')}

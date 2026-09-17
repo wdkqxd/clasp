@@ -13,10 +13,12 @@
 	import { SearchState } from '$lib/components/search/search.svelte';
 	import { ImageSearchState } from '$lib/components/image/imageSearch.svelte';
 	import { getQuickAnswer, type QuickAnswer as QuickAnswerData } from '$lib/components/quick-answer/quickAnswer';
+	import { initBlocklist } from '$lib/components/image/aiBlocklist';
 	import loadingIcon from 'pixelarticons/svg/loader.svg?raw';
 
 	const feed = new SearchState();
 	const imageFeed = new ImageSearchState();
+	initBlocklist();
 	let quickAnswer = $state<QuickAnswerData | null>(null);
 	let wikipediaAnswer = $state<import('$lib/types').WikipediaArticle | null>(null);
 	let startedQuery = '';

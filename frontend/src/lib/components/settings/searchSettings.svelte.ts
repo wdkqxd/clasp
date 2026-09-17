@@ -10,6 +10,7 @@ export type SearchSettings = {
 	showEngineBadges: boolean;
 	openInNewTab: boolean;
 	font: FontChoice;
+	hideAIImages: boolean;
 };
 
 const defaults: SearchSettings = {
@@ -17,6 +18,7 @@ const defaults: SearchSettings = {
 	showEngineBadges: false,
 	openInNewTab: false,
 	font: 'jetbrains',
+	hideAIImages: false,
 };
 
 function load(): SearchSettings {
@@ -34,7 +36,9 @@ function load(): SearchSettings {
 					: defaults.showEngineBadges,
 			openInNewTab:
 				typeof parsed.openInNewTab === 'boolean' ? parsed.openInNewTab : defaults.openInNewTab,
-			font: parsed.font === 'system' ? 'system' : 'jetbrains'
+			font: parsed.font === 'system' ? 'system' : 'jetbrains',
+			hideAIImages:
+				typeof parsed.hideAIImages === 'boolean' ? parsed.hideAIImages : defaults.hideAIImages,
 		};
 	} catch {
 		return { ...defaults, engines: [...defaults.engines] };

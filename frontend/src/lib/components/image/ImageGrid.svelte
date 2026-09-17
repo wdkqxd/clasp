@@ -2,6 +2,7 @@
 	import { fade } from 'svelte/transition';
 	import type { ImageResult } from '../../types';
 	import { getSearchSettings } from '../settings/searchSettings.svelte';
+	import { shouldBlockImage } from './aiBlocklist';
 
 	const settings = getSearchSettings();
 
@@ -18,6 +19,25 @@
 	} = $props();
 
 	const MAX_URL_LEN = 32;
+
+	let visibleImages = $derived(
+		settings.hideAIImages
+			? images.filter(
+					(img) =>
+						!shouldBlockImage({
+							url: img.url,
+							title: img.title,
+							hostname: (() => {
+								try {
+									return new URL(img.url).hostname;
+								} catch {
+									return '';
+								}
+							})()
+						})
+				)
+			: images
+	);
 
 	function span(image: ImageResult): string {
 		const w = image.width || 400;
@@ -51,9 +71,11 @@
 		}
 	}
 
-	function openSidebar(e: MouseEvent, index: number) {
+	function openSidebar(e: MouseEvent, visibleIndex: number) {
 		e.preventDefault();
-		onselect?.(index);
+		const image = visibleImages[visibleIndex];
+		const realIndex = images.indexOf(image);
+		onselect?.(realIndex);
 	}
 </script>
 
@@ -69,11 +91,11 @@
 			</div>
 		{/each}
 	</div>
-{:else if images.length === 0}
+{:else if visibleImages.length === 0}
 	<p class="text-[#555] text-sm text-center py-12">no images found</p>
 {:else}
 	<div in:fade={{ duration: 300 }} class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3 pb-5" style="grid-auto-flow: dense; grid-auto-rows: 220px;">
-		{#each images as image, i}
+		{#each visibleImages as image, i}
 			<div
 				class="flex flex-col text-left rounded-lg overflow-hidden image-card"
 				class:col-span-2={span(image) === 'col-span-2'}
