@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import globeIcon from 'pixelarticons/svg/globe.svg?raw';
 	import imagesIcon from 'pixelarticons/svg/images.svg?raw';
 	import settingsIcon from 'pixelarticons/svg/settings-2.svg?raw';
 	import clapperboardIcon from 'pixelarticons/svg/clapperboard.svg?raw';
-	import cogIcon from 'pixelarticons/svg/settings-cog.svg?raw';
 	import { fade } from 'svelte/transition';
 	import {
 		getSearchSettings,
@@ -139,15 +137,6 @@
 							</button>
 						</div>
 					{/if}
-
-					<button
-						type="button"
-						onclick={() => goto('/?settings')}
-						class="pref-btn flex w-full items-center justify-center gap-1.5 rounded border border-[#363636] py-1.5 text-[12px] text-[#a0a0a0] transition-all hover:border-[#4a4a4a] hover:text-[#d0d0d0]"
-					>
-						<span class="icon icon-sm">{@html cogIcon}</span>
-						Preferences
-					</button>
 				</div>
 			</div>
 		</div>
