@@ -356,6 +356,9 @@ func mergeTwoImageResults(existing *engine.ImageResult, incoming engine.ImageRes
 	if existing.URL == "" {
 		existing.URL = incoming.URL
 	}
+	if existing.SourceURL == "" {
+		existing.SourceURL = incoming.SourceURL
+	}
 	if existing.Thumbnail == "" {
 		existing.Thumbnail = incoming.Thumbnail
 	}

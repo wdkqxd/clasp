@@ -383,6 +383,7 @@ func parseStartpageImageResults(doc string, limit int) ([]ImageResult, error) {
 		out = append(out, ImageResult{
 			Title:     title,
 			URL:       sourceURL,
+			SourceURL: thumb,
 			Thumbnail: thumb,
 			Engine:    "startpage",
 		})

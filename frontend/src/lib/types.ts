@@ -67,6 +67,7 @@ export interface MarketQuote {
 export interface ImageResult {
 	title: string;
 	url: string;
+	source_url?: string;
 	thumbnail: string;
 	width: number;
 	height: number;

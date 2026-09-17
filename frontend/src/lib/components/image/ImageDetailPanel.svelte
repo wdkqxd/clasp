@@ -23,17 +23,26 @@
 		onnext: () => void;
 	} = $props();
 
-	function hostname(url: string): string {
+	const MAX_URL_LEN = 40;
+
+	function displayURL(u: string): string {
+		let out: string;
 		try {
-			return new URL(url).hostname.replace('www.', '');
+			const url = new URL(u);
+			out = url.hostname.replace(/^www\./, '');
+			const path = url.pathname;
+			if (path && path !== '/') {
+				out += path;
+			}
 		} catch {
-			return '';
+			out = u;
 		}
+		return out.length > MAX_URL_LEN ? `${out.slice(0, MAX_URL_LEN)}…` : out;
 	}
 
-	function faviconURL(url: string): string {
+	function faviconURL(u: string): string {
 		try {
-			const h = new URL(url).hostname.replace('www.', '');
+			const h = new URL(u).hostname.replace('www.', '');
 			return `https://icons.duckduckgo.com/ip3/${h}.ico`;
 		} catch {
 			return '';
@@ -83,7 +92,12 @@
 		</div>
 
 		<div class="flex flex-col gap-1">
-			<h3 class="text-[14px] text-[#c0c0c0] font-normal leading-snug">{image.title}</h3>
+			<a
+				href={image.url}
+				target={settings.openInNewTab ? '_blank' : undefined}
+				rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
+				class="text-[14px] text-[#c0c0c0] font-normal leading-snug no-underline hover:underline hover:text-[#fff] transition-colors"
+			>{image.title}</a>
 
 			<a
 				href={image.url}
@@ -99,7 +113,7 @@
 						onerror={(e) => (e.currentTarget as HTMLElement).style.display = 'none'}
 					/>
 				{/if}
-				<span>{hostname(image.url)}</span>
+				<span>{displayURL(image.url)}</span>
 			</a>
 
 			{#if image.width && image.height}
@@ -109,7 +123,7 @@
 
 		<div class="pt-1">
 			<a
-				href={image.url}
+				href={image.source_url}
 				target={settings.openInNewTab ? '_blank' : undefined}
 				rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
 				class="inline-block px-4 py-2 bg-[#1e1e1e] text-[#d0d0d0] text-[12px] rounded-md no-underline hover:bg-[#262626] transition-colors duration-100"

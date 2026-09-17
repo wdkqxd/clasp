@@ -35,6 +35,7 @@ type Infobox struct {
 type ImageResult struct {
 	Title     string   `json:"title"`
 	URL       string   `json:"url"`
+	SourceURL string   `json:"source_url,omitempty"`
 	Thumbnail string   `json:"thumbnail"`
 	Width     int      `json:"width"`
 	Height    int      `json:"height"`

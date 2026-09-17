@@ -145,16 +145,17 @@ func (d *DDG) ImageSearch(ctx context.Context, query string, limit, offset int) 
 
 	out := make([]ImageResult, 0, len(data.Results))
 	for _, r := range data.Results {
-		imgURL := r.Image
-		if imgURL == "" {
-			imgURL = r.SourceURL
-		}
-		if imgURL == "" {
+		if r.Image == "" && r.SourceURL == "" {
 			continue
+		}
+		pageURL := r.SourceURL
+		if pageURL == "" {
+			pageURL = r.Image
 		}
 		out = append(out, ImageResult{
 			Title:     r.Title,
-			URL:       imgURL,
+			URL:       pageURL,
+			SourceURL: r.Image,
 			Thumbnail: r.ThumbURL,
 			Width:     r.Width,
 			Height:    r.Height,

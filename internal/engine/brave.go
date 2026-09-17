@@ -122,7 +122,8 @@ func braveImageResults(data map[string]any, limit int) ([]ImageResult, error) {
 
 		out = append(out, ImageResult{
 			Title:     title,
-			URL:       imgURL,
+			URL:       sourceURL,
+			SourceURL: imgURL,
 			Thumbnail: thumb,
 			Width:     width,
 			Height:    height,

@@ -165,7 +165,6 @@
 		</div>
 	</div>
 
-	<!-- fixed sidebar on the right -->
 	<div
 		class="fixed top-0 right-0 bottom-0 w-[420px] max-w-full bg-[#0e0e10] border-l border-[#ffffff0f] z-50 overflow-y-auto transition-transform duration-250 ease-out {sidebarOpen
 			? 'translate-x-0'
