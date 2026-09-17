@@ -8,6 +8,10 @@ import (
 	"errors"
 	"fmt"
 	"html"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"net/http"
 	"net/url"
@@ -16,6 +20,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	_ "golang.org/x/image/webp"
 )
 
 const (
@@ -78,7 +84,22 @@ func (s *Startpage) ImageSearch(ctx context.Context, query string, limit, offset
 		}
 	}
 	
-	return parseStartpageImageResults(body, limit)
+	results, err := parseStartpageImageResults(body, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var wg sync.WaitGroup
+	for i := range results {
+		wg.Add(1)
+		go func(r *ImageResult) {
+			defer wg.Done()
+			r.Width, r.Height = imageSize(ctx, s.client, r.Thumbnail)
+		}(&results[i])
+	}
+	wg.Wait()
+
+	return results, nil
 }
 
 type anubisChallenge struct {
@@ -354,6 +375,47 @@ var (
 	reSpImageContainer = regexp.MustCompile(`(?s)<div[^>]*class="image-container grid-image-\d+[^"]*"[^>]*data-thumbnail-url="([^"]*)"[^>]*aria-label="click to expand image: ([^"]*)"`)
 	reSpImageSource    = regexp.MustCompile(`<span[^>]*>([^<]+)</span>`)
 )
+
+func imageSize(ctx context.Context, client HTTPClient, imageURL string) (int, int) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, imageURL, nil)
+	if err != nil {
+		return 0, 0
+	}
+	req.Header.Set("User-Agent", BrowserUserAgent)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, 0
+	}
+
+	// follow redirects manually (client has WithNotFollowRedirects)
+	for i := 0; i < 5 && resp.StatusCode >= 300 && resp.StatusCode < 400; i++ {
+		loc := resp.Header.Get("Location")
+		resp.Body.Close()
+		if loc == "" {
+			return 0, 0
+		}
+		req, err = http.NewRequestWithContext(ctx, http.MethodGet, loc, nil)
+		if err != nil {
+			return 0, 0
+		}
+		req.Header.Set("User-Agent", BrowserUserAgent)
+		resp, err = client.Do(req)
+		if err != nil {
+			return 0, 0
+		}
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0, 0
+	}
+	cfg, _, err := image.DecodeConfig(io.LimitReader(resp.Body, 1<<20))
+	if err != nil {
+		return 0, 0
+	}
+	return cfg.Width, cfg.Height
+}
 
 func parseStartpageImageResults(doc string, limit int) ([]ImageResult, error) {
 	out := make([]ImageResult, 0)
