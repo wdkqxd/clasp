@@ -64,6 +64,9 @@ func (s *Startpage) ImageSearch(ctx context.Context, query string, limit, offset
 	q.Set("query", query)
 	q.Set("cat", "images")
 	q.Set("language", "english")
+	if offset > 0 {
+		q.Set("page", strconv.Itoa(offset+1))
+	}
 	u.RawQuery = q.Encode()
 
 	body, err := s.get(ctx, u.String())

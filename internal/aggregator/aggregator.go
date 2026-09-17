@@ -413,7 +413,7 @@ func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page 
 			ectx, cancel := context.WithTimeout(ctx, a.perEngineTimeout)
 			defer cancel()
 			start := time.Now()
-			res, err := s.ImageSearch(ectx, query, maxCandidates, 0)
+			res, err := s.ImageSearch(ectx, query, maxCandidates, page)
 			ch <- imgOutcome{name: name, res: res, err: err, took: time.Since(start)}
 		}(as.name, as.s)
 	}
@@ -484,19 +484,15 @@ func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page 
 		positions = next
 	}
 
-	hasMore := len(resp.Results) > (page+1)*limit
-	resp.HasMore = hasMore
-
-	startIdx := page * limit
-	if startIdx >= len(resp.Results) {
-		resp.Results = nil
-	} else {
-		endIdx := startIdx + limit
-		if endIdx > len(resp.Results) {
-			endIdx = len(resp.Results)
+	hasMore := false
+	for _, as := range activeSearchers {
+		o := byName[as.name]
+		if o.err == nil && len(o.res) >= limit {
+			hasMore = true
+			break
 		}
-		resp.Results = resp.Results[startIdx:endIdx]
 	}
+	resp.HasMore = hasMore
 
 	resp.TookMS = time.Since(start).Milliseconds()
 	return resp
