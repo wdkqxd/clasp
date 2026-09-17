@@ -106,7 +106,7 @@
 				<div class="space-y-3">
 					<div>
 						<div class="space-y-2">
-							{#each SEARCH_ENGINES as engine}
+							{#each SEARCH_ENGINES.filter((e) => active !== 'Images' || e !== 'DuckDuckGo') as engine}
 								<button
 									type="button"
 									class="flex w-full items-center justify-between text-left text-[12px] text-[#9b9b9b]"

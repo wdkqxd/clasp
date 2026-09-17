@@ -2,8 +2,6 @@ package engine
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"html"
 	"io"
@@ -20,7 +18,6 @@ var (
 	reTitle = regexp.MustCompile(`(?i)<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>(.*?)</a>`)
 	reSnip  = regexp.MustCompile(`(?i)<a[^>]*class="[^"]*result__snippet[^"]*"[^>]*>(.*?)</a>`)
 	reTag   = regexp.MustCompile(`(?s)<[^>]+>`)
-	reVQD   = regexp.MustCompile(`vqd="([^"]+)"`)
 )
 
 type DDG struct {
@@ -96,112 +93,6 @@ func (d *DDG) Search(ctx context.Context, query string, limit, offset int) ([]Re
 		}
 	}
 	return results, nil
-}
-
-func (d *DDG) ImageSearch(ctx context.Context, query string, limit, offset int) ([]ImageResult, error) {
-	vqd, err := d.getVQD(ctx, query)
-	if err != nil {
-		return nil, err
-	}
-
-	u := fmt.Sprintf("https://duckduckgo.com/i.js?o=json&q=%s&vqd=%s", url.QueryEscape(query), url.QueryEscape(vqd))
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("User-Agent", BrowserUserAgent)
-	req.Header.Set("Referer", "https://duckduckgo.com/")
-	req.Header.Set("Origin", "https://duckduckgo.com")
-
-	resp, err := d.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("ddg images request failed: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ddg images returned %s", resp.Status)
-	}
-
-	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxBodyReadLimit))
-	if err != nil {
-		return nil, err
-	}
-
-	var data struct {
-		Results []struct {
-			Image      string `json:"image"`
-			Title      string `json:"title"`
-			Source     string `json:"source"`
-			ThumbURL   string `json:"thumbnail"`
-			Width      int    `json:"width"`
-			Height     int    `json:"height"`
-			SourceURL  string `json:"source_url"`
-		} `json:"results"`
-	}
-	if err := json.Unmarshal(body, &data); err != nil {
-		return nil, fmt.Errorf("ddg images parse error: %w", err)
-	}
-
-	out := make([]ImageResult, 0, len(data.Results))
-	for _, r := range data.Results {
-		if r.Image == "" && r.SourceURL == "" {
-			continue
-		}
-		pageURL := r.SourceURL
-		if pageURL == "" {
-			pageURL = r.Image
-		}
-		out = append(out, ImageResult{
-			Title:     r.Title,
-			URL:       pageURL,
-			SourceURL: r.Image,
-			Thumbnail: r.ThumbURL,
-			Width:     r.Width,
-			Height:    r.Height,
-			Engine:    "ddg",
-		})
-		if len(out) >= limit {
-			break
-		}
-	}
-	if len(out) == 0 {
-		return nil, errors.New("no image results found in ddg")
-	}
-	return out, nil
-}
-
-func (d *DDG) getVQD(ctx context.Context, query string) (string, error) {
-	u, err := url.Parse("https://duckduckgo.com/")
-	if err != nil {
-		return "", err
-	}
-	q := u.Query()
-	q.Set("q", query)
-	u.RawQuery = q.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("User-Agent", BrowserUserAgent)
-
-	resp, err := d.client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxBodyReadLimit))
-	if err != nil {
-		return "", err
-	}
-
-	m := reVQD.FindStringSubmatch(string(body))
-	if len(m) < 2 {
-		return "", errors.New("ddg: vqd token not found")
-	}
-	return m[1], nil
 }
 
 func resolveDDGURL(href string) (string, error) {

@@ -40,7 +40,6 @@ func main() {
 	}
 	imgEngines := []engine.Engine{
 		engine.NewBrave(imgClient),
-		engine.NewDDG(imgClient),
 		engine.NewStartpage(imgClient),
 	}
 
