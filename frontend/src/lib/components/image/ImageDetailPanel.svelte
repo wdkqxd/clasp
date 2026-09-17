@@ -83,7 +83,7 @@
 
 	<!-- Content -->
 	<div class="flex flex-col gap-3 px-4 py-4 overflow-y-auto">
-		<div class="flex justify-center bg-[#0a0a0a] rounded-lg p-2">
+		<div class="flex justify-center bg-[#0a0a0a] rounded-lg">
 			<img
 				src={image.thumbnail}
 				alt={image.title}
