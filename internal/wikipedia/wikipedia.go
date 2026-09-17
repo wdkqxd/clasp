@@ -218,11 +218,91 @@ func parseFacts(wikitext string) []Fact {
 
 func cleanWikiValue(value string) string {
 	value = regexp.MustCompile(`<!--.*?-->`).ReplaceAllString(value, "")
-	value = regexp.MustCompile(`\{\{[^{}]*\}\}`).ReplaceAllString(value, "")
 	value = regexp.MustCompile(`\[\[([^\]|]+)\|([^\]]+)\]\]`).ReplaceAllString(value, "$2")
+	value = expandUbl(value)
+	value = regexp.MustCompile(`\{\{[^{}]*\}\}`).ReplaceAllString(value, "")
 	value = regexp.MustCompile(`\[\[([^\]]+)\]\]`).ReplaceAllString(value, "$1")
+	value = regexp.MustCompile(`(?i)<ref[^>]*>.*?</ref>`).ReplaceAllString(value, "")
+	value = regexp.MustCompile(`(?i)<ref[^/]*/>`).ReplaceAllString(value, "")
 	value = regexp.MustCompile(`<[^>]+>`).ReplaceAllString(value, "")
 	return strings.TrimSpace(strings.Join(strings.Fields(value), " "))
+}
+
+func expandUbl(s string) string {
+	needle := "{{ubl|"
+	lower := strings.ToLower(s)
+	for {
+		idx := strings.Index(lower, needle)
+		if idx < 0 {
+			break
+		}
+		start := idx
+		depth := 0
+		end := start
+		for i := start; i+1 < len(s); i++ {
+			if s[i] == '{' && s[i+1] == '{' {
+				depth++
+				i++
+			} else if s[i] == '}' && s[i+1] == '}' {
+				depth--
+				i++
+				if depth == 0 {
+					end = i + 1
+					break
+				}
+			}
+		}
+		if end <= start {
+			break
+		}
+		inner := s[start+len("{{"):end-len("}}")]
+		if !strings.HasPrefix(strings.ToLower(inner), "ubl|") {
+			lower = lower[:start+len("{{")] + lower[end:]
+			s = s[:start+len("{{")] + s[end:]
+			continue
+		}
+		inner = inner[len("ubl|"):]
+		items := splitTopLevel(inner, '|')
+		for i, item := range items {
+			item = strings.TrimSpace(item)
+			item = regexp.MustCompile(`\s*\(acting\)`).ReplaceAllString(item, "")
+			items[i] = item
+		}
+		replacement := strings.Join(items, " / ")
+		s = s[:start] + replacement + s[end:]
+		lower = strings.ToLower(s)
+	}
+	return s
+}
+
+func splitTopLevel(s string, sep rune) []string {
+	var parts []string
+	braceDepth := 0
+	linkDepth := 0
+	cur := strings.Builder{}
+	runes := []rune(s)
+	for i := 0; i < len(runes); i++ {
+		r := runes[i]
+		if r == '{' && i+1 < len(runes) && runes[i+1] == '{' {
+			braceDepth++
+		} else if r == '}' && i+1 < len(runes) && runes[i+1] == '}' {
+			braceDepth--
+		} else if r == '[' && i+1 < len(runes) && runes[i+1] == '[' {
+			linkDepth++
+		} else if r == ']' && i+1 < len(runes) && runes[i+1] == ']' {
+			linkDepth--
+		}
+		if r == sep && braceDepth == 0 && linkDepth == 0 {
+			parts = append(parts, cur.String())
+			cur.Reset()
+			continue
+		}
+		cur.WriteRune(r)
+	}
+	if cur.Len() > 0 {
+		parts = append(parts, cur.String())
+	}
+	return parts
 }
 
 func isTechnicalFact(key string) bool {
