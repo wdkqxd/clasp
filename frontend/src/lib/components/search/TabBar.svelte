@@ -5,6 +5,7 @@
 	import imagesIcon from 'pixelarticons/svg/images.svg?raw';
 	import settingsIcon from 'pixelarticons/svg/settings-2.svg?raw';
 	import clapperboardIcon from 'pixelarticons/svg/clapperboard.svg?raw';
+	import cogIcon from 'pixelarticons/svg/settings-cog.svg?raw';
 	import { fade } from 'svelte/transition';
 	import {
 		getSearchSettings,
@@ -131,7 +132,7 @@
 									saveSearchSettings();
 								}}
 							>
-								<span>hide AI images</span>
+								<span>Hide AI images</span>
 								<span class="relative h-3.5 w-6 rounded-full transition-colors {settings.hideAIImages ? 'bg-[#777]' : 'bg-[#292929]'}">
 									<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform {settings.hideAIImages ? 'translate-x-3' : 'translate-x-0.5'}"></span>
 								</span>
@@ -142,12 +143,20 @@
 					<button
 						type="button"
 						onclick={() => goto('/?settings')}
-						class="flex w-full items-center justify-center rounded border border-[#363636] py-1 text-[12px] text-[#a0a0a0] transition-colors hover:border-[#4a4a4a] hover:text-[#d0d0d0]"
+						class="pref-btn flex w-full items-center justify-center gap-1.5 rounded border border-[#363636] py-1.5 text-[12px] text-[#a0a0a0] transition-all hover:border-[#4a4a4a] hover:text-[#d0d0d0]"
 					>
-						preferences
+						<span class="icon icon-sm">{@html cogIcon}</span>
+						Preferences
 					</button>
 				</div>
 			</div>
 		</div>
 	</div>
 </nav>
+
+<style>
+	.pref-btn:active {
+		transform: scale(0.96);
+		transition: transform 0.05s ease-out;
+	}
+</style>

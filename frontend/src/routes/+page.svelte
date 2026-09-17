@@ -39,6 +39,6 @@
 				<img src={logo} alt="" class="block h-12 w-auto" />
 			{/snippet}
 		</SettingsPopup>
-		<SearchForm {onSearch} placeholder="search..." />
+		<SearchForm {onSearch} placeholder="Search..." />
 	</div>
 </div>

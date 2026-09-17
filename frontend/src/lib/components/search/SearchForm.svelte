@@ -1,7 +1,7 @@
 <script lang="ts">
 	let {
 		value = $bindable(''),
-		placeholder = 'search...',
+		placeholder = 'Search...',
 		onSearch
 	}: {
 		value?: string;

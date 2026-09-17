@@ -68,7 +68,7 @@
 	>
 		<div class="space-y-2">
 			<div class="flex items-center justify-between gap-3">
-				<span class="text-[12px] text-[#9b9b9b]">font</span>
+				<span class="text-[12px] text-[#9b9b9b]">Font</span>
 				<div class="relative flex items-center">
 					<select
 						value={settings.font}
@@ -94,7 +94,7 @@
 					saveSearchSettings();
 				}}
 			>
-				<span>engine badges</span>
+				<span>Engine badges</span>
 				<span class="relative h-3.5 w-6 rounded-full transition-colors {settings.showEngineBadges ? 'bg-[#777]' : 'bg-[#292929]'}">
 					<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform duration-150 {settings.showEngineBadges ? 'translate-x-3' : 'translate-x-0.5'}"></span>
 				</span>
@@ -108,20 +108,20 @@
 					saveSearchSettings();
 				}}
 			>
-				<span>open links in new tab</span>
+				<span>Open links in new tab</span>
 				<span class="relative h-3.5 w-6 rounded-full transition-colors {settings.openInNewTab ? 'bg-[#777]' : 'bg-[#292929]'}">
 					<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform duration-150 {settings.openInNewTab ? 'translate-x-3' : 'translate-x-0.5'}"></span>
 				</span>
 			</button>
 
 			<a
-				href="https://github.com"
+				href="https://github.com/wdkqxd/clasp"
 				target={settings.openInNewTab ? '_blank' : undefined}
 				rel="noreferrer"
 				class="mt-3 flex items-center justify-center gap-1 rounded border border-[#363636] py-1 text-[12px] text-[#a0a0a0] transition-colors hover:border-[#4a4a4a] hover:text-[#d0d0d0] active:scale-[0.98]"
 			>
 				<span class="icon">{@html githubIcon}</span>
-				github
+				GitHub
 			</a>
 		</div>
 	</div>
