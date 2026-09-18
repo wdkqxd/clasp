@@ -136,7 +136,7 @@
 </script>
 
 <svelte:head>
-	<title>{feed.query ? `${feed.query}` : 'index'}</title>
+	<title>{feed.query ? `${feed.query}` : 'clasp'}</title>
 </svelte:head>
 
 <svelte:window onkeydown={handleKeydown} />

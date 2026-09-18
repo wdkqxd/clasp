@@ -96,7 +96,7 @@
 				href={image.url}
 				target={settings.openInNewTab ? '_blank' : undefined}
 				rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
-				class="text-[14px] text-[#c0c0c0] font-normal leading-snug no-underline hover:underline hover:text-[#fff] transition-colors"
+				class="text-[16px] text-[#c0c0c0] font-normal leading-snug no-underline hover:underline hover:text-[#fff] transition-colors"
 			>{image.title}</a>
 
 			<a
