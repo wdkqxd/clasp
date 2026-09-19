@@ -33,9 +33,9 @@
 	}
 
 	const ENGINE_LABELS: Record<string, string> = {
-		brave: 'Brave',
-		ddg: 'DuckDuckGo',
-		startpage: 'Startpage'
+		brave: 'brave',
+		ddg: 'duckduckgo',
+		startpage: 'startpage'
 	};
 
 	function engineLabel(e: string): string {
@@ -83,7 +83,7 @@ function cleanSnippet(s: string): string {
 	</a>
 	<div class="mt-2 flex flex-wrap gap-1.5" class:hidden={!settings.showEngineBadges}>
 		{#each resultEngines() as e}
-			<span class="rounded bg-[#1c1c1c] px-1.5 py-0.5 text-[10.5px] uppercase tracking-wide text-[#5c5c5c]">
+			<span class="rounded bg-[#1c1c1c] px-1.5 py-0.5 text-[10.5px] tracking-wide text-[#5c5c5c]">
 				{engineLabel(e)}
 			</span>
 		{/each}

@@ -111,7 +111,7 @@
 									class="flex w-full items-center justify-between text-left text-[12px] text-[#9b9b9b]"
 									onclick={() => toggleEngine(engine)}
 								>
-									<span>{engine}</span>
+									<span>{engine.toLowerCase()}</span>
 									<span class="relative h-3.5 w-6 rounded-full transition-colors {settings.engines.includes(engine) ? 'bg-[#777]' : 'bg-[#292929]'}">
 										<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform {settings.engines.includes(engine) ? 'translate-x-3' : 'translate-x-0.5'}"></span>
 									</span>
@@ -130,7 +130,7 @@
 									saveSearchSettings();
 								}}
 							>
-								<span>Hide AI images</span>
+								<span>hide ai images</span>
 								<span class="relative h-3.5 w-6 rounded-full transition-colors {settings.hideAIImages ? 'bg-[#777]' : 'bg-[#292929]'}">
 									<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform {settings.hideAIImages ? 'translate-x-3' : 'translate-x-0.5'}"></span>
 								</span>
