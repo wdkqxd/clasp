@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"net/url"
@@ -22,8 +23,9 @@ const (
 type Brave struct {
 	client HTTPClient
 
-	mu      sync.Mutex
-	infobox *Infobox
+	mu          sync.Mutex
+	infobox     *Infobox
+	discussions []Discussion
 }
 
 func NewBrave(client HTTPClient) *Brave {
@@ -36,6 +38,12 @@ func (b *Brave) Infobox() *Infobox {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	return b.infobox
+}
+
+func (b *Brave) Discussions() []Discussion {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.discussions
 }
 
 func (b *Brave) ImageSearch(ctx context.Context, query string, limit, offset int) ([]ImageResult, error) {
@@ -157,6 +165,7 @@ func intNum(v any) int {
 func (b *Brave) Search(ctx context.Context, query string, limit, offset int) ([]Result, error) {
 	b.mu.Lock()
 	b.infobox = nil
+	b.discussions = nil
 	b.mu.Unlock()
 
 	u, err := url.Parse(braveWebEndpoint)
@@ -198,6 +207,7 @@ func (b *Brave) Search(ctx context.Context, query string, limit, offset int) ([]
 	data, serpErr := parseSerpData(doc)
 	b.mu.Lock()
 	b.infobox = parseBraveInfobox(doc)
+	b.discussions = parseBraveDiscussions(doc)
 	b.mu.Unlock()
 
 	if serpErr == nil {
@@ -449,4 +459,78 @@ func wikiTitleFromURL(raw string) string {
 		title = raw[i+len("/wiki/"):]
 	}
 	return strings.ReplaceAll(title, "_", " ")
+}
+
+var (
+	reBraveDiscussionTitle   = regexp.MustCompile(`(?s)summary title="([^"]*)"`)
+	reBraveDiscussionSnippet = regexp.MustCompile(`(?s)<div class="content[^>]*>(.*?)<a class="source`)
+)
+
+func parseBraveDiscussions(doc string) []Discussion {
+	i := strings.Index(doc, `id="discussions"`)
+	if i < 0 {
+		return nil
+	}
+	sec := doc[i:]
+	if end := strings.Index(sec, `</section>`); end >= 0 {
+		sec = sec[:end]
+	}
+
+	seen := make(map[string]struct{})
+	out := make([]Discussion, 0, 8)
+	rest := sec
+	for {
+		start := strings.Index(rest, `<div class="discussions-item`)
+		if start < 0 {
+			break
+		}
+		rest = rest[start:]
+		marker := `<div class="discussions-item`
+		next := strings.Index(rest[len(marker):], marker)
+		end := len(rest)
+		if next >= 0 {
+			end = next + len(marker)
+		}
+		item := rest[:end]
+		rest = rest[end:]
+
+		t := reBraveDiscussionTitle.FindStringSubmatch(item)
+		if len(t) < 2 {
+			continue
+		}
+		title := strings.TrimSpace(cleanText(t[1]))
+		if title == "" {
+			continue
+		}
+		url := firstHTTPLink(item)
+		if url == "" {
+			continue
+		}
+		if _, dup := seen[url]; dup {
+			continue
+		}
+		seen[url] = struct{}{}
+		snippet := ""
+		if s := reBraveDiscussionSnippet.FindStringSubmatch(item); len(s) > 1 {
+			snippet = strings.TrimSpace(cleanText(s[1]))
+		}
+		out = append(out, Discussion{Title: title, URL: url, Snippet: snippet})
+		if len(out) >= 8 {
+			break
+		}
+	}
+	return out
+}
+
+func firstHTTPLink(s string) string {
+	for _, m := range reAnchorHref.FindAllStringSubmatch(s, -1) {
+		if len(m) < 2 {
+			continue
+		}
+		href := html.UnescapeString(m[1])
+		if strings.HasPrefix(href, "http://") || strings.HasPrefix(href, "https://") {
+			return href
+		}
+	}
+	return ""
 }

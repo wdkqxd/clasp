@@ -2,9 +2,12 @@
 	import loadingIcon from 'pixelarticons/svg/loader.svg?raw';
 	import ResultCard from './ResultCard.svelte';
 	import SkeletonResults from './SkeletonResults.svelte';
-	import type { SearchState } from './search.svelte';
+	import Discussions from './Discussions.svelte';
+	import { PAGE_SIZE } from './search.svelte.ts';
+	import type { SearchState } from './search.svelte.ts';
+	import type { Discussion } from '../../types';
 
-	let { feed, baseIndex = 0 }: { feed: SearchState; baseIndex?: number } = $props();
+	let { feed, baseIndex = 0, discussions = [] }: { feed: SearchState; baseIndex?: number; discussions?: Discussion[] } = $props();
 
 	let sentinel = $state<HTMLDivElement | null>(null);
 
@@ -33,10 +36,16 @@
 {:else}
 	<div class="space-y-10">
 		{#each feed.items as r, i (r.url)}
+			{#if discussions.length > 0 && i === PAGE_SIZE - 1}
+				<Discussions items={discussions} />
+			{/if}
 			<div class="result-item" style="--i:{Math.min(baseIndex + i, 10)}">
 				<ResultCard result={r} />
 			</div>
 		{/each}
+		{#if discussions.length > 0 && feed.items.length < PAGE_SIZE}
+			<Discussions items={discussions} />
+		{/if}
 	</div>
 {/if}
 

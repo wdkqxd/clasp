@@ -32,6 +32,12 @@ type Infobox struct {
 	URL   string `json:"url"`
 }
 
+type Discussion struct {
+	Title   string `json:"title"`
+	URL     string `json:"url"`
+	Snippet string `json:"snippet,omitempty"`
+}
+
 type ImageResult struct {
 	Title     string   `json:"title"`
 	URL       string   `json:"url"`

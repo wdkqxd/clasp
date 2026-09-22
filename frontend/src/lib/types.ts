@@ -24,6 +24,12 @@ export interface SearchInfobox {
 	url: string;
 }
 
+export interface Discussion {
+	title: string;
+	url: string;
+	snippet?: string;
+}
+
 export interface SearchResponse {
 	query: string;
 	took_ms: number;
@@ -31,6 +37,7 @@ export interface SearchResponse {
 	engines: Record<string, EngineStatus>;
 	has_more: boolean;
 	infobox?: SearchInfobox;
+	discussions?: Discussion[];
 }
 
 export interface WikipediaArticle {

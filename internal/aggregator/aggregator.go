@@ -19,20 +19,21 @@ type Status struct {
 }
 
 type Response struct {
-	Query   string            `json:"query"`
-	TookMS  int64             `json:"took_ms"`
-	Results []engine.Result   `json:"results"`
-	Engines map[string]Status `json:"engines"`
-	HasMore bool              `json:"has_more"`
-	Infobox *engine.Infobox   `json:"infobox,omitempty"`
+	Query       string              `json:"query"`
+	TookMS      int64               `json:"took_ms"`
+	Results     []engine.Result     `json:"results"`
+	Engines     map[string]Status   `json:"engines"`
+	HasMore     bool                `json:"has_more"`
+	Infobox     *engine.Infobox     `json:"infobox,omitempty"`
+	Discussions []engine.Discussion `json:"discussions,omitempty"`
 }
 
 type ImageResponse struct {
-	Query   string              `json:"query"`
-	TookMS  int64               `json:"took_ms"`
+	Query   string               `json:"query"`
+	TookMS  int64                `json:"took_ms"`
 	Results []engine.ImageResult `json:"results"`
-	Engines map[string]Status   `json:"engines"`
-	HasMore bool                `json:"has_more"`
+	Engines map[string]Status    `json:"engines"`
+	HasMore bool                 `json:"has_more"`
 }
 
 type Aggregator struct {
@@ -222,6 +223,8 @@ func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, 
 		}
 	}
 
+	resp.Discussions = collectDiscussions(activeEngines)
+
 	if len(scoredResults) > limit {
 		scoredResults = scoredResults[:limit]
 	}
@@ -365,6 +368,31 @@ func mergeTwoImageResults(existing *engine.ImageResult, incoming engine.ImageRes
 	if incoming.Engine != "" && !slices.Contains(existing.Engines, incoming.Engine) {
 		existing.Engines = append(existing.Engines, incoming.Engine)
 	}
+}
+
+func collectDiscussions(engines []engine.Engine) []engine.Discussion {
+	out := make([]engine.Discussion, 0, 8)
+	seen := make(map[string]struct{})
+	for _, e := range engines {
+		ds, ok := e.(interface{ Discussions() []engine.Discussion })
+		if !ok {
+			continue
+		}
+		for _, d := range ds.Discussions() {
+			if d.Title == "" || d.URL == "" {
+				continue
+			}
+			if _, dup := seen[d.URL]; dup {
+				continue
+			}
+			seen[d.URL] = struct{}{}
+			out = append(out, d)
+			if len(out) >= 8 {
+				return out
+			}
+		}
+	}
+	return out
 }
 
 func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page int, enabled []string) ImageResponse {

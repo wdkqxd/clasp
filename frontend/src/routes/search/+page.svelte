@@ -21,6 +21,7 @@
 	initBlocklist();
 	let quickAnswer = $state<QuickAnswerData | null>(null);
 	let wikipediaAnswer = $state<import('$lib/types').WikipediaArticle | null>(null);
+	let discussions = $state<import('$lib/types').Discussion[]>([]);
 	let startedQuery = '';
 	let requestId = 0;
 	let imageSentinel = $state<HTMLElement | null>(null);
@@ -48,10 +49,14 @@
 			selectedImageIndex = -1;
 			void imageFeed.run(q);
 		} else {
+			discussions = [];
 			getQuickAnswer(q).then((answer) => {
 				quickAnswer = answer;
 			});
 			void feed.run(q).then((res) => {
+				if (q === feed.query) {
+					discussions = res?.discussions ?? [];
+				}
 				if (!res?.infobox) {
 					wikipediaAnswer = null;
 					return;
@@ -78,6 +83,7 @@
 			imageFeed.clear();
 			quickAnswer = null;
 			wikipediaAnswer = null;
+			discussions = [];
 			selectedImageIndex = -1;
 			return;
 		}
@@ -85,6 +91,7 @@
 		if (stateKey === startedQuery) return;
 		startedQuery = stateKey;
 		selectedImageIndex = -1;
+		discussions = [];
 		const currentRequest = ++requestId;
 		checkBang(q).then((bang) => {
 			if (currentRequest !== requestId) return;
@@ -200,7 +207,7 @@
 			{/if}
 			<div class="relative flex flex-col md:block">
 				<section class="order-last min-w-0 md:order-none">
-					<ResultsList feed={feed} baseIndex={2} />
+					<ResultsList feed={feed} baseIndex={2} discussions={discussions} />
 				</section>
 				{#if wikipediaAnswer && !feed.loading}
 					<aside class="result-item order-first mt-0 mb-12 w-full min-w-0 md:absolute md:left-[calc(100%+3rem)] md:top-0 md:order-none md:mb-0 md:mt-0 md:w-[320px]" style="--i:1">
