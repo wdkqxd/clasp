@@ -1,4 +1,4 @@
-package engine
+package helpers
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func parseJSLiteral(s string) (any, error) {
+func ParseJSLiteral(s string) (any, error) {
 	p := &jsParser{s: s}
 	v, err := p.value()
 	if err != nil {
@@ -18,6 +18,44 @@ func parseJSLiteral(s string) (any, error) {
 		return nil, fmt.Errorf("unexpected trailing data at offset %d", p.i)
 	}
 	return v, nil
+}
+
+func MatchObject(s string, i int) (int, bool) {
+	if i >= len(s) || (s[i] != '{' && s[i] != '[') {
+		return 0, false
+	}
+	open := s[i]
+	close := byte('}')
+	if open == '[' {
+		close = ']'
+	}
+	depth := 0
+	inStr := false
+	var quote byte
+	for ; i < len(s); i++ {
+		c := s[i]
+		if inStr {
+			if c == '\\' {
+				i++
+			} else if c == quote {
+				inStr = false
+			}
+			continue
+		}
+		switch c {
+		case '"', '\'':
+			inStr = true
+			quote = c
+		case open:
+			depth++
+		case close:
+			depth--
+			if depth == 0 {
+				return i + 1, true
+			}
+		}
+	}
+	return 0, false
 }
 
 type jsParser struct {

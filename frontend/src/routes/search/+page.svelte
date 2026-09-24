@@ -5,23 +5,22 @@
 	import Infobox from '$lib/components/infobox/Infobox.svelte';
 	import { wikipedia } from '$lib/api';
 	import ResultsList from '$lib/components/search/ResultsList.svelte';
+	import Answers from '$lib/components/rich-answers/Answers.svelte';
 	import ImageGrid from '$lib/components/image/ImageGrid.svelte';
 	import ImageDetailPanel from '$lib/components/image/ImageDetailPanel.svelte';
-	import QuickAnswer from '$lib/components/quick-answer/QuickAnswer.svelte';
 	import SearchForm from '$lib/components/search/SearchForm.svelte';
 	import TabBar from '$lib/components/search/TabBar.svelte';
 	import { SearchState } from '$lib/components/search/search.svelte';
 	import { ImageSearchState } from '$lib/components/image/imageSearch.svelte';
-	import { getQuickAnswer, type QuickAnswer as QuickAnswerData } from '$lib/components/quick-answer/quickAnswer';
 	import { initBlocklist } from '$lib/components/image/aiBlocklist';
 	import loadingIcon from 'pixelarticons/svg/loader.svg?raw';
 
 	const feed = new SearchState();
 	const imageFeed = new ImageSearchState();
 	initBlocklist();
-	let quickAnswer = $state<QuickAnswerData | null>(null);
 	let wikipediaAnswer = $state<import('$lib/types').WikipediaArticle | null>(null);
 	let discussions = $state<import('$lib/types').Discussion[]>([]);
+	let rich = $state<import('$lib/types').RichAnswer[]>([]);
 	let startedQuery = '';
 	let requestId = 0;
 	let imageSentinel = $state<HTMLElement | null>(null);
@@ -50,12 +49,11 @@
 			void imageFeed.run(q);
 		} else {
 			discussions = [];
-			getQuickAnswer(q).then((answer) => {
-				quickAnswer = answer;
-			});
+			rich = [];
 			void feed.run(q).then((res) => {
 				if (q === feed.query) {
 					discussions = res?.discussions ?? [];
+					rich = res?.rich ?? [];
 				}
 				if (!res?.infobox) {
 					wikipediaAnswer = null;
@@ -81,9 +79,9 @@
 			startedQuery = '';
 			feed.clear();
 			imageFeed.clear();
-			quickAnswer = null;
 			wikipediaAnswer = null;
 			discussions = [];
+			rich = [];
 			selectedImageIndex = -1;
 			return;
 		}
@@ -92,6 +90,7 @@
 		startedQuery = stateKey;
 		selectedImageIndex = -1;
 		discussions = [];
+		rich = [];
 		const currentRequest = ++requestId;
 		checkBang(q).then((bang) => {
 			if (currentRequest !== requestId) return;
@@ -200,13 +199,13 @@
 		</header>
 
 		<main class="space-y-12">
-			{#if quickAnswer && !feed.loading}
-				<div class="result-item" style="--i:0">
-					<QuickAnswer answer={quickAnswer} />
-				</div>
-			{/if}
 			<div class="relative flex flex-col md:block">
 				<section class="order-last min-w-0 md:order-none">
+					{#if rich.length > 0}
+						<div class="mb-10">
+							<Answers items={rich} />
+						</div>
+					{/if}
 					<ResultsList feed={feed} baseIndex={2} discussions={discussions} />
 				</section>
 				{#if wikipediaAnswer && !feed.loading}

@@ -1,4 +1,4 @@
-package engine
+package helpers
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 	fhttp "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"
 	"github.com/bogdanfinn/tls-client/profiles"
+
+	"metasearch/internal/engine"
 )
 
 type BrowserClient struct {
@@ -58,4 +60,4 @@ func (b *BrowserClient) Do(req *http.Request) (*http.Response, error) {
 	}, nil
 }
 
-var _ HTTPClient = (*BrowserClient)(nil)
+var _ engine.HTTPClient = (*BrowserClient)(nil)

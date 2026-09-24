@@ -1,6 +1,5 @@
 import type { SearchResponse } from './types';
 import type { WikipediaArticle } from './types';
-import type { MarketQuote } from './types';
 import type { ImageSearchResponse } from './types';
 import type { SearchEngine } from './components/settings/searchSettings.svelte';
 
@@ -26,13 +25,6 @@ export async function myIP(): Promise<string> {
 
 export async function wikipedia(query: string, language = 'auto'): Promise<WikipediaArticle | null> {
 	const res = await fetch(`/api/wikipedia?q=${encodeURIComponent(query)}&lang=${encodeURIComponent(language)}`);
-	if (res.status === 404) return null;
-	if (!res.ok) throw new Error(`HTTP ${res.status}`);
-	return res.json();
-}
-
-export async function market(query: string, period = '7d'): Promise<MarketQuote | null> {
-	const res = await fetch(`/api/market?q=${encodeURIComponent(query)}&period=${encodeURIComponent(period)}`);
 	if (res.status === 404) return null;
 	if (!res.ok) throw new Error(`HTTP ${res.status}`);
 	return res.json();

@@ -1,4 +1,4 @@
-package engine
+package startpage
 
 import (
 	"context"
@@ -22,41 +22,42 @@ import (
 	"time"
 
 	_ "golang.org/x/image/webp"
+
+	"metasearch/internal/engine"
 )
 
 const (
-	startpageEndpoint = "https://www.startpage.com/sp/search"
-	startpagePassPath = "/.within.website/x/cmd/anubis/api/pass-challenge"
+	endpoint = "https://www.startpage.com/sp/search"
+	passPath = "/.within.website/x/cmd/anubis/api/pass-challenge"
 )
 
 var (
 	reAnubisChallenge = regexp.MustCompile(`(?s)<script id="anubis_challenge" type="application/json">\s*(\{.*?\})\s*</script>`)
 	reSpTitle         = regexp.MustCompile(`(?s)<a class="result-title result-link[^"]*" href="([^"]+)"[^>]*>\s*<h2 class="wgl-title[^"]*"[^>]*>(.*?)</h2>\s*</a>`)
 	reSpDescription   = regexp.MustCompile(`(?s)<p class="description[^"]*"[^>]*>(.*?)</p>`)
-	reSpTags          = regexp.MustCompile(`(?s)<[^>]+>`)
 	reSpPageForm      = regexp.MustCompile(`(?s)<form action="/sp/search" method="post"[^>]*aria-label="go to page ([0-9]+)"[^>]*>(.*?)</form>`)
 	reSpInputTag      = regexp.MustCompile(`(?s)<input\b[^>]*>`)
 	reSpAttr          = regexp.MustCompile(`([\w.\-]+)=("([^"]*)"|'([^']*)'|[^\s>]+)`)
 )
 
 type Startpage struct {
-	client HTTPClient
+	client engine.HTTPClient
 
 	mu      sync.Mutex
 	cookies map[string]string // cookie jar shared across queries
 }
 
-func NewStartpage(client HTTPClient) *Startpage {
+func New(client engine.HTTPClient) *Startpage {
 	return &Startpage{client: client, cookies: make(map[string]string)}
 }
 
 func (s *Startpage) Name() string { return "startpage" }
 
-func (s *Startpage) ImageSearch(ctx context.Context, query string, limit, offset int) ([]ImageResult, error) {
+func (s *Startpage) ImageSearch(ctx context.Context, query string, limit, offset int) ([]engine.ImageResult, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	u, err := url.Parse(startpageEndpoint)
+	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -86,8 +87,8 @@ func (s *Startpage) ImageSearch(ctx context.Context, query string, limit, offset
 			return nil, errors.New("startpage still serving a challenge after proof of work")
 		}
 	}
-	
-	results, err := parseStartpageImageResults(body, limit)
+
+	results, err := parseImageResults(body, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +96,7 @@ func (s *Startpage) ImageSearch(ctx context.Context, query string, limit, offset
 	var wg sync.WaitGroup
 	for i := range results {
 		wg.Add(1)
-		go func(r *ImageResult) {
+		go func(r *engine.ImageResult) {
 			defer wg.Done()
 			r.Width, r.Height = imageSize(ctx, s.client, r.Thumbnail)
 		}(&results[i])
@@ -117,13 +118,13 @@ type anubisChallenge struct {
 	} `json:"challenge"`
 }
 
-func (s *Startpage) Search(ctx context.Context, query string, limit, offset int) ([]Result, error) {
+func (s *Startpage) Search(ctx context.Context, query string, limit, offset int) ([]engine.Result, error) {
 	pageNum := offset + 1
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	u, err := url.Parse(startpageEndpoint)
+	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -151,22 +152,22 @@ func (s *Startpage) Search(ctx context.Context, query string, limit, offset int)
 	}
 
 	if pageNum == 1 {
-		return parseStartpageResults(body, limit)
+		return parseResults(body, limit)
 	}
 
-	form, ok := startpagePageForm(body, pageNum)
+	form, ok := pageForm(body, pageNum)
 	if !ok {
 		return nil, fmt.Errorf("startpage: no pagination form for page %d", pageNum)
 	}
 	form.Set("query", query)
 	form.Set("page", strconv.Itoa(pageNum))
 
-	body, err = s.post(ctx, startpageEndpoint, form)
+	body, err = s.post(ctx, endpoint, form)
 	if err != nil {
 		return nil, err
 	}
 
-	return parseStartpageResults(body, limit)
+	return parseResults(body, limit)
 }
 
 func (s *Startpage) get(ctx context.Context, u string) (string, error) {
@@ -174,7 +175,7 @@ func (s *Startpage) get(ctx context.Context, u string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	setStartpageHeaders(req, s.cookies)
+	setHeaders(req, s.cookies)
 	return s.do(ctx, req)
 }
 
@@ -184,7 +185,7 @@ func (s *Startpage) post(ctx context.Context, u string, form url.Values) (string
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	setStartpageHeaders(req, s.cookies)
+	setHeaders(req, s.cookies)
 	return s.do(ctx, req)
 }
 
@@ -195,13 +196,13 @@ func (s *Startpage) do(ctx context.Context, req *http.Request) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	startpageStoreCookies(s.cookies, resp.Header.Values("Set-Cookie"))
+	storeCookies(s.cookies, resp.Header.Values("Set-Cookie"))
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("startpage returned %s", resp.Status)
 	}
 
-	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxBodyReadLimit))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, engine.MaxBodyReadLimit))
 	if err != nil {
 		return "", err
 	}
@@ -233,22 +234,22 @@ func (s *Startpage) passChallenge(ctx context.Context, doc string) error {
 	v.Set("id", ch.Challenge.ID)
 	v.Set("response", hash)
 	v.Set("nonce", strconv.FormatInt(nonce, 10))
-	v.Set("redir", startpageEndpoint)
+	v.Set("redir", endpoint)
 	v.Set("elapsedTime", strconv.FormatInt(time.Since(start).Milliseconds(), 10))
-	passURL := "https://www.startpage.com" + startpagePassPath + "?" + v.Encode()
+	passURL := "https://www.startpage.com" + passPath + "?" + v.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, passURL, nil)
 	if err != nil {
 		return err
 	}
-	setStartpageHeaders(req, s.cookies)
+	setHeaders(req, s.cookies)
 
 	resp, err := s.client.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	startpageStoreCookies(s.cookies, resp.Header.Values("Set-Cookie"))
+	storeCookies(s.cookies, resp.Header.Values("Set-Cookie"))
 
 	if s.cookies["spchal-auth"] == "" {
 		return errors.New("startpage proof of work was rejected (no spchal-auth cookie)")
@@ -268,8 +269,8 @@ func solveAnubis(randomData string, difficulty int) (int64, string) {
 	return 0, ""
 }
 
-func setStartpageHeaders(req *http.Request, cookies map[string]string) {
-	req.Header.Set("User-Agent", BrowserUserAgent)
+func setHeaders(req *http.Request, cookies map[string]string) {
+	req.Header.Set("User-Agent", engine.BrowserUserAgent)
 	req.Header.Set("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
 	req.Header.Set("accept-language", "en-US,en;q=0.9")
 	req.Header.Set("accept-encoding", "gzip")
@@ -290,7 +291,7 @@ func setStartpageHeaders(req *http.Request, cookies map[string]string) {
 
 var reSetCookieName = regexp.MustCompile(`^([^=;]+)=([^;]*)`)
 
-func startpageStoreCookies(jar map[string]string, lines []string) {
+func storeCookies(jar map[string]string, lines []string) {
 	for _, line := range lines {
 		m := reSetCookieName.FindStringSubmatch(line)
 		if len(m) < 3 {
@@ -306,7 +307,7 @@ func startpageStoreCookies(jar map[string]string, lines []string) {
 	}
 }
 
-func startpagePageForm(doc string, page int) (url.Values, bool) {
+func pageForm(doc string, page int) (url.Values, bool) {
 	for _, m := range reSpPageForm.FindAllStringSubmatch(doc, -1) {
 		p, err := strconv.Atoi(m[1])
 		if err != nil || p != page {
@@ -331,20 +332,20 @@ func startpagePageForm(doc string, page int) (url.Values, bool) {
 	return nil, false
 }
 
-func parseStartpageResults(doc string, limit int) ([]Result, error) {
+func parseResults(doc string, limit int) ([]engine.Result, error) {
 	idxs := reSpTitle.FindAllStringSubmatchIndex(doc, -1)
 	if len(idxs) == 0 {
 		return nil, errors.New("no startpage results found in page")
 	}
 
-	out := make([]Result, 0, len(idxs))
+	out := make([]engine.Result, 0, len(idxs))
 	for i, m := range idxs {
 		resultURL := doc[m[2]:m[3]]
 		if !strings.HasPrefix(resultURL, "http://") && !strings.HasPrefix(resultURL, "https://") {
 			continue
 		}
-		r := Result{
-			Title:  cleanStartpageText(doc[m[4]:m[5]]),
+		r := engine.Result{
+			Title:  cleanText(doc[m[4]:m[5]]),
 			URL:    resultURL,
 			Engine: "startpage",
 		}
@@ -355,7 +356,7 @@ func parseStartpageResults(doc string, limit int) ([]Result, error) {
 			segEnd = idxs[i+1][0]
 		}
 		if d := reSpDescription.FindStringSubmatch(doc[segStart:segEnd]); len(d) > 1 {
-			r.Snippet = cleanStartpageText(d[1])
+			r.Snippet = cleanText(d[1])
 		}
 
 		out = append(out, r)
@@ -369,22 +370,23 @@ func parseStartpageResults(doc string, limit int) ([]Result, error) {
 	return out, nil
 }
 
-func cleanStartpageText(raw string) string {
-	raw = reSpTags.ReplaceAllString(raw, "")
-	return html.UnescapeString(strings.TrimSpace(raw))
-}
-
 var (
+	reSpTags           = regexp.MustCompile(`(?s)<[^>]+>`)
 	reSpImageContainer = regexp.MustCompile(`(?s)<div[^>]*class="image-container grid-image-\d+[^"]*"[^>]*data-thumbnail-url="([^"]*)"[^>]*aria-label="click to expand image: ([^"]*)"`)
 	reSpImageSource    = regexp.MustCompile(`<span[^>]*>([^<]+)</span>`)
 )
 
-func imageSize(ctx context.Context, client HTTPClient, imageURL string) (int, int) {
+func cleanText(raw string) string {
+	raw = reSpTags.ReplaceAllString(raw, "")
+	return html.UnescapeString(strings.TrimSpace(raw))
+}
+
+func imageSize(ctx context.Context, client engine.HTTPClient, imageURL string) (int, int) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, imageURL, nil)
 	if err != nil {
 		return 0, 0
 	}
-	req.Header.Set("User-Agent", BrowserUserAgent)
+	req.Header.Set("User-Agent", engine.BrowserUserAgent)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -402,7 +404,7 @@ func imageSize(ctx context.Context, client HTTPClient, imageURL string) (int, in
 		if err != nil {
 			return 0, 0
 		}
-		req.Header.Set("User-Agent", BrowserUserAgent)
+		req.Header.Set("User-Agent", engine.BrowserUserAgent)
 		resp, err = client.Do(req)
 		if err != nil {
 			return 0, 0
@@ -420,8 +422,8 @@ func imageSize(ctx context.Context, client HTTPClient, imageURL string) (int, in
 	return cfg.Width, cfg.Height
 }
 
-func parseStartpageImageResults(doc string, limit int) ([]ImageResult, error) {
-	out := make([]ImageResult, 0)
+func parseImageResults(doc string, limit int) ([]engine.ImageResult, error) {
+	out := make([]engine.ImageResult, 0)
 
 	matches := reSpImageContainer.FindAllStringSubmatchIndex(doc, -1)
 	for _, loc := range matches {
@@ -445,7 +447,7 @@ func parseStartpageImageResults(doc string, limit int) ([]ImageResult, error) {
 			sourceURL = "https://" + source
 		}
 
-		out = append(out, ImageResult{
+		out = append(out, engine.ImageResult{
 			Title:     title,
 			URL:       sourceURL,
 			SourceURL: thumb,

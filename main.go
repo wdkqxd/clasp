@@ -15,7 +15,10 @@ import (
 	"metasearch/internal/api"
 	"metasearch/internal/bangs"
 	"metasearch/internal/engine"
-	"metasearch/internal/market"
+	"metasearch/internal/engine/helpers"
+	"metasearch/internal/engine/sources/brave"
+	"metasearch/internal/engine/sources/ddg"
+	"metasearch/internal/engine/sources/startpage"
 	"metasearch/internal/wikipedia"
 )
 
@@ -25,29 +28,29 @@ func main() {
 		port = "8080"
 	}
 
-	client, err := engine.NewBrowserClient()
+	client, err := helpers.NewBrowserClient()
 	if err != nil {
 		log.Fatalf("failed to create browser client: %v", err)
 	}
-	imgClient, err := engine.NewBrowserClient()
+	imgClient, err := helpers.NewBrowserClient()
 	if err != nil {
 		log.Fatalf("failed to create image browser client: %v", err)
 	}
 	engines := []engine.Engine{
-		engine.NewBrave(client),
-		engine.NewDDG(client),
-		engine.NewStartpage(client),
+		brave.New(client),
+		ddg.New(client),
+		startpage.New(client),
 	}
 	imgEngines := []engine.Engine{
-		engine.NewBrave(imgClient),
-		engine.NewStartpage(imgClient),
+		brave.New(imgClient),
+		startpage.New(imgClient),
 	}
 
 	agg := aggregator.New(engines, imgEngines)
 	bangStore := bangs.New(context.Background())
 	wikipediaClient := wikipedia.NewClient(client)
 
-	apiHandler := api.New(agg, bangStore, wikipediaClient, market.NewClient())
+	apiHandler := api.New(agg, bangStore, wikipediaClient)
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/", apiHandler)

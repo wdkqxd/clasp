@@ -1,37 +1,38 @@
-package engine
+package ddg
 
 import (
 	"context"
 	"fmt"
-	"html"
 	"io"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"metasearch/internal/engine"
+	"metasearch/internal/engine/helpers"
 )
 
-const ddgEndpoint = "https://html.duckduckgo.com/html/"
+const endpoint = "https://html.duckduckgo.com/html/"
 
 var (
 	reTitle = regexp.MustCompile(`(?i)<a[^>]*class="[^"]*result__a[^"]*"[^>]*href="([^"]+)"[^>]*>(.*?)</a>`)
 	reSnip  = regexp.MustCompile(`(?i)<a[^>]*class="[^"]*result__snippet[^"]*"[^>]*>(.*?)</a>`)
-	reTag   = regexp.MustCompile(`(?s)<[^>]+>`)
 )
 
 type DDG struct {
-	client HTTPClient
+	client engine.HTTPClient
 }
 
-func NewDDG(client HTTPClient) *DDG {
+func New(client engine.HTTPClient) *DDG {
 	return &DDG{client: client}
 }
 
 func (d *DDG) Name() string { return "ddg" }
 
-func (d *DDG) Search(ctx context.Context, query string, limit, offset int) ([]Result, error) {
-	u, err := url.Parse(ddgEndpoint)
+func (d *DDG) Search(ctx context.Context, query string, limit, offset int) ([]engine.Result, error) {
+	u, err := url.Parse(endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +47,7 @@ func (d *DDG) Search(ctx context.Context, query string, limit, offset int) ([]Re
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", BrowserUserAgent)
+	req.Header.Set("User-Agent", engine.BrowserUserAgent)
 
 	resp, err := d.client.Do(req)
 	if err != nil {
@@ -61,7 +62,7 @@ func (d *DDG) Search(ctx context.Context, query string, limit, offset int) ([]Re
 		return nil, fmt.Errorf("ddg returned %s", resp.Status)
 	}
 
-	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxBodyReadLimit))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, engine.MaxBodyReadLimit))
 	if err != nil {
 		return nil, err
 	}
@@ -70,22 +71,22 @@ func (d *DDG) Search(ctx context.Context, query string, limit, offset int) ([]Re
 	titles := reTitle.FindAllStringSubmatch(doc, -1)
 	snips := reSnip.FindAllStringSubmatch(doc, -1)
 
-	results := make([]Result, 0, len(titles))
+	results := make([]engine.Result, 0, len(titles))
 	for i, m := range titles {
 		if len(m) < 3 {
 			continue
 		}
-		target, err := resolveDDGURL(m[1])
-		if err != nil || isDDGAd(target) {
+		target, err := resolveURL(m[1])
+		if err != nil || isAd(target) {
 			continue
 		}
-		r := Result{
-			Title:  cleanText(m[2]),
+		r := engine.Result{
+			Title:  helpers.CleanText(m[2]),
 			URL:    target,
 			Engine: d.Name(),
 		}
 		if i < len(snips) && len(snips[i]) > 1 {
-			r.Snippet = cleanText(snips[i][1])
+			r.Snippet = helpers.CleanText(snips[i][1])
 		}
 		results = append(results, r)
 		if len(results) >= limit {
@@ -95,7 +96,7 @@ func (d *DDG) Search(ctx context.Context, query string, limit, offset int) ([]Re
 	return results, nil
 }
 
-func resolveDDGURL(href string) (string, error) {
+func resolveURL(href string) (string, error) {
 	if strings.Contains(href, "uddg=") {
 		u, err := url.Parse(href)
 		if err == nil {
@@ -113,12 +114,7 @@ func resolveDDGURL(href string) (string, error) {
 	return "", fmt.Errorf("unsupported ddg link: %q", href)
 }
 
-func cleanText(s string) string {
-	s = reTag.ReplaceAllString(s, "")
-	return strings.Join(strings.Fields(html.UnescapeString(s)), " ")
-}
-
 // sponsored-result redirects (y.js links)
-func isDDGAd(target string) bool {
+func isAd(target string) bool {
 	return strings.Contains(target, "ad_domain=") || strings.Contains(target, "/y.js")
 }

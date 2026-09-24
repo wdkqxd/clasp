@@ -26,6 +26,7 @@ type Response struct {
 	HasMore     bool                `json:"has_more"`
 	Infobox     *engine.Infobox     `json:"infobox,omitempty"`
 	Discussions []engine.Discussion `json:"discussions,omitempty"`
+	Rich        []engine.RichAnswer `json:"rich,omitempty"`
 }
 
 type ImageResponse struct {
@@ -224,6 +225,7 @@ func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, 
 	}
 
 	resp.Discussions = collectDiscussions(activeEngines)
+	resp.Rich = collectRich(activeEngines)
 
 	if len(scoredResults) > limit {
 		scoredResults = scoredResults[:limit]
@@ -393,6 +395,21 @@ func collectDiscussions(engines []engine.Engine) []engine.Discussion {
 		}
 	}
 	return out
+}
+
+// collectRich gathers rich instant-answer widgets from engines that support them.
+// Brave is the only such engine today, so the first non-empty set wins.
+func collectRich(engines []engine.Engine) []engine.RichAnswer {
+	for _, e := range engines {
+		rs, ok := e.(interface{ RichAnswers() []engine.RichAnswer })
+		if !ok {
+			continue
+		}
+		if r := rs.RichAnswers(); len(r) > 0 {
+			return r
+		}
+	}
+	return nil
 }
 
 func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page int, enabled []string) ImageResponse {

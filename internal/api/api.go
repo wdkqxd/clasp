@@ -11,7 +11,6 @@ import (
 
 	"metasearch/internal/aggregator"
 	"metasearch/internal/bangs"
-	"metasearch/internal/market"
 	"metasearch/internal/wikipedia"
 )
 
@@ -24,46 +23,25 @@ type Server struct {
 	search    Searcher
 	bangs     *bangs.Store
 	wikipedia *wikipedia.Client
-	market    *market.Client
 	start     time.Time
 	corsOrig  string
 }
 
-func New(search Searcher, b *bangs.Store, wiki *wikipedia.Client, marketClient *market.Client) http.Handler {
+func New(search Searcher, b *bangs.Store, wiki *wikipedia.Client) http.Handler {
 	s := &Server{
 		search:    search,
 		bangs:     b,
 		wikipedia: wiki,
-		market:    marketClient,
 		start:     time.Now(),
 		corsOrig:  os.Getenv("CORS_ORIGIN"),
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/healthz", s.handleHealth)
 	mux.HandleFunc("GET /api/wikipedia", s.handleWikipedia)
-	mux.HandleFunc("GET /api/market", s.handleMarket)
 	mux.HandleFunc("GET /api/search", s.handleSearch)
 	mux.HandleFunc("GET /api/images", s.handleImages)
 	mux.HandleFunc("GET /api/bangs", s.handleBangs)
 	return s.withCORS(mux)
-}
-
-func (s *Server) handleMarket(w http.ResponseWriter, r *http.Request) {
-	query := strings.TrimSpace(r.URL.Query().Get("q"))
-	if query == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "missing required query parameter 'q'"})
-		return
-	}
-	period := strings.TrimSpace(r.URL.Query().Get("period"))
-	if period == "" {
-		period = "7d"
-	}
-	quote, err := s.market.Search(r.Context(), query, period)
-	if err != nil || quote == nil {
-		writeJSON(w, http.StatusNotFound, map[string]string{"error": "market data unavailable"})
-		return
-	}
-	writeJSON(w, http.StatusOK, quote)
 }
 
 func (s *Server) withCORS(next http.Handler) http.Handler {
