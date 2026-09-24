@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"metasearch/internal/engine"
 	"metasearch/internal/engine/helpers"
@@ -23,10 +24,13 @@ var (
 
 type DDG struct {
 	client engine.HTTPClient
+
+	mu   sync.Mutex
+	vqds map[string]string // cached vqd tokens, keyed by query
 }
 
 func New(client engine.HTTPClient) *DDG {
-	return &DDG{client: client}
+	return &DDG{client: client, vqds: make(map[string]string)}
 }
 
 func (d *DDG) Name() string { return "ddg" }

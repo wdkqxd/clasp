@@ -43,6 +43,7 @@ func main() {
 	}
 	imgEngines := []engine.Engine{
 		brave.New(imgClient),
+		ddg.New(imgClient),
 		startpage.New(imgClient),
 	}
 
