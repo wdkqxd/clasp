@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"sync"
 
 	"metasearch/internal/engine"
 )
@@ -19,11 +18,6 @@ const (
 
 type Brave struct {
 	client engine.HTTPClient
-
-	mu          sync.Mutex
-	infobox     *engine.Infobox
-	discussions []engine.Discussion
-	rich        []engine.RichAnswer
 }
 
 func New(client engine.HTTPClient) *Brave {
@@ -31,24 +25,6 @@ func New(client engine.HTTPClient) *Brave {
 }
 
 func (b *Brave) Name() string { return "brave" }
-
-func (b *Brave) Infobox() *engine.Infobox {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	return b.infobox
-}
-
-func (b *Brave) Discussions() []engine.Discussion {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	return b.discussions
-}
-
-func (b *Brave) RichAnswers() []engine.RichAnswer {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	return b.rich
-}
 
 func (b *Brave) ImageSearch(ctx context.Context, query string, limit, offset int) ([]engine.ImageResult, error) {
 	doc, err := b.fetchDoc(ctx, "brave images", imageURI, query, offset)
@@ -62,29 +38,28 @@ func (b *Brave) ImageSearch(ctx context.Context, query string, limit, offset int
 	return imageResults(data, limit)
 }
 
-func (b *Brave) Search(ctx context.Context, query string, limit, offset int) ([]engine.Result, error) {
-	b.mu.Lock()
-	b.infobox = nil
-	b.discussions = nil
-	b.rich = nil
-	b.mu.Unlock()
+func (b *Brave) Search(ctx context.Context, query string, limit, offset int) (engine.SearchResult, error) {
+	sr := engine.SearchResult{}
 
 	doc, err := b.fetchDoc(ctx, "brave web", webEndpoint, query, offset)
 	if err != nil {
-		return nil, err
+		return sr, err
 	}
+
+	sr.Infobox = parseInfobox(doc)
+	sr.Discussions = parseDiscussions(doc)
+	sr.Rich = parseRich(doc)
 
 	data, serpErr := parseSerpData(doc)
-	b.mu.Lock()
-	b.infobox = parseInfobox(doc)
-	b.discussions = parseDiscussions(doc)
-	b.rich = parseRich(doc)
-	b.mu.Unlock()
-
 	if serpErr == nil {
-		return webResults(data, limit)
+		sr.Results, err = webResults(data, limit)
+	} else {
+		sr.Results, err = ssrResults(doc, limit)
 	}
-	return ssrResults(doc, limit)
+	if err != nil {
+		return engine.SearchResult{}, err
+	}
+	return sr, nil
 }
 
 func (b *Brave) fetchDoc(ctx context.Context, label, rawURL, query string, offset int) (string, error) {

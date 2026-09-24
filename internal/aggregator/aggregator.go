@@ -105,7 +105,7 @@ func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, 
 
 	type outcome struct {
 		name string
-		res  []engine.Result
+		res  engine.SearchResult
 		err  error
 		took time.Duration
 	}
@@ -147,8 +147,8 @@ func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, 
 			st.Error = o.err.Error()
 		} else {
 			st.Status = "ok"
-			st.Count = len(o.res)
-			for j, r := range o.res {
+			st.Count = len(o.res.Results)
+			for j, r := range o.res.Results {
 				key := normalizeURL(r.URL)
 				if key == "" {
 					continue
@@ -200,7 +200,7 @@ func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, 
 	hasMore := len(scoredResults) > limit
 	if !hasMore {
 		for _, o := range byName {
-			if o.err == nil && len(o.res) > 0 {
+			if o.err == nil && len(o.res.Results) > 0 {
 				hasMore = true
 				break
 			}
@@ -209,15 +209,20 @@ func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, 
 	resp.HasMore = hasMore
 
 	for _, e := range activeEngines {
-		if ib, ok := e.(interface{ Infobox() *engine.Infobox }); ok {
-			if ib := ib.Infobox(); ib != nil && resp.Infobox == nil {
-				resp.Infobox = ib
-			}
+		o := byName[e.Name()]
+		if o.err != nil {
+			continue
+		}
+		if resp.Infobox == nil && o.res.Infobox != nil {
+			resp.Infobox = o.res.Infobox
+		}
+		if resp.Discussions == nil && len(o.res.Discussions) > 0 {
+			resp.Discussions = o.res.Discussions
+		}
+		if resp.Rich == nil && len(o.res.Rich) > 0 {
+			resp.Rich = o.res.Rich
 		}
 	}
-
-	resp.Discussions = collectDiscussions(activeEngines)
-	resp.Rich = collectRich(activeEngines)
 
 	if len(scoredResults) > limit {
 		scoredResults = scoredResults[:limit]
@@ -362,44 +367,6 @@ func mergeTwoImageResults(existing *engine.ImageResult, incoming engine.ImageRes
 	if incoming.Engine != "" && !slices.Contains(existing.Engines, incoming.Engine) {
 		existing.Engines = append(existing.Engines, incoming.Engine)
 	}
-}
-
-func collectDiscussions(engines []engine.Engine) []engine.Discussion {
-	out := make([]engine.Discussion, 0, 8)
-	seen := make(map[string]struct{})
-	for _, e := range engines {
-		ds, ok := e.(interface{ Discussions() []engine.Discussion })
-		if !ok {
-			continue
-		}
-		for _, d := range ds.Discussions() {
-			if d.Title == "" || d.URL == "" {
-				continue
-			}
-			if _, dup := seen[d.URL]; dup {
-				continue
-			}
-			seen[d.URL] = struct{}{}
-			out = append(out, d)
-			if len(out) >= 8 {
-				return out
-			}
-		}
-	}
-	return out
-}
-
-func collectRich(engines []engine.Engine) []engine.RichAnswer {
-	for _, e := range engines {
-		rs, ok := e.(interface{ RichAnswers() []engine.RichAnswer })
-		if !ok {
-			continue
-		}
-		if r := rs.RichAnswers(); len(r) > 0 {
-			return r
-		}
-	}
-	return nil
 }
 
 func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page int, enabled []string) ImageResponse {

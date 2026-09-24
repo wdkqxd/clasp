@@ -221,10 +221,17 @@ type RichMetaURL struct {
 	Favicon  string `json:"favicon,omitempty"`
 }
 
+type SearchResult struct {
+	Results     []Result
+	Infobox     *Infobox
+	Discussions []Discussion
+	Rich        []RichAnswer
+}
+
 // abstracts a search backend for the aggregator
 type Engine interface {
 	Name() string
-	Search(ctx context.Context, query string, limit, offset int) ([]Result, error)
+	Search(ctx context.Context, query string, limit, offset int) (SearchResult, error)
 }
 
 type ImageSearcher interface {

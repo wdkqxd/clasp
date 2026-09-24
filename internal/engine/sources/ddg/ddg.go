@@ -35,10 +35,10 @@ func New(client engine.HTTPClient) *DDG {
 
 func (d *DDG) Name() string { return "ddg" }
 
-func (d *DDG) Search(ctx context.Context, query string, limit, offset int) ([]engine.Result, error) {
+func (d *DDG) Search(ctx context.Context, query string, limit, offset int) (engine.SearchResult, error) {
 	u, err := url.Parse(endpoint)
 	if err != nil {
-		return nil, err
+		return engine.SearchResult{}, err
 	}
 	q := u.Query()
 	q.Set("q", query)
@@ -49,26 +49,26 @@ func (d *DDG) Search(ctx context.Context, query string, limit, offset int) ([]en
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
-		return nil, err
+		return engine.SearchResult{}, err
 	}
 	req.Header.Set("User-Agent", engine.BrowserUserAgent)
 
 	resp, err := d.client.Do(req)
 	if err != nil {
-		return nil, err
+		return engine.SearchResult{}, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return nil, fmt.Errorf("ddg blocked the request: %s", resp.Status)
+		return engine.SearchResult{}, fmt.Errorf("ddg blocked the request: %s", resp.Status)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ddg returned %s", resp.Status)
+		return engine.SearchResult{}, fmt.Errorf("ddg returned %s", resp.Status)
 	}
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, engine.MaxBodyReadLimit))
 	if err != nil {
-		return nil, err
+		return engine.SearchResult{}, err
 	}
 	doc := string(body)
 
@@ -97,7 +97,7 @@ func (d *DDG) Search(ctx context.Context, query string, limit, offset int) ([]en
 			break
 		}
 	}
-	return results, nil
+	return engine.SearchResult{Results: results}, nil
 }
 
 func resolveURL(href string) (string, error) {

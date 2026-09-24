@@ -72,7 +72,7 @@ func (s *Startpage) ImageSearch(ctx context.Context, query string, limit, offset
 	return results, nil
 }
 
-func (s *Startpage) Search(ctx context.Context, query string, limit, offset int) ([]engine.Result, error) {
+func (s *Startpage) Search(ctx context.Context, query string, limit, offset int) (engine.SearchResult, error) {
 	pageNum := offset + 1
 
 	s.mu.Lock()
@@ -80,7 +80,7 @@ func (s *Startpage) Search(ctx context.Context, query string, limit, offset int)
 
 	u, err := url.Parse(endpoint)
 	if err != nil {
-		return nil, err
+		return engine.SearchResult{}, err
 	}
 	q := u.Query()
 	q.Set("query", query)
@@ -89,30 +89,32 @@ func (s *Startpage) Search(ctx context.Context, query string, limit, offset int)
 
 	body, err := s.get(ctx, u.String())
 	if err != nil {
-		return nil, err
+		return engine.SearchResult{}, err
 	}
 	body, err = s.passIfChallenged(ctx, body, u.String())
 	if err != nil {
-		return nil, err
+		return engine.SearchResult{}, err
 	}
 
 	if pageNum == 1 {
-		return parseResults(body, limit)
+		results, err := parseResults(body, limit)
+		return engine.SearchResult{Results: results}, err
 	}
 
 	form, ok := pageForm(body, pageNum)
 	if !ok {
-		return nil, errors.New("startpage: no pagination form for page " + strconv.Itoa(pageNum))
+		return engine.SearchResult{}, errors.New("startpage: no pagination form for page " + strconv.Itoa(pageNum))
 	}
 	form.Set("query", query)
 	form.Set("page", strconv.Itoa(pageNum))
 
 	body, err = s.post(ctx, endpoint, form)
 	if err != nil {
-		return nil, err
+		return engine.SearchResult{}, err
 	}
 
-	return parseResults(body, limit)
+	results, err := parseResults(body, limit)
+	return engine.SearchResult{Results: results}, err
 }
 
 // passIfChallenged solves the anubis proof of work when startpage serves a
