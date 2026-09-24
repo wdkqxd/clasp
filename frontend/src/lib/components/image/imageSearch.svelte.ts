@@ -3,7 +3,7 @@ import { BaseSearchState } from '../../baseSearchState.svelte';
 import type { SearchEngine } from '../settings/searchSettings.svelte';
 import type { ImageSearchResponse, ImageResult } from '../../types';
 
-export const IMAGE_PAGE_SIZE = 50;
+export const IMAGE_PAGE_SIZE = 90;
 
 export class ImageSearchState extends BaseSearchState<ImageResult, ImageSearchResponse> {
 	constructor() {

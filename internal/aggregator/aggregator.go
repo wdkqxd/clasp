@@ -65,6 +65,7 @@ func New(engines []engine.Engine, imgEngines []engine.Engine, opts ...Option) *A
 const (
 	rrfK              = 10
 	maxCandidates     = 60
+	imageCandidates   = 200
 	navigationalBoost = 4.0
 )
 
@@ -458,7 +459,7 @@ func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page 
 			ectx, cancel := context.WithTimeout(ctx, a.perEngineTimeout)
 			defer cancel()
 			start := time.Now()
-			res, err := s.ImageSearch(ectx, query, maxCandidates, page)
+			res, err := s.ImageSearch(ectx, query, imageCandidates, page)
 			ch <- imgOutcome{name: name, res: res, err: err, took: time.Since(start)}
 		}(as.name, as.s)
 	}
@@ -497,7 +498,7 @@ func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page 
 			positions = append(positions, enginePos{name: as.name, pos: 0})
 		}
 	}
-	for len(positions) > 0 {
+	for len(positions) > 0 && len(resp.Results) < limit {
 		var next []enginePos
 		for _, ep := range positions {
 			o := byName[ep.name]
