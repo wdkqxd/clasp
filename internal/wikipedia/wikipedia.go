@@ -253,7 +253,7 @@ func expandUbl(s string) string {
 		if end <= start {
 			break
 		}
-		inner := s[start+len("{{"):end-len("}}")]
+		inner := s[start+len("{{") : end-len("}}")]
 		if !strings.HasPrefix(strings.ToLower(inner), "ubl|") {
 			lower = lower[:start+len("{{")] + lower[end:]
 			s = s[:start+len("{{")] + s[end:]

@@ -50,18 +50,18 @@ type ImageResult struct {
 }
 
 type RichAnswer struct {
-	Type           string                `json:"type"`
-	Calculator     *RichCalculator       `json:"calculator,omitempty"`
-	Colorpicker    *RichColorpicker      `json:"colorpicker,omitempty"`
-	Weather        *RichWeather          `json:"weather,omitempty"`
-	Timer          *RichTimer            `json:"timer,omitempty"`
-	UnitConversion *RichUnitConversion   `json:"unitConversion,omitempty"`
-	Timezones      *RichTimezones        `json:"timezones,omitempty"`
-	Cryptocurrency *RichCryptocurrency   `json:"cryptocurrency,omitempty"`
-	Unixtimestamp  *RichUnixtimestamp    `json:"unixtimestamp,omitempty"`
-	Currency       *RichCurrency         `json:"currency,omitempty"`
-	News           *RichNews             `json:"news,omitempty"`
-	Stopwatch      bool                  `json:"stopwatch,omitempty"`
+	Type           string              `json:"type"`
+	Calculator     *RichCalculator     `json:"calculator,omitempty"`
+	Colorpicker    *RichColorpicker    `json:"colorpicker,omitempty"`
+	Weather        *RichWeather        `json:"weather,omitempty"`
+	Timer          *RichTimer          `json:"timer,omitempty"`
+	UnitConversion *RichUnitConversion `json:"unitConversion,omitempty"`
+	Timezones      *RichTimezones      `json:"timezones,omitempty"`
+	Cryptocurrency *RichCryptocurrency `json:"cryptocurrency,omitempty"`
+	Unixtimestamp  *RichUnixtimestamp  `json:"unixtimestamp,omitempty"`
+	Currency       *RichCurrency       `json:"currency,omitempty"`
+	News           *RichNews           `json:"news,omitempty"`
+	Stopwatch      bool                `json:"stopwatch,omitempty"`
 }
 
 type RichCalculator struct {
@@ -117,9 +117,9 @@ type RichWeatherDay struct {
 }
 
 type RichWeatherAlert struct {
-	Event               string `json:"event"`
-	Description         string `json:"description,omitempty"`
-	StartRelativeI18n   string `json:"start_relative_i18n,omitempty"`
+	Event             string `json:"event"`
+	Description       string `json:"description,omitempty"`
+	StartRelativeI18n string `json:"start_relative_i18n,omitempty"`
 }
 
 type RichTimer struct {
@@ -154,10 +154,10 @@ type RichTimezoneCnv struct {
 }
 
 type RichCryptocurrency struct {
-	IntentType string             `json:"intent_type"`
-	VsCurrency string             `json:"vs_currency"`
-	Quote      *RichCryptoQuote   `json:"quote,omitempty"`
-	Timeseries *RichCryptoSeries  `json:"timeseries,omitempty"`
+	IntentType string            `json:"intent_type"`
+	VsCurrency string            `json:"vs_currency"`
+	Quote      *RichCryptoQuote  `json:"quote,omitempty"`
+	Timeseries *RichCryptoSeries `json:"timeseries,omitempty"`
 }
 
 type RichCryptoQuote struct {
@@ -195,13 +195,13 @@ type RichCurrency struct {
 }
 
 type RichCurrSeries struct {
-	TimeRange   string    `json:"time_range"`
-	TsExchange  [][2]any  `json:"ts_exchange_rate,omitempty"`
+	TimeRange  string   `json:"time_range"`
+	TsExchange [][2]any `json:"ts_exchange_rate,omitempty"`
 }
 
 type RichNews struct {
-	IsTopical bool             `json:"is_topical"`
-	Topics    []string         `json:"topics,omitempty"`
+	IsTopical bool              `json:"is_topical"`
+	Topics    []string          `json:"topics,omitempty"`
 	Articles  []RichNewsArticle `json:"articles"`
 }
 
