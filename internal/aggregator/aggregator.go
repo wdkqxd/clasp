@@ -39,15 +39,13 @@ type ImageResponse struct {
 
 type Aggregator struct {
 	engines          []engine.Engine
-	imgEngines       []engine.Engine
 	totalTimeout     time.Duration
 	perEngineTimeout time.Duration
 }
 
-func New(engines []engine.Engine, imgEngines []engine.Engine) *Aggregator {
+func New(engines []engine.Engine) *Aggregator {
 	return &Aggregator{
 		engines:          engines,
-		imgEngines:       imgEngines,
 		totalTimeout:     10 * time.Second,
 		perEngineTimeout: 5 * time.Second,
 	}
@@ -395,7 +393,7 @@ func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page 
 		name string
 		s    engine.ImageSearcher
 	}
-	for _, e := range selectEngines(a.imgEngines, enabled) {
+	for _, e := range selectEngines(a.engines, enabled) {
 		if is, ok := e.(engine.ImageSearcher); ok {
 			activeSearchers = append(activeSearchers, struct {
 				name string
