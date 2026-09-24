@@ -3,6 +3,7 @@
 	import type { ImageResult } from '../../types';
 	import { getSearchSettings } from '../settings/searchSettings.svelte';
 	import { shouldBlockImage } from './aiBlocklist';
+	import ImageThumb from './ImageThumb.svelte';
 
 	const settings = getSearchSettings();
 
@@ -106,12 +107,10 @@
 					class:selected={selectedIndex === i}
 					onclick={(e) => openSidebar(e, i)}
 				>
-					<img
+					<ImageThumb
 						src={image.thumbnail}
 						alt={image.title}
-						loading="lazy"
-						class="w-full h-full object-cover rounded-lg transition-[transform,opacity] duration-200 ease-out"
-						class:selected-img={selectedIndex === i}
+						selected={selectedIndex === i}
 					/>
 				</a>
 				<div class="flex flex-col gap-0.5 mt-2 px-0.5 image-info">
