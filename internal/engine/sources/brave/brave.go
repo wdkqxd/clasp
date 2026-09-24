@@ -51,42 +51,10 @@ func (b *Brave) RichAnswers() []engine.RichAnswer {
 }
 
 func (b *Brave) ImageSearch(ctx context.Context, query string, limit, offset int) ([]engine.ImageResult, error) {
-	u, err := url.Parse(imageURI)
+	doc, err := b.fetchDoc(ctx, "brave images", imageURI, query, offset)
 	if err != nil {
 		return nil, err
 	}
-	q := u.Query()
-	q.Set("q", query)
-	q.Set("source", "web")
-	q.Set("spellcheck", "0")
-	q.Set("search_lang", "en")
-	q.Set("country", "ALL")
-	if offset > 0 {
-		q.Set("offset", strconv.Itoa(offset))
-	}
-	u.RawQuery = q.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	setHeaders(req)
-
-	resp, err := b.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("brave images returned %s", resp.Status)
-	}
-	body, err := io.ReadAll(io.LimitReader(resp.Body, engine.MaxBodyReadLimit))
-	if err != nil {
-		return nil, err
-	}
-	doc := string(body)
-
 	data, err := parseSerpData(doc)
 	if err != nil {
 		return nil, err
@@ -101,9 +69,28 @@ func (b *Brave) Search(ctx context.Context, query string, limit, offset int) ([]
 	b.rich = nil
 	b.mu.Unlock()
 
-	u, err := url.Parse(webEndpoint)
+	doc, err := b.fetchDoc(ctx, "brave web", webEndpoint, query, offset)
 	if err != nil {
 		return nil, err
+	}
+
+	data, serpErr := parseSerpData(doc)
+	b.mu.Lock()
+	b.infobox = parseInfobox(doc)
+	b.discussions = parseDiscussions(doc)
+	b.rich = parseRich(doc)
+	b.mu.Unlock()
+
+	if serpErr == nil {
+		return webResults(data, limit)
+	}
+	return ssrResults(doc, limit)
+}
+
+func (b *Brave) fetchDoc(ctx context.Context, label, rawURL, query string, offset int) (string, error) {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return "", err
 	}
 	q := u.Query()
 	q.Set("q", query)
@@ -118,36 +105,24 @@ func (b *Brave) Search(ctx context.Context, query string, limit, offset int) ([]
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	setHeaders(req)
 
 	resp, err := b.client.Do(req)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("brave web returned %s", resp.Status)
+		return "", fmt.Errorf("%s returned %s", label, resp.Status)
 	}
 	body, err := io.ReadAll(io.LimitReader(resp.Body, engine.MaxBodyReadLimit))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	doc := string(body)
-
-	data, serpErr := parseSerpData(doc)
-	b.mu.Lock()
-	b.infobox = parseInfobox(doc)
-	b.discussions = parseDiscussions(doc)
-	b.rich = parseRich(doc)
-	b.mu.Unlock()
-
-	if serpErr == nil {
-		return webResults(data, limit)
-	}
-	return ssrResults(doc, limit)
+	return string(body), nil
 }
 
 func setHeaders(req *http.Request) {

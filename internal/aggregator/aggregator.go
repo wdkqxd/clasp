@@ -44,22 +44,13 @@ type Aggregator struct {
 	perEngineTimeout time.Duration
 }
 
-type Option func(*Aggregator)
-
-func WithTotalTimeout(d time.Duration) Option  { return func(a *Aggregator) { a.totalTimeout = d } }
-func WithEngineTimeout(d time.Duration) Option { return func(a *Aggregator) { a.perEngineTimeout = d } }
-
-func New(engines []engine.Engine, imgEngines []engine.Engine, opts ...Option) *Aggregator {
-	a := &Aggregator{
+func New(engines []engine.Engine, imgEngines []engine.Engine) *Aggregator {
+	return &Aggregator{
 		engines:          engines,
 		imgEngines:       imgEngines,
 		totalTimeout:     10 * time.Second,
 		perEngineTimeout: 5 * time.Second,
 	}
-	for _, o := range opts {
-		o(a)
-	}
-	return a
 }
 
 const (
@@ -398,8 +389,6 @@ func collectDiscussions(engines []engine.Engine) []engine.Discussion {
 	return out
 }
 
-// collectRich gathers rich instant-answer widgets from engines that support them.
-// Brave is the only such engine today, so the first non-empty set wins.
 func collectRich(engines []engine.Engine) []engine.RichAnswer {
 	for _, e := range engines {
 		rs, ok := e.(interface{ RichAnswers() []engine.RichAnswer })
