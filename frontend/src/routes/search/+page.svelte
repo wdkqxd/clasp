@@ -88,6 +88,7 @@
 		const stateKey = `${tabKey}:${q}`;
 		if (stateKey === startedQuery) return;
 		startedQuery = stateKey;
+		feed.query = q;
 		selectedImageIndex = -1;
 		discussions = [];
 		rich = [];
