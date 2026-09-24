@@ -49,8 +49,6 @@ type ImageResult struct {
 	Engines   []string `json:"engines,omitempty"`
 }
 
-// RichAnswer is one instant-answer card rendered above organic results.
-// Exactly one widget payload is set; Type is the canonical metasearch subtype.
 type RichAnswer struct {
 	Type           string                `json:"type"`
 	Calculator     *RichCalculator       `json:"calculator,omitempty"`

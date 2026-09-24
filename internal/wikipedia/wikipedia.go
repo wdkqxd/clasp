@@ -12,6 +12,8 @@ import (
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+
+	"metasearch/internal/engine"
 )
 
 type Article struct {
@@ -29,14 +31,10 @@ type Fact struct {
 }
 
 type Client struct {
-	http HTTPClient
+	http engine.HTTPClient
 }
 
-type HTTPClient interface {
-	Do(*http.Request) (*http.Response, error)
-}
-
-func NewClient(httpClient HTTPClient) *Client {
+func NewClient(httpClient engine.HTTPClient) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 5 * time.Second}
 	}

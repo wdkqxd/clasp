@@ -142,10 +142,3 @@
 		</div>
 	</div>
 </nav>
-
-<style>
-	.pref-btn:active {
-		transform: scale(0.96);
-		transition: transform 0.05s ease-out;
-	}
-</style>

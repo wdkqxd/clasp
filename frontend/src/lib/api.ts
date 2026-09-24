@@ -17,12 +17,6 @@ export async function search(
 	return res.json();
 }
 
-export async function myIP(): Promise<string> {
-	const res = await fetch('https://whoami.moe');
-	if (!res.ok) throw new Error(`HTTP ${res.status}`);
-	return (await res.text()).trim();
-}
-
 export async function wikipedia(query: string, language = 'auto'): Promise<WikipediaArticle | null> {
 	const res = await fetch(`/api/wikipedia?q=${encodeURIComponent(query)}&lang=${encodeURIComponent(language)}`);
 	if (res.status === 404) return null;
