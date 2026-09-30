@@ -2,7 +2,7 @@ package startpage
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -41,7 +41,7 @@ func (s *Startpage) do(ctx context.Context, req *http.Request) (string, error) {
 	storeCookies(s.cookies, resp.Header.Values("Set-Cookie"))
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("startpage returned %s", resp.Status)
+		return "", errors.New(resp.Status)
 	}
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, engine.MaxBodyReadLimit))

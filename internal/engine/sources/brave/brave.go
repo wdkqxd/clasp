@@ -2,7 +2,7 @@ package brave
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -27,7 +27,7 @@ func New(client engine.HTTPClient) *Brave {
 func (b *Brave) Name() string { return "brave" }
 
 func (b *Brave) ImageSearch(ctx context.Context, query string, limit, offset int) ([]engine.ImageResult, error) {
-	doc, err := b.fetchDoc(ctx, "brave images", imageURI, query, offset)
+	doc, err := b.fetchDoc(ctx, imageURI, query, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (b *Brave) ImageSearch(ctx context.Context, query string, limit, offset int
 func (b *Brave) Search(ctx context.Context, query string, limit, offset int) (engine.SearchResult, error) {
 	sr := engine.SearchResult{}
 
-	doc, err := b.fetchDoc(ctx, "brave web", webEndpoint, query, offset)
+	doc, err := b.fetchDoc(ctx, webEndpoint, query, offset)
 	if err != nil {
 		return sr, err
 	}
@@ -62,7 +62,7 @@ func (b *Brave) Search(ctx context.Context, query string, limit, offset int) (en
 	return sr, nil
 }
 
-func (b *Brave) fetchDoc(ctx context.Context, label, rawURL, query string, offset int) (string, error) {
+func (b *Brave) fetchDoc(ctx context.Context, rawURL, query string, offset int) (string, error) {
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return "", err
@@ -91,7 +91,7 @@ func (b *Brave) fetchDoc(ctx context.Context, label, rawURL, query string, offse
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("%s returned %s", label, resp.Status)
+		return "", errors.New(resp.Status)
 	}
 	body, err := io.ReadAll(io.LimitReader(resp.Body, engine.MaxBodyReadLimit))
 	if err != nil {

@@ -62,10 +62,10 @@ func (d *DDG) ImageSearch(ctx context.Context, query string, limit, offset int) 
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return nil, fmt.Errorf("ddg images blocked the request: %s", resp.Status)
+		return nil, fmt.Errorf("blocked the request: %s", resp.Status)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("ddg images returned %s", resp.Status)
+		return nil, errors.New(resp.Status)
 	}
 
 	var payload ddgImagePayload
@@ -133,7 +133,7 @@ func (d *DDG) fetchVQD(ctx context.Context, query string) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("duckduckgo returned %s while fetching vqd", resp.Status)
+		return "", fmt.Errorf("%s while fetching vqd", resp.Status)
 	}
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if err != nil {

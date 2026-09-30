@@ -2,6 +2,7 @@ package ddg
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -60,10 +61,10 @@ func (d *DDG) Search(ctx context.Context, query string, limit, offset int) (engi
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return engine.SearchResult{}, fmt.Errorf("ddg blocked the request: %s", resp.Status)
+		return engine.SearchResult{}, fmt.Errorf("blocked the request: %s", resp.Status)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return engine.SearchResult{}, fmt.Errorf("ddg returned %s", resp.Status)
+		return engine.SearchResult{}, errors.New(resp.Status)
 	}
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, engine.MaxBodyReadLimit))

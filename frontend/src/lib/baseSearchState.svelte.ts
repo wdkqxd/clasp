@@ -1,7 +1,9 @@
+import type { EngineStatus } from './types';
 import { getSearchSettings, type SearchEngine } from './components/settings/searchSettings.svelte';
 
 interface BaseResponse {
 	took_ms: number;
+	engines: Record<string, EngineStatus>;
 }
 
 export abstract class BaseSearchState<TItem, TResponse extends BaseResponse> {
@@ -13,6 +15,7 @@ export abstract class BaseSearchState<TItem, TResponse extends BaseResponse> {
 	hasMore = $state(true);
 	page = $state(0);
 	tookMs = $state<number | null>(null);
+	engineStatus = $state<Record<string, EngineStatus>>({});
 
 	#seen = new Set<string>();
 
@@ -41,6 +44,7 @@ export abstract class BaseSearchState<TItem, TResponse extends BaseResponse> {
 		this.error = '';
 		this.page = 0;
 		this.tookMs = null;
+		this.engineStatus = {};
 		this.hasMore = true;
 		this.loading = true;
 		this.#seen = new Set();
@@ -48,6 +52,7 @@ export abstract class BaseSearchState<TItem, TResponse extends BaseResponse> {
 			const settings = getSearchSettings();
 			const res = await this.fetchResults(q, 0, this.pageSize, settings.engines);
 			this.tookMs = res.took_ms;
+			this.engineStatus = res.engines ?? {};
 			this.#append(this.getResults(res), this.getHasMore(res));
 			return res;
 		} catch (e) {
@@ -67,6 +72,7 @@ export abstract class BaseSearchState<TItem, TResponse extends BaseResponse> {
 			const settings = getSearchSettings();
 			const res = await this.fetchResults(this.query, next, this.pageSize, settings.engines);
 			this.tookMs = res.took_ms;
+			this.engineStatus = res.engines ?? {};
 			this.page = next;
 			this.#append(this.getResults(res), this.getHasMore(res));
 		} catch (e) {

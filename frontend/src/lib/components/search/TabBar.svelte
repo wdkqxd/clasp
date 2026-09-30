@@ -6,20 +6,24 @@
 	import clapperboardIcon from 'pixelarticons/svg/clapperboard.svg?raw';
 	import { fade } from 'svelte/transition';
 	import {
+		ENGINE_API_NAMES,
 		getSearchSettings,
 		SEARCH_ENGINES,
 		saveSearchSettings,
 		type SearchEngine
 	} from '../settings/searchSettings.svelte';
+	import type { EngineStatus } from '../../types';
 
 	let {
 		tabs,
 		active,
-		tookMs = null
+		tookMs = null,
+		engineStatus = {}
 	}: {
 		tabs: string[];
 		active: string;
 		tookMs?: number | null;
+		engineStatus?: Record<string, EngineStatus>;
 	} = $props();
 
 	let settingsOpen = $state(false);
@@ -44,6 +48,10 @@
 			? settings.engines.filter((item) => item !== engine)
 			: [...settings.engines, engine];
 		saveSearchSettings();
+	}
+
+	function engineStatusFor(engine: SearchEngine): EngineStatus | undefined {
+		return engineStatus[ENGINE_API_NAMES[engine]];
 	}
 
 	$effect(() => {
@@ -106,13 +114,28 @@
 					<div>
 						<div class="space-y-2">
 							{#each SEARCH_ENGINES as engine}
+								{@const status = engineStatusFor(engine)}
 								<button
 									type="button"
 									class="flex w-full items-center justify-between text-left text-[12px] text-[#9b9b9b]"
 									onclick={() => toggleEngine(engine)}
 								>
-									<span>{engine.toLowerCase()}</span>
-									<span class="relative h-3.5 w-6 rounded-full transition-colors {settings.engines.includes(engine) ? 'bg-[#777]' : 'bg-[#292929]'}">
+									<span class="flex min-w-0 items-center gap-1.5">
+										<span class="truncate">{engine.toLowerCase()}</span>
+										{#if status?.status === 'error'}
+											<span class="group/err relative shrink-0 cursor-help text-[11px] text-[#d05a5a]">
+												error
+												<span
+													class="pointer-events-none absolute left-0 top-full z-30 mt-1.5 w-max max-w-[190px] rounded border border-[#292929] bg-[#121212] px-2 py-1.5 text-[11px] leading-snug font-normal text-[#8a8a8a] opacity-0 shadow-2xl shadow-black/40 transition-opacity duration-200 ease-out group-hover/err:opacity-100"
+												>
+													{status?.error || 'unknown error'}
+												</span>
+											</span>
+										{:else if typeof status?.took_ms === 'number'}
+											<span class="shrink-0 text-[11px] text-[#5c5c5c]">{status.took_ms} ms</span>
+										{/if}
+									</span>
+									<span class="relative h-3.5 w-6 shrink-0 rounded-full transition-colors {settings.engines.includes(engine) ? 'bg-[#777]' : 'bg-[#292929]'}">
 										<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform {settings.engines.includes(engine) ? 'translate-x-3' : 'translate-x-0.5'}"></span>
 									</span>
 								</button>

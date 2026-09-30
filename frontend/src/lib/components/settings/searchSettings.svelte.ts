@@ -3,6 +3,12 @@ export const SEARCH_SETTINGS_KEY = 'metasearch.search.settings';
 export const SEARCH_ENGINES = ['Brave', 'DuckDuckGo', 'Startpage'] as const;
 export type SearchEngine = (typeof SEARCH_ENGINES)[number];
 
+export const ENGINE_API_NAMES: Record<SearchEngine, string> = {
+	Brave: 'brave',
+	DuckDuckGo: 'ddg',
+	Startpage: 'startpage'
+};
+
 export type FontChoice = 'jetbrains' | 'system';
 
 export type SearchSettings = {
