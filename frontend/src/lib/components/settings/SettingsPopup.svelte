@@ -2,7 +2,6 @@
 	import type { Snippet } from 'svelte';
 	import settingsIcon from 'pixelarticons/svg/settings-cog.svg?raw';
 	import chevronDownIcon from 'pixelarticons/svg/chevron-down.svg?raw';
-	import githubIcon from 'pixelarticons/svg/github.svg?raw';
 	import { getSearchSettings, saveSearchSettings, type FontChoice } from './searchSettings.svelte';
 
 	let {
@@ -113,16 +112,6 @@
 					<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform duration-150 {settings.openInNewTab ? 'translate-x-3' : 'translate-x-0.5'}"></span>
 				</span>
 			</button>
-
-			<a
-				href="https://github.com/wdkqxd/clasp"
-				target={settings.openInNewTab ? '_blank' : undefined}
-				rel="noreferrer"
-				class="mt-3 flex items-center justify-center gap-1 rounded border border-[#363636] py-1 text-[12px] text-[#a0a0a0] transition-colors hover:border-[#4a4a4a] hover:text-[#d0d0d0] active:scale-[0.98]"
-			>
-				<span class="icon">{@html githubIcon}</span>
-				github
-			</a>
 		</div>
 	</div>
 </div>
