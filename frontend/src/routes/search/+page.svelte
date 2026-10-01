@@ -27,6 +27,7 @@
 	let selectedImageIndex = $state(-1);
 
 	let activeTab = $derived(page.url.searchParams.get('type') === 'images' ? 'Images' : 'Web');
+	let searchPlaceholder = $derived(activeTab === 'Images' ? 'search images' : 'search the web');
 
 	$effect(() => {
 		if (activeTab !== 'Images' || !imageSentinel) return;
@@ -151,8 +152,8 @@
 {#if activeTab === 'Images'}
 	<div class="min-h-screen" class:pr-[420px]={sidebarOpen}>
 		<div class="w-full max-w-3xl pl-4 sm:pl-8 md:pl-16 lg:pl-28 xl:pl-44 pr-4 sm:pr-6 pt-8 sm:pt-10">
-			<header class="mb-8 min-h-[86px]">
-				<SearchForm bind:value={feed.query} {onSearch} />
+			<header class="mb-5 min-h-[86px]">
+				<SearchForm bind:value={feed.query} {onSearch} placeholder={searchPlaceholder} />
 				<TabBar tabs={['Web', 'Images', 'Video']} active={activeTab} tookMs={imageFeed.tookMs} engineStatus={imageFeed.engineStatus} />
 			</header>
 		</div>
@@ -194,8 +195,8 @@
 	<div
 		class="w-full max-w-3xl pl-4 sm:pl-8 md:pl-16 lg:pl-28 xl:pl-44 pr-4 sm:pr-6 pt-8 sm:pt-10"
 	>
-		<header class="mb-8 min-h-[86px]">
-			<SearchForm bind:value={feed.query} {onSearch} />
+		<header class="mb-5 min-h-[86px]">
+			<SearchForm bind:value={feed.query} {onSearch} placeholder={searchPlaceholder} />
 			<TabBar tabs={['Web', 'Images', 'Video']} active={activeTab} tookMs={feed.tookMs} engineStatus={feed.engineStatus} />
 		</header>
 

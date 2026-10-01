@@ -34,7 +34,7 @@
 {:else if feed.items.length === 0}
 	<p class="text-[13px] text-[#5c5c5c]">no results</p>
 {:else}
-	<div class="space-y-10">
+	<div class="space-y-8">
 		{#each feed.items as r, i (r.url)}
 			{#if discussions.length > 0 && i === PAGE_SIZE - 1}
 				<Discussions items={discussions} />
