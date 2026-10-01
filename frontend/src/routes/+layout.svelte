@@ -2,6 +2,7 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { onNavigate } from '$app/navigation';
+	import { page } from '$app/state';
 	import { getSearchSettings, type FontChoice } from '$lib/components/settings/searchSettings.svelte';
 
 	let { children } = $props();
@@ -20,6 +21,10 @@
 
 	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;
+
+		const isSearchTabSwitch =
+			page.url.pathname === '/search' && navigation.to?.url.pathname === '/search';
+		if (isSearchTabSwitch) return;
 
 		return new Promise((resolve) => {
 			document.startViewTransition(async () => {
