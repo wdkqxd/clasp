@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ImageResult } from '../../types';
 	import { getSearchSettings } from '../settings/searchSettings.svelte';
-	import { ChevronLeft, ChevronRight, X } from '@lucide/svelte';
+	import { ChevronLeft, ChevronRight, ArrowUpRight, X } from '@lucide/svelte';
 
 	const settings = getSearchSettings();
 
@@ -124,9 +124,10 @@
 				href={image.source_url}
 				target={settings.openInNewTab ? '_blank' : undefined}
 				rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
-				class="inline-block px-4 py-2 bg-[#1e1e1e] text-[#d0d0d0] text-[12px] rounded-md no-underline hover:bg-[#262626] transition-colors duration-100"
+				class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1e1e1e] text-[#d0d0d0] text-[12px] rounded-sm no-underline transition-all duration-75 ease-out hover:bg-[#262626] active:scale-[0.96]"
 			>
-				View source
+				view source
+				<span class="icon h-3.5 w-3.5"><ArrowUpRight /></span>
 			</a>
 		</div>
 	</div>
