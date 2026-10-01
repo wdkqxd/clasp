@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import { onNavigate } from '$app/navigation';
 	import { getSearchSettings, type FontChoice } from '$lib/components/settings/searchSettings.svelte';
 
 	let { children } = $props();
@@ -15,6 +16,17 @@
 
 	$effect(() => {
 		document.documentElement.style.setProperty('--font-mono', FONT_STACKS[settings.font]);
+	});
+
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) return;
+
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
 	});
 </script>
 
