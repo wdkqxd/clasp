@@ -61,9 +61,9 @@
 	{/if}
 
 	<div
-		class="absolute right-0 top-full z-20 mt-2 w-64 origin-top-right rounded-md border border-[#292929] bg-[#121212] p-3 shadow-2xl shadow-black/30 transition-all duration-200 ease-out {open
-			? 'visible translate-y-0 scale-100 opacity-100'
-			: 'pointer-events-none invisible -translate-y-1 scale-95 opacity-0'}"
+		class="absolute right-0 top-full z-20 mt-2 w-64 origin-top-right rounded-md border border-[#292929] bg-[#121212] p-3 shadow-2xl shadow-black/30 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] {open
+			? 'visible translate-y-0 scale-100 opacity-100 blur-0'
+			: 'pointer-events-none invisible -translate-y-1 scale-95 opacity-0 blur-sm'}"
 	>
 		<div class="space-y-2">
 			<div class="flex items-center justify-between gap-3">

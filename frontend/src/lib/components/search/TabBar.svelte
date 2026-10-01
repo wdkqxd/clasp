@@ -106,9 +106,9 @@
 		</button>
 
 			<div
-				class="absolute right-0 top-7 z-20 w-56 origin-top-right rounded-md border border-[#292929] bg-[#121212] p-3 shadow-2xl shadow-black/30 transition-all duration-200 ease-out {settingsOpen
-					? 'visible translate-y-0 scale-100 opacity-100'
-					: 'pointer-events-none invisible -translate-y-1 scale-95 opacity-0'}"
+				class="absolute right-0 top-7 z-20 w-56 origin-top-right rounded-md border border-[#292929] bg-[#121212] p-3 shadow-2xl shadow-black/30 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] {settingsOpen
+					? 'visible translate-y-0 scale-100 opacity-100 blur-0'
+					: 'pointer-events-none invisible -translate-y-1 scale-95 opacity-0 blur-sm'}"
 			>
 				<div class="space-y-3">
 					<div>
