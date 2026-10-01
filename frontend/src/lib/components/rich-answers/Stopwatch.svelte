@@ -1,4 +1,8 @@
 <script lang="ts">
+	let { query = '' }: { query?: string } = $props();
+
+	const STOPWATCH_RE = /^(?:open\s+|start\s+|launch\s+)?(?:a\s+)?stopwatch$/i;
+
 	let swMs = $state(0);
 	let swRunning = $state(false);
 	let swLaps = $state<number[]>([]);
@@ -27,29 +31,31 @@
 	}
 </script>
 
-<div class="rounded-md border border-[#292929] bg-[#121212] p-4 shadow-2xl shadow-black/30">
-	<div class="font-mono text-[32px] leading-none text-[#e0e0e0]">{fmtSw(swMs)}</div>
-	<div class="mt-3 flex items-center gap-2 text-[12px]">
-		<button
-			type="button"
-			class="cursor-pointer rounded bg-[#1c1c1c] px-3 py-1 text-[#9b9b9b] transition-colors hover:bg-[#262626] hover:text-[#d0d0d0]"
-			onclick={onSw}
-		>
-			{swRunning ? 'pause' : swMs > 0 ? 'resume' : 'start'}
-		</button>
-		<button
-			type="button"
-			class="cursor-pointer rounded bg-[#1c1c1c] px-3 py-1 text-[#707070] transition-colors hover:bg-[#262626] hover:text-[#9b9b9b]"
-			onclick={onSwLap}
-		>
-			{swRunning ? 'lap' : 'reset'}
-		</button>
-	</div>
-	{#if swLaps.length}
-		<div class="mt-3 flex flex-col gap-1 text-[12px] text-[#707070]">
-			{#each swLaps as lap, i (i)}
-				<span>lap {swLaps.length - i} · {fmtSw(lap)}</span>
-			{/each}
+{#if query.trim().match(STOPWATCH_RE)}
+	<div class="rounded-md border border-[#292929] bg-[#121212] p-4 shadow-2xl shadow-black/30">
+		<div class="font-mono text-[32px] leading-none text-[#e0e0e0]">{fmtSw(swMs)}</div>
+		<div class="mt-3 flex items-center gap-2 text-[12px]">
+			<button
+				type="button"
+				class="cursor-pointer rounded bg-[#1c1c1c] px-3 py-1 text-[#9b9b9b] transition-colors hover:bg-[#262626] hover:text-[#d0d0d0]"
+				onclick={onSw}
+			>
+				{swRunning ? 'pause' : swMs > 0 ? 'resume' : 'start'}
+			</button>
+			<button
+				type="button"
+				class="cursor-pointer rounded bg-[#1c1c1c] px-3 py-1 text-[#707070] transition-colors hover:bg-[#262626] hover:text-[#9b9b9b]"
+				onclick={onSwLap}
+			>
+				{swRunning ? 'lap' : 'reset'}
+			</button>
 		</div>
-	{/if}
-</div>
+		{#if swLaps.length}
+			<div class="mt-3 flex flex-col gap-1 text-[12px] text-[#707070]">
+				{#each swLaps as lap, i (i)}
+					<span>lap {swLaps.length - i} · {fmtSw(lap)}</span>
+				{/each}
+			</div>
+		{/if}
+	</div>
+{/if}
