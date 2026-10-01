@@ -1,9 +1,21 @@
+<script>
+	import chevronLeftIcon from 'pixelarticons/svg/chevron-left.svg?raw';
+</script>
+
 <svelte:head>
 	<title>about — clasp</title>
 </svelte:head>
 
 <div class="mx-auto w-full max-w-2xl px-4 py-16 sm:py-24">
-	<a href="/" class="text-[11px] text-[#3a3a3a] transition-colors hover:text-[#8a8a8a]">&larr; back</a>
+	<a
+		href="/"
+		class="inline-flex items-center gap-1.5 text-[11px] text-[#3a3a3a] transition-colors hover:text-[#8a8a8a]"
+	>
+		<span class="inline-block size-[12px] shrink-0 align-middle [&>svg]:block [&>svg]:size-full"
+			>{@html chevronLeftIcon}</span
+		>
+		back
+	</a>
 
 	<h1 class="mt-10 text-[15px] font-normal text-[#d0d0d0]">about</h1>
 
