@@ -61,7 +61,24 @@ type RichAnswer struct {
 	Unixtimestamp  *RichUnixtimestamp  `json:"unixtimestamp,omitempty"`
 	Currency       *RichCurrency       `json:"currency,omitempty"`
 	News           *RichNews           `json:"news,omitempty"`
+	TopAnswer      *RichTopAnswer      `json:"topAnswer,omitempty"`
 	Stopwatch      bool                `json:"stopwatch,omitempty"`
+}
+
+type RichTopAnswer struct {
+	Question string            `json:"question"`
+	Blocks   []RichAnswerBlock `json:"blocks"`
+	Author   string            `json:"author,omitempty"`
+	Upvotes  int               `json:"upvotes,omitempty"`
+	Title    string            `json:"title,omitempty"`
+	URL      string            `json:"url"`
+	MetaURL  *RichMetaURL      `json:"meta_url,omitempty"`
+}
+
+type RichAnswerBlock struct {
+	Kind  string   `json:"kind"`
+	Text  string   `json:"text,omitempty"`
+	Items []string `json:"items,omitempty"`
 }
 
 type RichCalculator struct {

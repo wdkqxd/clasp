@@ -9,6 +9,7 @@
 	import Cryptocurrency from './Cryptocurrency.svelte';
 	import Currency from './Currency.svelte';
 	import Unixtimestamp from './Unixtimestamp.svelte';
+	import TopAnswer from './TopAnswer.svelte';
 
 	let { items }: { items: RichAnswer[] } = $props();
 </script>
@@ -16,7 +17,9 @@
 {#if items.length > 0}
 	<section class="space-y-10 border-[#262626]">
 		{#each items as a, i (i)}
-			{#if a.type === 'colorpicker' && a.colorpicker}
+			{#if a.type === 'topAnswer' && a.topAnswer}
+				<TopAnswer topAnswer={a.topAnswer} />
+			{:else if a.type === 'colorpicker' && a.colorpicker}
 				<Colorpicker colorpicker={a.colorpicker} />
 			{:else if a.type === 'weather' && a.weather}
 				<Weather weather={a.weather} />

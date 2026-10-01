@@ -42,7 +42,29 @@ export interface RichAnswer {
 	unixtimestamp?: RichUnixtimestamp;
 	currency?: RichCurrency;
 	news?: RichNews;
+	topAnswer?: RichTopAnswer;
 	stopwatch?: boolean;
+}
+
+export interface RichAnswerBlock {
+	kind: string;
+	text?: string;
+	items?: string[];
+}
+
+export interface RichTopAnswer {
+	question: string;
+	blocks?: RichAnswerBlock[];
+	author?: string;
+	upvotes?: number;
+	title?: string;
+	url: string;
+	meta_url?: RichMetaURL;
+}
+
+export interface RichMetaURL {
+	hostname?: string;
+	favicon?: string;
 }
 
 export interface RichCalculator {
