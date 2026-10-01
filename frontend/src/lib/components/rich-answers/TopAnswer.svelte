@@ -29,6 +29,7 @@
 				}
 			})()
 	);
+	const favicon = $derived(host ? `https://icons.duckduckgo.com/ip3/${host}.ico` : '');
 </script>
 
 <section class="rounded-lg border border-[#262626] bg-[#161616] px-4 py-3.5">
@@ -88,8 +89,15 @@
 				rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
 				class="sitelink ml-auto flex min-w-0 shrink items-center gap-1.5 hover:text-[#8f8f8f]"
 			>
-				{#if topAnswer.meta_url?.favicon}
-					<img src={topAnswer.meta_url.favicon} alt="" class="h-3 w-3" loading="lazy" />
+				{#if favicon}
+					<img
+						src={favicon}
+						alt=""
+						width="14"
+						height="14"
+						loading="lazy"
+						class="h-3.5 w-3.5 rounded-sm object-contain opacity-75"
+					/>
 				{/if}
 				<span class="truncate">{host}</span>
 			</a>

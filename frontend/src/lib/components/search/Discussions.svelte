@@ -66,9 +66,16 @@
 									class="sitelink inline-flex items-center text-[12px] lowercase text-[#5c5c5c]"
 								>
 									<span>more on</span>
-									{#if favicon(d.url)}
-										<img src={favicon(d.url)} alt="" class="ml-2 h-3 w-3" loading="lazy" />
-									{/if}
+								{#if favicon(d.url)}
+									<img
+										src={favicon(d.url)}
+										alt=""
+										width="14"
+										height="14"
+										loading="lazy"
+										class="ml-2 h-3.5 w-3.5 rounded-sm object-contain opacity-75"
+									/>
+								{/if}
 									<span class="ml-1">{host(d.url)}</span>
 								</a>
 							</div>
