@@ -3,11 +3,13 @@ package wikipedia
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"golang.org/x/text/cases"
@@ -30,15 +32,70 @@ type Fact struct {
 	Value string `json:"value"`
 }
 
+const (
+	perLanguageTimeout = 3 * time.Second
+	cacheTTL           = 10 * time.Minute
+	negativeCacheTTL   = 90 * time.Second
+	maxCacheEntries    = 512
+	upstreamInterval = 150 * time.Millisecond
+	throttleCooldown = 60 * time.Second
+	userAgent        = "clasp/1.0 (https://github.com/wdkq/clasp)"
+)
+
+type cacheEntry struct {
+	article *Article
+	expires time.Time
+}
+
 type Client struct {
 	http engine.HTTPClient
+
+	mu           sync.Mutex
+	cache        map[string]cacheEntry
+	nextRequest  time.Time
+	blockedUntil time.Time
 }
 
 func NewClient(httpClient engine.HTTPClient) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 5 * time.Second}
 	}
-	return &Client{http: httpClient}
+	return &Client{http: httpClient, cache: make(map[string]cacheEntry)}
+}
+
+var errThrottled = errors.New("wikipedia: throttled")
+
+// waitSlot blocks until the next upstream call is allowed.
+func (c *Client) waitSlot(ctx context.Context) error {
+	c.mu.Lock()
+	now := time.Now()
+	if c.nextRequest.Before(now) {
+		c.nextRequest = now
+	}
+	at := c.nextRequest
+	c.nextRequest = at.Add(upstreamInterval)
+	blocked := c.blockedUntil
+	c.mu.Unlock()
+
+	if now.Before(blocked) {
+		return errThrottled
+	}
+	if d := time.Until(at); d > 0 {
+		t := time.NewTimer(d)
+		defer t.Stop()
+		select {
+		case <-t.C:
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+	return nil
+}
+
+func (c *Client) throttle() {
+	c.mu.Lock()
+	c.blockedUntil = time.Now().Add(throttleCooldown)
+	c.mu.Unlock()
 }
 
 type apiResponse struct {
@@ -73,10 +130,15 @@ func (c *Client) Search(ctx context.Context, query, language string) (*Article, 
 		return nil, nil
 	}
 
+	candidates := languageCandidates(query, language)
+
 	var lastErr error
-	for _, candidate := range languageCandidates(query, language) {
-		article, err := c.searchLanguage(ctx, query, candidate)
+	for _, lang := range candidates {
+		article, err := c.lookup(ctx, query, lang)
 		if err != nil {
+			if errors.Is(err, errThrottled) {
+				break
+			}
 			lastErr = err
 			continue
 		}
@@ -87,13 +149,68 @@ func (c *Client) Search(ctx context.Context, query, language string) (*Article, 
 	return nil, lastErr
 }
 
+func (c *Client) lookup(ctx context.Context, query, language string) (*Article, error) {
+	key := language + "\x00" + query
+	if art, ok := c.fromCache(key); ok {
+		return art, nil
+	}
+	if err := c.waitSlot(ctx); err != nil {
+		return nil, err
+	}
+
+	lctx, cancel := context.WithTimeout(ctx, perLanguageTimeout)
+	defer cancel()
+
+	art, err := c.searchLanguage(lctx, query, language)
+	if err == nil && lctx.Err() == nil {
+		c.toCache(key, art)
+	}
+	return art, err
+}
+
+func (c *Client) fromCache(key string) (*Article, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	entry, ok := c.cache[key]
+	if !ok {
+		return nil, false
+	}
+	if time.Now().After(entry.expires) {
+		delete(c.cache, key)
+		return nil, false
+	}
+	return entry.article, true
+}
+
+func (c *Client) toCache(key string, article *Article) {
+	ttl := cacheTTL
+	if article == nil {
+		ttl = negativeCacheTTL
+	}
+	expires := time.Now().Add(ttl)
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if len(c.cache) >= maxCacheEntries {
+		now := time.Now()
+		for k, v := range c.cache {
+			if now.After(v.expires) {
+				delete(c.cache, k)
+			}
+		}
+		if len(c.cache) >= maxCacheEntries {
+			c.cache = make(map[string]cacheEntry, maxCacheEntries)
+		}
+	}
+	c.cache[key] = cacheEntry{article: article, expires: expires}
+}
+
 func (c *Client) searchLanguage(ctx context.Context, query, language string) (*Article, error) {
 
 	endpoint := fmt.Sprintf("https://%s.wikipedia.org/w/api.php", language)
 	params := url.Values{
 		"action":       {"query"},
 		"format":       {"json"},
-		"origin":       {"*"},
 		"generator":    {"search"},
 		"gsrsearch":    {query},
 		"gsrnamespace": {"0"},
@@ -114,13 +231,17 @@ func (c *Client) searchLanguage(ctx context.Context, query, language string) (*A
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "metasearch/1.0 (Wikipedia API client)")
+	req.Header.Set("User-Agent", userAgent)
 
 	res, err := c.http.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
+	if res.StatusCode == http.StatusTooManyRequests {
+		c.throttle()
+		return nil, errThrottled
+	}
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("wikipedia: unexpected status %s", res.Status)
 	}
@@ -214,15 +335,28 @@ func parseFacts(wikitext string) []Fact {
 	return facts
 }
 
+var (
+	reWikiComment   = regexp.MustCompile(`<!--.*?-->`)
+	reWikiPipedLink = regexp.MustCompile(`\[\[([^\]|]+)\|([^\]]+)\]\]`)
+	reWikiTemplate  = regexp.MustCompile(`\{\{[^{}]*\}\}`)
+	reWikiPlainLink = regexp.MustCompile(`\[\[([^\]]+)\]\]`)
+	reWikiRefBlock  = regexp.MustCompile(`(?i)<ref[^>]*>.*?</ref>`)
+	reWikiRefSelf   = regexp.MustCompile(`(?i)<ref[^/]*/>`)
+	reWikiTag       = regexp.MustCompile(`<[^>]+>`)
+	reWikiActing    = regexp.MustCompile(`\s*\(acting\)`)
+
+	titleCaser = cases.Title(language.English)
+)
+
 func cleanWikiValue(value string) string {
-	value = regexp.MustCompile(`<!--.*?-->`).ReplaceAllString(value, "")
-	value = regexp.MustCompile(`\[\[([^\]|]+)\|([^\]]+)\]\]`).ReplaceAllString(value, "$2")
+	value = reWikiComment.ReplaceAllString(value, "")
+	value = reWikiPipedLink.ReplaceAllString(value, "$2")
 	value = expandUbl(value)
-	value = regexp.MustCompile(`\{\{[^{}]*\}\}`).ReplaceAllString(value, "")
-	value = regexp.MustCompile(`\[\[([^\]]+)\]\]`).ReplaceAllString(value, "$1")
-	value = regexp.MustCompile(`(?i)<ref[^>]*>.*?</ref>`).ReplaceAllString(value, "")
-	value = regexp.MustCompile(`(?i)<ref[^/]*/>`).ReplaceAllString(value, "")
-	value = regexp.MustCompile(`<[^>]+>`).ReplaceAllString(value, "")
+	value = reWikiTemplate.ReplaceAllString(value, "")
+	value = reWikiPlainLink.ReplaceAllString(value, "$1")
+	value = reWikiRefBlock.ReplaceAllString(value, "")
+	value = reWikiRefSelf.ReplaceAllString(value, "")
+	value = reWikiTag.ReplaceAllString(value, "")
 	return strings.TrimSpace(strings.Join(strings.Fields(value), " "))
 }
 
@@ -263,7 +397,7 @@ func expandUbl(s string) string {
 		items := splitTopLevel(inner, '|')
 		for i, item := range items {
 			item = strings.TrimSpace(item)
-			item = regexp.MustCompile(`\s*\(acting\)`).ReplaceAllString(item, "")
+			item = reWikiActing.ReplaceAllString(item, "")
 			items[i] = item
 		}
 		replacement := strings.Join(items, " / ")
@@ -310,7 +444,7 @@ func isTechnicalFact(key string) bool {
 
 func factLabel(key string) string {
 	key = strings.ReplaceAll(strings.ReplaceAll(strings.TrimSpace(key), "_", " "), "-", " ")
-	return cases.Title(language.English).String(strings.ToLower(key))
+	return titleCaser.String(strings.ToLower(key))
 }
 
 var languagePattern = regexp.MustCompile(`^[a-z]{2,3}$`)
@@ -335,10 +469,7 @@ func languageCandidates(query, requested string) []string {
 			if strings.ContainsAny(query, "іїєґ") {
 				return []string{"uk", "ru", "en"}
 			}
-			if strings.ContainsAny(query, "ёы") {
-				return []string{"ru", "uk", "en"}
-			}
-			return []string{"bg", "ru", "uk", "sr", "en"}
+			return []string{"ru", "uk", "bg", "sr", "en"}
 		case r >= '\u4E00' && r <= '\u9FFF', r >= '\u3400' && r <= '\u4DBF': // CJK Unified Ideographs
 			return []string{"zh", "en"}
 		case r >= '\u3040' && r <= '\u309F', r >= '\u30A0' && r <= '\u30FF': // Hiragana + Katakana
