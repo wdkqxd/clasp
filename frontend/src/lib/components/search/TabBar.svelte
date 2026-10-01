@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import globeIcon from 'pixelarticons/svg/globe.svg?raw';
-	import imagesIcon from 'pixelarticons/svg/images.svg?raw';
-	import settingsIcon from 'pixelarticons/svg/settings-2.svg?raw';
-	import clapperboardIcon from 'pixelarticons/svg/clapperboard.svg?raw';
+	import { Clapperboard, Globe, Image, Settings2 } from '@lucide/svelte';
 	import { fade } from 'svelte/transition';
 	import {
 		ENGINE_API_NAMES,
@@ -29,11 +26,11 @@
 	let settingsOpen = $state(false);
 	const settings = getSearchSettings();
 
-	const icons: Record<string, string> = {
-		Web: globeIcon,
-		Images: imagesIcon,
-		Video: clapperboardIcon
-	};
+	const icons = {
+		Web: Globe,
+		Images: Image,
+		Video: Clapperboard
+	} as const;
 
 	function tabHref(tab: string): string {
 		const q = page.url.searchParams.get('q') ?? '';
@@ -76,6 +73,7 @@
 <nav class="relative flex items-center gap-5 pt-3 text-[13px] font-medium" data-search-settings>
 	<div class="flex items-center gap-5">
 		{#each tabs as tab}
+			{@const Icon = icons[tab as keyof typeof icons] ?? Globe}
 			<a
 				href={tab === 'Video' ? '#' : tabHref(tab)}
 				class="inline-flex items-center gap-1.5 {tab.toLowerCase() === active.toLowerCase()
@@ -83,7 +81,7 @@
 					: 'text-[#4a4a4a] hover:text-[#6a6a6a]'} transition-colors"
 				onclick={tab === 'Video' ? (e) => e.preventDefault() : undefined}
 			>
-				<span class="icon">{@html icons[tab] ?? ''}</span>
+				<span class="icon"><Icon /></span>
 				{tab}
 			</a>
 		{/each}
@@ -102,7 +100,7 @@
 			onclick={() => (settingsOpen = !settingsOpen)}
 			class="inline-flex items-center text-[#4a4a4a] hover:text-[#9a9a9a] transition-colors {settingsOpen ? 'text-[#9a9a9a]' : ''}"
 		>
-			<span class="icon icon-sm translate-y-[2px]">{@html settingsIcon}</span>
+			<span class="icon icon-sm translate-y-[2px]"><Settings2 /></span>
 		</button>
 
 			<div

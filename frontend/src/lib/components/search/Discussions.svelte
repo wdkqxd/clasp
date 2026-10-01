@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Discussion } from '../../types';
 	import { getSearchSettings } from '../settings/searchSettings.svelte';
-	import chevronIcon from 'pixelarticons/svg/chevron-down.svg?raw';
+	import { ChevronDown } from '@lucide/svelte';
 
 	let { items }: { items: Discussion[] } = $props();
 
@@ -54,7 +54,7 @@
 					class="flex w-full cursor-pointer items-center justify-between gap-3 px-2 py-2 text-left outline-none"
 				>
 					<span class="min-w-0 flex-1 truncate text-[14px] leading-snug text-[#c0c0c0]">{d.title}</span>
-					<span class="icon shrink-0 text-[#5c5c5c] transition-transform duration-200 disc-chevron">{@html chevronIcon}</span>
+					<span class="icon shrink-0 text-[#5c5c5c] transition-transform duration-200 disc-chevron"><ChevronDown /></span>
 				</button>
 
 				<div class="disc-body">

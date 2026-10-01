@@ -1,5 +1,5 @@
 <script lang="ts">
-	import loadingIcon from 'pixelarticons/svg/loader.svg?raw';
+	import { Loader } from '@lucide/svelte';
 	import ResultCard from './ResultCard.svelte';
 	import SkeletonResults from './SkeletonResults.svelte';
 	import Discussions from './Discussions.svelte';
@@ -51,7 +51,7 @@
 
 {#if feed.loadingMore}
 	<div class="flex justify-center py-4">
-		<span class="inline-block w-7 h-7 spin text-[#5c5c5c]">{@html loadingIcon}</span>
+		<span class="inline-block w-7 h-7 spin text-[#5c5c5c]"><Loader /></span>
 	</div>
 {/if}
 <div bind:this={sentinel} class="h-5"></div>

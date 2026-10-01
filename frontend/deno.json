@@ -4,6 +4,7 @@
   "nodeModulesDir": "auto",
 
   "imports": {
+    "@lucide/svelte": "npm:@lucide/svelte@^1.49.0",
     "@sveltejs/adapter-auto": "npm:@sveltejs/adapter-auto@^7.0.1",
     "@sveltejs/adapter-static": "npm:@sveltejs/adapter-static@^3.0.10",
     "@sveltejs/kit": "npm:@sveltejs/kit@^2.63.0",
@@ -13,8 +14,7 @@
     "svelte-check": "npm:svelte-check@^4.6.0",
     "tailwindcss": "npm:tailwindcss@^4.3.3",
     "typescript": "npm:typescript@^6.0.3",
-    "vite": "npm:vite@^8.0.16",
-    "pixelarticons": "npm:pixelarticons@^2.4.1"
+    "vite": "npm:vite@^8.0.16"
   },
 
   "tasks": {

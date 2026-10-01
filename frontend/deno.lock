@@ -1,12 +1,12 @@
 {
   "version": "5",
   "specifiers": {
+    "npm:@lucide/svelte@^1.49.0": "1.49.0_svelte@5.57.0",
     "npm:@sveltejs/adapter-auto@^7.0.1": "7.0.1_@sveltejs+kit@2.70.3__@sveltejs+vite-plugin-svelte@7.3.0___svelte@5.57.0___vite@8.3.0__svelte@5.57.0__typescript@6.0.3__vite@8.3.0_@sveltejs+vite-plugin-svelte@7.3.0__svelte@5.57.0__vite@8.3.0_svelte@5.57.0_typescript@6.0.3_vite@8.3.0",
     "npm:@sveltejs/adapter-static@^3.0.10": "3.0.10_@sveltejs+kit@2.70.3__@sveltejs+vite-plugin-svelte@7.3.0___svelte@5.57.0___vite@8.3.0__svelte@5.57.0__typescript@6.0.3__vite@8.3.0_@sveltejs+vite-plugin-svelte@7.3.0__svelte@5.57.0__vite@8.3.0_svelte@5.57.0_typescript@6.0.3_vite@8.3.0",
     "npm:@sveltejs/kit@^2.63.0": "2.70.3_@sveltejs+vite-plugin-svelte@7.3.0__svelte@5.57.0__vite@8.3.0_svelte@5.57.0_typescript@6.0.3_vite@8.3.0",
     "npm:@sveltejs/vite-plugin-svelte@^7.1.2": "7.3.0_svelte@5.57.0_vite@8.3.0",
     "npm:@tailwindcss/vite@^4.3.3": "4.3.3_vite@8.3.0",
-    "npm:pixelarticons@^2.4.1": "2.4.1",
     "npm:svelte-check@^4.6.0": "4.7.6_svelte@5.57.0_typescript@6.0.3",
     "npm:svelte@^5.56.1": "5.57.0",
     "npm:tailwindcss@^4.3.3": "4.3.3",
@@ -48,6 +48,12 @@
       "dependencies": [
         "@jridgewell/resolve-uri",
         "@jridgewell/sourcemap-codec"
+      ]
+    },
+    "@lucide/svelte@1.49.0_svelte@5.57.0": {
+      "integrity": "sha512-RFH6Vx7dj6hshcBa1qJ0nKAWwkh385jJbDwF1WVg7yflC89310BsA55SEmJnaSRfr03dAyZMMLUC1EMGBu0Z0Q==",
+      "dependencies": [
+        "svelte"
       ]
     },
     "@napi-rs/wasm-runtime@1.2.4": {
@@ -570,10 +576,6 @@
     "picomatch@4.0.7": {
       "integrity": "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA=="
     },
-    "pixelarticons@2.4.1": {
-      "integrity": "sha512-NIiwuEmBrFT6YG5PdMnOPRsGm0rbz4TiH0P5sgftjrQugxgdF+xtZPgGrgAOL76KUMJ04kk5Bq2lVLnmBg7IPw==",
-      "bin": true
-    },
     "postcss@8.5.28": {
       "integrity": "sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==",
       "dependencies": [
@@ -716,12 +718,12 @@
   },
   "workspace": {
     "dependencies": [
+      "npm:@lucide/svelte@^1.49.0",
       "npm:@sveltejs/adapter-auto@^7.0.1",
       "npm:@sveltejs/adapter-static@^3.0.10",
       "npm:@sveltejs/kit@^2.63.0",
       "npm:@sveltejs/vite-plugin-svelte@^7.1.2",
       "npm:@tailwindcss/vite@^4.3.3",
-      "npm:pixelarticons@^2.4.1",
       "npm:svelte-check@^4.6.0",
       "npm:svelte@^5.56.1",
       "npm:tailwindcss@^4.3.3",

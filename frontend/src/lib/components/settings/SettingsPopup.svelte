@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import settingsIcon from 'pixelarticons/svg/settings-cog.svg?raw';
-	import chevronDownIcon from 'pixelarticons/svg/chevron-down.svg?raw';
+	import { ChevronDown, Settings } from '@lucide/svelte';
 	import { getSearchSettings, saveSearchSettings, type FontChoice } from './searchSettings.svelte';
 
 	let {
@@ -56,7 +55,7 @@
 				? 'text-[#9a9a9a]'
 				: ''}"
 		>
-			<span class="icon">{@html settingsIcon}</span>
+			<span class="icon"><Settings /></span>
 		</button>
 	{/if}
 
@@ -81,7 +80,7 @@
 							<option value={f.value}>{f.label}</option>
 						{/each}
 					</select>
-					<span class="pointer-events-none absolute right-0 icon icon-sm text-[#5c5c5c]">{@html chevronDownIcon}</span>
+					<span class="pointer-events-none absolute right-0 icon icon-sm text-[#5c5c5c]"><ChevronDown /></span>
 				</div>
 			</div>
 

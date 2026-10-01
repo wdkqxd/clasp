@@ -1,5 +1,5 @@
 <script>
-	import chevronLeftIcon from 'pixelarticons/svg/chevron-left.svg?raw';
+	import { ChevronLeft } from '@lucide/svelte';
 </script>
 
 <svelte:head>
@@ -12,7 +12,7 @@
 		class="inline-flex items-center gap-1.5 text-[11px] text-[#3a3a3a] transition-colors hover:text-[#8a8a8a]"
 	>
 		<span class="inline-block size-[12px] shrink-0 align-middle [&>svg]:block [&>svg]:size-full"
-			>{@html chevronLeftIcon}</span
+			><ChevronLeft /></span
 		>
 		back
 	</a>

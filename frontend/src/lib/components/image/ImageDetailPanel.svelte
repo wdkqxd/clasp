@@ -1,9 +1,7 @@
 <script lang="ts">
 	import type { ImageResult } from '../../types';
 	import { getSearchSettings } from '../settings/searchSettings.svelte';
-	import chevronLeftIcon from 'pixelarticons/svg/chevron-left.svg?raw';
-	import chevronRightIcon from 'pixelarticons/svg/chevron-right.svg?raw';
-	import closeIcon from 'pixelarticons/svg/close.svg?raw';
+	import { ChevronLeft, ChevronRight, X } from '@lucide/svelte';
 
 	const settings = getSearchSettings();
 
@@ -61,7 +59,7 @@
 				onclick={onprev}
 				aria-label="Previous image"
 			>
-				<span class="icon">{@html chevronLeftIcon}</span>
+				<span class="icon"><ChevronLeft /></span>
 			</button>
 			<button
 				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-100 cursor-pointer disabled:opacity-30"
@@ -69,14 +67,14 @@
 				onclick={onnext}
 				aria-label="Next image"
 			>
-				<span class="icon">{@html chevronRightIcon}</span>
+				<span class="icon"><ChevronRight /></span>
 			</button>
 			<button
 				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-100 cursor-pointer"
 				onclick={onclose}
 				aria-label="Close detail panel"
 			>
-				<span class="icon">{@html closeIcon}</span>
+				<span class="icon"><X /></span>
 			</button>
 		</div>
 	</div>

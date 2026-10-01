@@ -13,7 +13,7 @@
 	import { SearchState } from '$lib/components/search/search.svelte';
 	import { ImageSearchState } from '$lib/components/image/imageSearch.svelte';
 	import { initBlocklist } from '$lib/components/image/aiBlocklist';
-	import loadingIcon from 'pixelarticons/svg/loader.svg?raw';
+	import { Loader } from '@lucide/svelte';
 
 	const feed = new SearchState();
 	const imageFeed = new ImageSearchState();
@@ -167,7 +167,7 @@
 
 			{#if imageFeed.loadingMore}
 				<div class="flex justify-center py-4">
-					<span class="inline-block w-7 h-7 spin text-[#5c5c5c]">{@html loadingIcon}</span>
+					<span class="inline-block w-7 h-7 spin text-[#5c5c5c]"><Loader /></span>
 				</div>
 			{/if}
 			<div bind:this={imageSentinel}></div>
