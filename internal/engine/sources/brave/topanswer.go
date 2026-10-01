@@ -2,6 +2,7 @@ package brave
 
 import (
 	"html"
+	"regexp"
 	"strings"
 
 	"metasearch/internal/engine"
@@ -13,46 +14,121 @@ const (
 	maxTopAnswerText   = 8000
 )
 
-func parseTopAnswer(data map[string]any) *engine.RichAnswer {
-	body, _ := data["body"].(map[string]any)
-	response, _ := body["response"].(map[string]any)
-	web, _ := response["web"].(map[string]any)
-	raw, _ := web["results"].([]any)
+var (
+	reHref        = regexp.MustCompile(`href="(https?://[^"]+)"`)
+	reTitleAnchor = regexp.MustCompile(`(?s)<a[^>]*class="title[^"]*"[^>]*href="([^"]+)"[^>]*>(.*?)</a>`)
+	reCite        = regexp.MustCompile(`(?s)<cite[^>]*>.*?</cite>`)
+	reComments    = regexp.MustCompile(`(?s)<!--.*?-->`)
+	reTags        = regexp.MustCompile(`(?s)<[^>]*>`)
+)
 
-	for _, item := range raw {
-		m, ok := item.(map[string]any)
-		if !ok || richStr(m["subtype"]) != "qa" {
-			continue
-		}
-		qa, ok := m["qa"].(map[string]any)
-		if !ok {
-			continue
-		}
-		ans, ok := qa["answer"].(map[string]any)
-		if !ok {
-			continue
-		}
-		question := helpers.CleanText(richStr(qa["question"]))
-		blocks := answerBlocks(richStr(ans["text"]))
-		if question == "" || len(blocks) == 0 {
-			continue
-		}
-		ta := &engine.RichTopAnswer{
-			Question: question,
-			Blocks:   blocks,
-			Author:   helpers.CleanText(richStr(ans["author"])),
-			Title:    helpers.CleanText(richStr(m["title"])),
-			URL:      richStr(m["url"]),
-		}
-		if n, ok := intVal(ans["upvoteCount"]); ok && n > 0 {
-			ta.Upvotes = int(n)
-		}
-		if mu, ok := m["meta_url"].(map[string]any); ok {
-			ta.MetaURL = &engine.RichMetaURL{Hostname: richStr(mu["hostname"]), Favicon: richStr(mu["favicon"])}
-		}
-		return &engine.RichAnswer{Type: "topAnswer", TopAnswer: ta}
+func parseTopAnswer(doc, query string) *engine.RichAnswer {
+	box := elementByID(doc, `id="codebox"`)
+	if box == "" {
+		return nil
 	}
-	return nil
+	answer := stripCite(elementByID(box, `id="codebox-answer"`))
+	blocks := answerBlocks(answer)
+	if len(blocks) == 0 {
+		return nil
+	}
+
+	ta := &engine.RichTopAnswer{
+		Question: helpers.CleanText(query),
+		Blocks:   blocks,
+	}
+	if m := reTitleAnchor.FindStringSubmatch(box); m != nil {
+		ta.Title = stripTags(m[2])
+		if ta.Title != "" {
+			ta.Question = ta.Title
+		}
+		ta.URL = html.UnescapeString(m[1])
+	} else if m := reHref.FindStringSubmatch(box); m != nil {
+		ta.URL = html.UnescapeString(m[1])
+	}
+	if host := hostOf(ta.URL); host != "" {
+		ta.MetaURL = &engine.RichMetaURL{Hostname: host}
+	}
+	return &engine.RichAnswer{Type: "topAnswer", TopAnswer: ta}
+}
+
+func stripTags(s string) string {
+	s = reComments.ReplaceAllString(s, "")
+	s = reTags.ReplaceAllString(s, " ")
+	return collapseText(html.UnescapeString(s))
+}
+
+func stripCite(s string) string {
+	if loc := reCite.FindAllStringIndex(s, -1); len(loc) > 0 {
+		last := loc[len(loc)-1]
+		if strings.TrimSpace(s[last[1]:]) == "" {
+			return s[:last[0]]
+		}
+	}
+	return s
+}
+
+func elementByID(doc, id string) string {
+	i := strings.Index(doc, id)
+	if i < 0 {
+		return ""
+	}
+	open := strings.LastIndex(doc[:i], "<div")
+	if open < 0 {
+		return ""
+	}
+	return elementInner(doc, open, "div")
+}
+
+func hostOf(raw string) string {
+	i := strings.Index(raw, "://")
+	if i < 0 {
+		return ""
+	}
+	rest := raw[i+3:]
+	if j := strings.IndexAny(rest, "/?#"); j >= 0 {
+		rest = rest[:j]
+	}
+	return strings.ToLower(rest)
+}
+
+func elementInner(doc string, start int, name string) string {
+	i := strings.Index(doc[start:], "<"+name)
+	if i < 0 {
+		return ""
+	}
+	i += start
+	j := strings.IndexByte(doc[i:], '>')
+	if j < 0 {
+		return ""
+	}
+	from := i + j + 1
+	body := from
+	depth := 1
+	for from < len(doc) {
+		k := strings.IndexByte(doc[from:], '<')
+		if k < 0 {
+			break
+		}
+		k += from
+		e := strings.IndexByte(doc[k:], '>')
+		if e < 0 {
+			break
+		}
+		e += k
+		if tagName(doc[k+1:e]) == name {
+			if strings.HasPrefix(doc[k+1:e], "/") {
+				depth--
+				if depth == 0 {
+					return doc[body:k]
+				}
+			} else if !strings.HasSuffix(strings.TrimSpace(doc[k+1:e]), "/") {
+				depth++
+			}
+		}
+		from = e + 1
+	}
+	return doc[body:]
 }
 
 func answerBlocks(s string) []engine.RichAnswerBlock {

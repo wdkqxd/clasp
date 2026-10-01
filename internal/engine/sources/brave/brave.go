@@ -51,10 +51,10 @@ func (b *Brave) Search(ctx context.Context, query string, limit, offset int) (en
 	sr.Infobox = parseInfobox(doc)
 	sr.Discussions = parseDiscussions(doc)
 	sr.Rich = parseRich(doc)
+	if ta := parseTopAnswer(doc, query); ta != nil {
+		sr.Rich = append([]engine.RichAnswer{*ta}, sr.Rich...)
+	}
 	if serpErr == nil {
-		if ta := parseTopAnswer(data); ta != nil {
-			sr.Rich = append([]engine.RichAnswer{*ta}, sr.Rich...)
-		}
 		sr.Results, err = webResults(data, limit)
 	} else {
 		sr.Results, err = ssrResults(doc, limit)
