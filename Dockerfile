@@ -1,9 +1,9 @@
-FROM oven/bun:1 AS frontend
+FROM denoland/deno:alpine AS frontend
 WORKDIR /app
-COPY frontend/package.json frontend/bun.lock* ./
-RUN bun install --frozen-lockfile
+COPY frontend/deno.json frontend/deno.lock ./
+RUN deno install --frozen
 COPY frontend/ ./
-RUN bun run build
+RUN deno task build
 
 FROM golang:1.26-alpine AS builder
 WORKDIR /app
