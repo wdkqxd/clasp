@@ -37,13 +37,7 @@
 	}
 </script>
 
-<section class="py-2">
-	<header class="flex items-center gap-2 text-[#5c5c5c]">
-		<span class="text-[11px] tracking-wide">discussions</span>
-	</header>
-
-	<hr class="mx-1 my-3 border-[#262626]" />
-
+<section>
 	<div>
 		{#each items as d (d.url)}
 			<div class="disc-item rounded transition-colors duration-300 ease-out hover:bg-[#1c1c1c]" class:open={isOpen(d.url)}>
