@@ -179,6 +179,12 @@ export interface SearchResponse {
 	rich?: RichAnswer[];
 }
 
+export interface SuggestResponse {
+	query: string;
+	engine: string;
+	suggestions: string[];
+}
+
 export interface WikipediaArticle {
 	title: string;
 	description?: string;

@@ -19,6 +19,7 @@ import (
 	"metasearch/internal/engine/sources/brave"
 	"metasearch/internal/engine/sources/ddg"
 	"metasearch/internal/engine/sources/startpage"
+	"metasearch/internal/suggest"
 	"metasearch/internal/wikipedia"
 )
 
@@ -41,8 +42,9 @@ func main() {
 	agg := aggregator.New(engines)
 	bangStore := bangs.New(context.Background())
 	wikipediaClient := wikipedia.NewClient(client)
+	suggestClient := suggest.NewClient(client)
 
-	apiHandler := api.New(agg, bangStore, wikipediaClient)
+	apiHandler := api.New(agg, bangStore, wikipediaClient, suggestClient)
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/", apiHandler)

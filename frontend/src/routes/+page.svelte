@@ -42,7 +42,7 @@
 					<img src={logo} alt="" class="block h-12 w-auto" />
 				{/snippet}
 			</SettingsPopup>
-			<SearchForm {onSearch} />
+			<SearchForm {onSearch} maxSuggestions={5} />
 		</div>
 	</div>
 

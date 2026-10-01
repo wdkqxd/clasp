@@ -9,6 +9,15 @@ export const ENGINE_API_NAMES: Record<SearchEngine, string> = {
 	Startpage: 'startpage'
 };
 
+export const AUTOCOMPLETE_PROVIDERS = [
+	{ value: 'kagi', label: 'kagi' },
+	{ value: 'ddg', label: 'duckduckgo' },
+	{ value: 'brave', label: 'brave' },
+	{ value: 'startpage', label: 'startpage' }
+] as const;
+
+export type AutocompleteProvider = (typeof AUTOCOMPLETE_PROVIDERS)[number]['value'];
+
 export type FontChoice = 'jetbrains' | 'system';
 
 export type SearchSettings = {
@@ -16,6 +25,7 @@ export type SearchSettings = {
 	showEngineBadges: boolean;
 	openInNewTab: boolean;
 	font: FontChoice;
+	autocomplete: AutocompleteProvider;
 	hideAIImages: boolean;
 };
 
@@ -24,6 +34,7 @@ const defaults: SearchSettings = {
 	showEngineBadges: false,
 	openInNewTab: false,
 	font: 'jetbrains',
+	autocomplete: 'kagi',
 	hideAIImages: false,
 };
 
@@ -43,6 +54,9 @@ function load(): SearchSettings {
 			openInNewTab:
 				typeof parsed.openInNewTab === 'boolean' ? parsed.openInNewTab : defaults.openInNewTab,
 			font: parsed.font === 'system' ? 'system' : 'jetbrains',
+			autocomplete: AUTOCOMPLETE_PROVIDERS.some((p) => p.value === parsed.autocomplete)
+				? parsed.autocomplete
+				: defaults.autocomplete,
 			hideAIImages:
 				typeof parsed.hideAIImages === 'boolean' ? parsed.hideAIImages : defaults.hideAIImages,
 		};

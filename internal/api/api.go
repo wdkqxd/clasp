@@ -11,6 +11,7 @@ import (
 
 	"metasearch/internal/aggregator"
 	"metasearch/internal/bangs"
+	"metasearch/internal/suggest"
 	"metasearch/internal/wikipedia"
 )
 
@@ -23,15 +24,17 @@ type Server struct {
 	search    Searcher
 	bangs     *bangs.Store
 	wikipedia *wikipedia.Client
+	suggest   *suggest.Client
 	start     time.Time
 	corsOrig  string
 }
 
-func New(search Searcher, b *bangs.Store, wiki *wikipedia.Client) http.Handler {
+func New(search Searcher, b *bangs.Store, wiki *wikipedia.Client, suggestions *suggest.Client) http.Handler {
 	s := &Server{
 		search:    search,
 		bangs:     b,
 		wikipedia: wiki,
+		suggest:   suggestions,
 		start:     time.Now(),
 		corsOrig:  os.Getenv("CORS_ORIGIN"),
 	}
@@ -41,6 +44,7 @@ func New(search Searcher, b *bangs.Store, wiki *wikipedia.Client) http.Handler {
 	mux.HandleFunc("GET /api/search", s.handleSearch)
 	mux.HandleFunc("GET /api/images", s.handleImages)
 	mux.HandleFunc("GET /api/bangs", s.handleBangs)
+	mux.HandleFunc("GET /api/suggest", s.handleSuggest)
 	return s.withCORS(mux)
 }
 
@@ -153,6 +157,34 @@ func (s *Server) handleImages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, s.search.ImageSearch(r.Context(), params.query, params.limit, params.page, params.engines))
+}
+
+func (s *Server) handleSuggest(w http.ResponseWriter, r *http.Request) {
+	query := strings.TrimSpace(r.URL.Query().Get("q"))
+	if query == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"error": "missing required query parameter 'q'",
+		})
+		return
+	}
+
+	engine := suggest.Normalize(r.URL.Query().Get("engine"))
+	if engine == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]any{
+			"error": "invalid 'engine': must be one of " + strings.Join(suggest.Engines(), ", "),
+		})
+		return
+	}
+
+	resp, err := s.suggest.Suggest(r.Context(), query, engine)
+	if err != nil {
+		writeJSON(w, http.StatusBadGateway, map[string]any{
+			"engine": engine,
+			"error":  err.Error(),
+		})
+		return
+	}
+	writeJSON(w, http.StatusOK, resp)
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

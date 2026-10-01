@@ -1,6 +1,7 @@
 import type { SearchResponse } from './types';
 import type { WikipediaArticle } from './types';
 import type { ImageSearchResponse } from './types';
+import type { SuggestResponse } from './types';
 import type { SearchEngine } from './components/settings/searchSettings.svelte';
 
 export async function search(
@@ -12,6 +13,14 @@ export async function search(
 	const engineParam = engines?.length ? `&engines=${encodeURIComponent(engines.join(','))}` : '';
 	const res = await fetch(
 		`/api/search?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}${engineParam}`
+	);
+	if (!res.ok) throw new Error(`HTTP ${res.status}`);
+	return res.json();
+}
+
+export async function suggest(query: string, engine: string): Promise<SuggestResponse> {
+	const res = await fetch(
+		`/api/suggest?q=${encodeURIComponent(query)}&engine=${encodeURIComponent(engine)}`
 	);
 	if (!res.ok) throw new Error(`HTTP ${res.status}`);
 	return res.json();

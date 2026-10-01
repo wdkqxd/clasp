@@ -1,7 +1,13 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { ChevronDown, Settings } from '@lucide/svelte';
-	import { getSearchSettings, saveSearchSettings, type FontChoice } from './searchSettings.svelte';
+	import {
+		AUTOCOMPLETE_PROVIDERS,
+		getSearchSettings,
+		saveSearchSettings,
+		type AutocompleteProvider,
+		type FontChoice
+	} from './searchSettings.svelte';
 
 	let {
 		trigger = undefined,
@@ -78,6 +84,25 @@
 					>
 						{#each FONTS as f}
 							<option value={f.value}>{f.label}</option>
+						{/each}
+					</select>
+					<span class="pointer-events-none absolute right-0 icon icon-sm text-[#5c5c5c]"><ChevronDown /></span>
+				</div>
+			</div>
+
+			<div class="flex items-center justify-between gap-3">
+				<span class="text-[12px] text-[#9b9b9b]">autocomplete</span>
+				<div class="relative flex items-center">
+					<select
+						value={settings.autocomplete}
+						onchange={(event) => {
+							settings.autocomplete = (event.currentTarget as HTMLSelectElement).value as AutocompleteProvider;
+							saveSearchSettings();
+						}}
+						class="cursor-pointer appearance-none rounded bg-transparent py-0 pr-4 text-[12px] text-[#9b9b9b] outline-none transition-colors hover:text-[#d0d0d0]"
+					>
+						{#each AUTOCOMPLETE_PROVIDERS as provider}
+							<option value={provider.value}>{provider.label}</option>
 						{/each}
 					</select>
 					<span class="pointer-events-none absolute right-0 icon icon-sm text-[#5c5c5c]"><ChevronDown /></span>
