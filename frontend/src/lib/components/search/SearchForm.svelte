@@ -28,12 +28,10 @@
 	let {
 		value = $bindable(''),
 		placeholder = 'search the web',
-		maxSuggestions = 7,
 		onSearch
 	}: {
 		value?: string;
 		placeholder?: string;
-		maxSuggestions?: number;
 		onSearch: (q: string) => void;
 	} = $props();
 
@@ -57,11 +55,10 @@
 	$effect(() => {
 		const query = value.trim();
 		const engine = settings.autocomplete;
-		const limit = maxSuggestions;
 		if (!focused || query.length < MIN_QUERY_LENGTH) return;
 
 		const timer = setTimeout(() => {
-			void loadSuggestions(query, engine, limit);
+			void loadSuggestions(query, engine);
 		}, DEBOUNCE_MS);
 		return () => clearTimeout(timer);
 	});
@@ -70,14 +67,12 @@
 		if (value.trim().length < MIN_QUERY_LENGTH) closeSuggestions();
 	});
 
-	async function loadSuggestions(query: string, engine: string, limit: number) {
+	async function loadSuggestions(query: string, engine: string) {
 		const id = ++requestId;
 		try {
 			const res = await suggest(query, engine);
 			if (id !== requestId) return;
-			suggestions = res.suggestions
-				.filter((s) => s.toLowerCase() !== query.toLowerCase())
-				.slice(0, limit);
+			suggestions = res.suggestions.filter((s) => s.toLowerCase() !== query.toLowerCase());
 			activeIndex = -1;
 			suggestionsOpen = suggestions.length > 0;
 		} catch {
