@@ -46,7 +46,7 @@
 		</div>
 	</div>
 
-	<footer class="flex items-center justify-center gap-6 pb-6 text-[12px] text-[#3a3a3a]">
+	<footer class="flex items-center justify-center gap-4 pb-6 text-[12px] text-[#3a3a3a]">
 		<a
 			href="https://github.com/wdkqxd/clasp"
 			target={settings.openInNewTab ? '_blank' : undefined}
