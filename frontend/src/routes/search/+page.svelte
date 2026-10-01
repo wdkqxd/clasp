@@ -21,6 +21,7 @@
 	let wikipediaAnswer = $state<import('$lib/types').WikipediaArticle | null>(null);
 	let discussions = $state<import('$lib/types').Discussion[]>([]);
 	let rich = $state<import('$lib/types').RichAnswer[]>([]);
+	let submittedQuery = $state('');
 	let startedQuery = '';
 	let requestId = 0;
 	let imageSentinel = $state<HTMLElement | null>(null);
@@ -84,12 +85,14 @@
 			discussions = [];
 			rich = [];
 			selectedImageIndex = -1;
+			submittedQuery = '';
 			return;
 		}
 		const stateKey = `${tabKey}:${q}`;
 		if (stateKey === startedQuery) return;
 		startedQuery = stateKey;
 		feed.query = q;
+		submittedQuery = q;
 		selectedImageIndex = -1;
 		discussions = [];
 		rich = [];
@@ -203,11 +206,9 @@
 		<main class="space-y-12">
 			<div class="relative flex flex-col md:block">
 				<section class="order-last min-w-0 md:order-none">
-					{#if rich.length > 0}
-						<div class="mb-10">
-							<Answers items={rich} />
-						</div>
-					{/if}
+					<div>
+						<Answers items={rich} query={submittedQuery} />
+					</div>
 					<ResultsList feed={feed} baseIndex={2} discussions={discussions} />
 				</section>
 				{#if wikipediaAnswer && !feed.loading}

@@ -41,174 +41,36 @@ func parseRich(doc string) []engine.RichAnswer {
 	return out
 }
 
-var richSubtypeKeys = []struct {
-	subtype    string
-	payloadKey string
-	kind       string
-}{
-	{"calculator", "calculator", "calculator"},
-	{"colorpicker", "colorpicker", "colorpicker"},
-	{"weather", "weather", "weather"},
-	{"timer", "timer", "timer"},
-	{"unitconversion", "unitConversion", "unitConversion"},
-	{"timezones", "timezones", "timezones"},
-	{"cryptocurrency", "cryptocurrency", "cryptocurrency"},
-	{"unixtimestamp", "unixtimestamp", "unixtimestamp"},
-	{"currency", "currency", "currency"},
-	{"news", "news", "news"},
-}
+var richSubtypes = []string{"cryptocurrency"}
 
 func richAnswerFromMap(m map[string]any) *engine.RichAnswer {
 	subtype, _ := m["subtype"].(string)
 	subtype = strings.ToLower(subtype)
-	if subtype == "stopwatch" {
-		return &engine.RichAnswer{Type: "stopwatch", Stopwatch: true}
-	}
-	for _, sub := range richSubtypeKeys {
-		if subtype != "" && subtype != sub.subtype {
+	for _, name := range richSubtypes {
+		if subtype != "" && subtype != name {
 			continue
 		}
-		payload, ok := m[sub.payloadKey].(map[string]any)
+		payload, ok := m[name].(map[string]any)
 		if !ok || len(payload) == 0 {
 			continue
 		}
-		switch sub.kind {
-		case "calculator":
-			if a := richCalculator(payload); a != nil {
-				return a
-			}
-		case "colorpicker":
-			if a := richColorpicker(payload); a != nil {
-				return a
-			}
-		case "weather":
-			if a := richWeather(payload); a != nil {
-				return a
-			}
-		case "timer":
-			if a := richTimer(payload); a != nil {
-				return a
-			}
-		case "unitConversion":
-			if a := richUnitConversion(payload); a != nil {
-				return a
-			}
-		case "timezones":
-			if a := richTimezones(payload); a != nil {
-				return a
-			}
-		case "cryptocurrency":
-			if a := richCryptocurrency(payload); a != nil {
-				return a
-			}
-		case "unixtimestamp":
-			if a := richUnixtimestamp(payload); a != nil {
-				return a
-			}
-		case "currency":
-			if a := richCurrency(payload); a != nil {
-				return a
-			}
-		case "news":
-			if a := richNews(payload); a != nil {
-				return a
-			}
+		if a := richAnswerFor(name, payload); a != nil {
+			return a
 		}
 		// subtype matched but payload not usable -> stop scanning
-		if subtype == sub.subtype {
+		if subtype == name {
 			break
 		}
 	}
 	return nil
 }
 
-func richCalculator(p map[string]any) *engine.RichAnswer {
-	expr, _ := p["expression"].(string)
-	ans, ok := richFloat(p["answer"])
-	if !ok || expr == "" {
-		return nil
+func richAnswerFor(name string, payload map[string]any) *engine.RichAnswer {
+	switch name {
+	case "cryptocurrency":
+		return richCryptocurrency(payload)
 	}
-	return &engine.RichAnswer{Type: "calculator", Calculator: &engine.RichCalculator{Expression: expr, Answer: ans}}
-}
-
-func richColorpicker(p map[string]any) *engine.RichAnswer {
-	color, _ := p["color"].(string)
-	if color == "" {
-		return nil
-	}
-	format, _ := p["format"].(string)
-	return &engine.RichAnswer{Type: "colorpicker", Colorpicker: &engine.RichColorpicker{Color: color, Format: format}}
-}
-
-func richTimer(p map[string]any) *engine.RichAnswer {
-	dur, ok := richFloat(p["duration"])
-	if !ok {
-		return nil
-	}
-	start, _ := p["start_on_load"].(bool)
-	return &engine.RichAnswer{Type: "timer", Timer: &engine.RichTimer{Duration: int64(dur), StartOnLoad: start}}
-}
-
-func richUnitConversion(p map[string]any) *engine.RichAnswer {
-	amount, ok := richFloat(p["amount"])
-	if !ok {
-		return nil
-	}
-	from, _ := p["from_unit"].(string)
-	to, _ := p["to_unit"].(string)
-	if from == "" || to == "" {
-		return nil
-	}
-	dim, _ := p["dimensionality"].(string)
-	return &engine.RichAnswer{
-		Type: "unitConversion",
-		UnitConversion: &engine.RichUnitConversion{
-			Amount: amount, FromUnit: from, ToUnit: to, Dimensionality: dim,
-		},
-	}
-}
-
-func richTimezones(p map[string]any) *engine.RichAnswer {
-	res, ok := p["result"].(map[string]any)
-	if !ok {
-		return nil
-	}
-	out := &engine.RichTimezones{Type: richStr(res["type"])}
-	raw, ok := res["timezones"].([]any)
-	if !ok {
-		return nil
-	}
-	for _, t := range raw {
-		tm, ok := t.(map[string]any)
-		if !ok {
-			continue
-		}
-		rz := engine.RichTimezone{
-			Abbreviation: richStr(tm["abbreviation"]),
-			GenericName:  richStr(tm["generic_name"]),
-			UTCOffset:    richStr(tm["utc_offset"]),
-		}
-		if ct, ok := tm["converted_time"].(map[string]any); ok {
-			city := richStr(ct["city"])
-			if cm, ok := ct["city"].(map[string]any); ok {
-				city = richStr(cm["name"])
-			}
-			rz.ConvertedTime = &engine.RichTimezoneCnv{
-				Strftime: richStr(ct["strftime"]),
-				Location: richStr(ct["location"]),
-				UTCDiff:  richStr(ct["utc_diff"]),
-				City:     city,
-			}
-		}
-		out.Timezones = append(out.Timezones, rz)
-		if len(out.Timezones) >= 6 {
-			break
-		}
-	}
-	if len(out.Timezones) == 0 {
-		return nil
-	}
-	return &engine.RichAnswer{Type: "timezones", Timezones: out}
+	return nil
 }
 
 func richCryptocurrency(p map[string]any) *engine.RichAnswer {
@@ -274,93 +136,6 @@ func richPriceSeries(ts map[string]any) [][2]float64 {
 		out = sampled
 	}
 	return out
-}
-
-func richUnixtimestamp(p map[string]any) *engine.RichAnswer {
-	if _, ok := p["conversion"].(map[string]any); !ok {
-		return nil
-	}
-	return &engine.RichAnswer{Type: "unixtimestamp", Unixtimestamp: &engine.RichUnixtimestamp{Conversion: p["conversion"]}}
-}
-
-func richCurrency(p map[string]any) *engine.RichAnswer {
-	conv, ok := p["conversion"].(map[string]any)
-	if !ok {
-		return nil
-	}
-	out := &engine.RichCurrency{Amount: richFloatOrDefault(conv["amount"])}
-	if q, ok := conv["query"].(map[string]any); ok {
-		if from, ok := q["from_currency"].(map[string]any); ok {
-			out.FromCode = richStr(from["code"])
-			out.FromName = richStr(from["full_name"])
-		}
-		if to, ok := q["to_currency"].(map[string]any); ok {
-			out.ToCode = richStr(to["code"])
-			out.ToName = richStr(to["full_name"])
-		}
-		if amt, ok := richFloat(q["amount"]); ok && out.Amount == 0 {
-			out.Amount = amt
-		}
-	}
-	out.Result = richFloatOrDefault(conv["result"])
-	out.Date = richStr(conv["date"])
-	if info, ok := conv["info"].(map[string]any); ok {
-		out.ExchangeRate = richFloatOrDefault(info["rate"])
-	}
-	if ts, ok := p["timeseries"].(map[string]any); ok {
-		series := &engine.RichCurrSeries{TimeRange: richStr(ts["time_range"])}
-		if raw, ok := ts["ts_exchange_rate"].([]any); ok {
-			for _, r := range raw {
-				pair, ok := r.([]any)
-				if !ok || len(pair) < 2 {
-					continue
-				}
-				series.TsExchange = append(series.TsExchange, [2]any{pair[0], pair[1]})
-				if len(series.TsExchange) >= 30 {
-					break
-				}
-			}
-		}
-		out.Timeseries = series
-	}
-	if out.FromCode == "" || out.ToCode == "" {
-		return nil
-	}
-	return &engine.RichAnswer{Type: "currency", Currency: out}
-}
-
-func richNews(p map[string]any) *engine.RichAnswer {
-	raw, ok := p["articles"].([]any)
-	if !ok {
-		return nil
-	}
-	out := &engine.RichNews{}
-	for _, a := range raw {
-		am, ok := a.(map[string]any)
-		if !ok {
-			continue
-		}
-		art := engine.RichNewsArticle{
-			Title:         richStr(am["title"]),
-			URL:           richStr(am["url"]),
-			Description:   richStr(am["description"]),
-			Img:           richStr(am["img"]),
-			PublishTime:   int64(richFloatOrDefault(am["publish_time"])),
-			PublisherName: richStr(am["publisher_name"]),
-			PageAge:       richStr(am["page_age"]),
-		}
-		if mu, ok := am["meta_url"].(map[string]any); ok {
-			art.MetaURL = &engine.RichMetaURL{Hostname: richStr(mu["hostname"]), Favicon: richStr(mu["favicon"])}
-		}
-		out.Articles = append(out.Articles, art)
-		if len(out.Articles) >= 6 {
-			break
-		}
-	}
-	if len(out.Articles) == 0 {
-		return nil
-	}
-	return &engine.RichAnswer{Type: "news", News: out}
 }
 
 func richStr(v any) string {

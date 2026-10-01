@@ -32,18 +32,10 @@ export interface Discussion {
 
 export interface RichAnswer {
 	type: string;
-	calculator?: RichCalculator;
-	colorpicker?: RichColorpicker;
 	weather?: RichWeather;
-	timer?: RichTimer;
-	unitConversion?: RichUnitConversion;
-	timezones?: RichTimezones;
 	cryptocurrency?: RichCryptocurrency;
-	unixtimestamp?: RichUnixtimestamp;
 	currency?: RichCurrency;
-	news?: RichNews;
 	topAnswer?: RichTopAnswer;
-	stopwatch?: boolean;
 }
 
 export interface RichAnswerBlock {
@@ -65,16 +57,6 @@ export interface RichTopAnswer {
 export interface RichMetaURL {
 	hostname?: string;
 	favicon?: string;
-}
-
-export interface RichCalculator {
-	expression: string;
-	answer: number;
-}
-
-export interface RichColorpicker {
-	color: string;
-	format?: string;
 }
 
 export interface RichWeatherCurrent {
@@ -113,30 +95,6 @@ export interface RichWeatherAlert {
 	start_relative_i18n?: string;
 }
 
-export interface RichTimer {
-	duration: number;
-	start_on_load: boolean;
-}
-
-export interface RichUnitConversion {
-	amount: number;
-	from_unit: string;
-	to_unit: string;
-	dimensionality: string;
-}
-
-export interface RichTimezone {
-	abbreviation?: string;
-	generic_name?: string;
-	utc_offset?: string;
-	converted_time?: { strftime?: string; location?: string; utc_diff?: string; city?: string };
-}
-
-export interface RichTimezones {
-	type?: string;
-	timezones?: RichTimezone[];
-}
-
 export interface RichCryptoQuote {
 	id?: string;
 	symbol: string;
@@ -157,10 +115,6 @@ export interface RichCryptocurrency {
 	timeseries?: { time_range?: string; ts_price?: [number, number][] };
 }
 
-export interface RichUnixtimestamp {
-	conversion?: Record<string, unknown>;
-}
-
 export interface RichCurrency {
 	amount: number;
 	from_currency_code: string;
@@ -171,23 +125,6 @@ export interface RichCurrency {
 	exchange_rate?: number;
 	date?: string;
 	timeseries?: { time_range?: string; ts_exchange_rate?: [string, number][] };
-}
-
-export interface RichNewsArticle {
-	title: string;
-	url: string;
-	description?: string;
-	img?: string;
-	publish_time?: number;
-	publisher_name?: string;
-	page_age?: string;
-	meta_url?: { hostname?: string; favicon?: string };
-}
-
-export interface RichNews {
-	is_topical?: boolean;
-	topics?: string[];
-	articles?: RichNewsArticle[];
 }
 
 export interface SearchResponse {
