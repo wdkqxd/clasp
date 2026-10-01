@@ -38,24 +38,27 @@
 </script>
 
 <section>
-	<div>
+	<div class="space-y-2.5">
 		{#each items as d (d.url)}
-			<div class="disc-item rounded transition-colors duration-300 ease-out hover:bg-[#1c1c1c]" class:open={isOpen(d.url)}>
+			<div
+				class="disc-item rounded-md border border-[#262626] bg-[#121212] transition-colors duration-300 ease-out hover:bg-[#181818]"
+				class:open={isOpen(d.url)}
+			>
 				<button
 					type="button"
 					onclick={() => toggle(d.url)}
 					aria-expanded={isOpen(d.url)}
-					class="flex w-full cursor-pointer items-center justify-between gap-3 px-2 py-2 text-left outline-none"
+					class="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left outline-none"
 				>
-					<span class="min-w-0 flex-1 truncate text-[14px] leading-snug text-[#c0c0c0]">{d.title}</span>
+					<span class="min-w-0 flex-1 text-[14px] leading-snug text-[#e2e2e2]">{d.title}</span>
 					<span class="icon shrink-0 text-[#5c5c5c] transition-transform duration-200 disc-chevron"><ChevronDown /></span>
 				</button>
 
 				<div class="disc-body">
 					<div class="disc-body-inner">
-						<div class="px-2 pb-3">
+						<div class="px-4 pb-3.5">
 							{#if d.snippet}
-								<p class="max-w-[52ch] text-[13px] leading-relaxed text-[#707070] line-clamp-3">{d.snippet}</p>
+								<p class="max-w-[68ch] text-[13.5px] leading-relaxed text-[#b0b0b0] line-clamp-3">{d.snippet}</p>
 							{/if}
 
 							<div class="mt-2.5">
@@ -66,16 +69,16 @@
 									class="sitelink inline-flex items-center text-[12px] lowercase text-[#5c5c5c]"
 								>
 									<span>more on</span>
-								{#if favicon(d.url)}
-									<img
-										src={favicon(d.url)}
-										alt=""
-										width="14"
-										height="14"
-										loading="lazy"
-										class="ml-2 h-3.5 w-3.5 rounded-sm object-contain opacity-75"
-									/>
-								{/if}
+									{#if favicon(d.url)}
+										<img
+											src={favicon(d.url)}
+											alt=""
+											width="14"
+											height="14"
+											loading="lazy"
+											class="ml-2 h-3.5 w-3.5 rounded-sm object-contain opacity-75"
+										/>
+									{/if}
 									<span class="ml-1">{host(d.url)}</span>
 								</a>
 							</div>

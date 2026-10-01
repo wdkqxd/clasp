@@ -32,7 +32,7 @@
 	const favicon = $derived(host ? `https://icons.duckduckgo.com/ip3/${host}.ico` : '');
 </script>
 
-<section class="rounded-lg border border-[#262626] bg-[#161616] px-4 py-3.5">
+<section class="rounded-md border border-[#262626] bg-[#161616] px-4 py-3.5">
 	<div class="flex items-start gap-2.5">
 		<h2 class="text-[15px] leading-snug font-medium text-[#e2e2e2] line-clamp-3">{topAnswer.question}</h2>
 	</div>
