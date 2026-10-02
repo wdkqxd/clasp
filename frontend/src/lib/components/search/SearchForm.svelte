@@ -166,11 +166,9 @@
 
 	function pickBang(target: BangMatch) {
 		const tail = value.trim().slice(1).replace(/^\S*/, '').trim();
-		const q = `!${target.trigger}${tail ? ` ${tail}` : ''}`;
-		value = q;
+		value = `!${target.trigger} ${tail}`;
 		closeSuggestions();
 		input?.focus();
-		onSearch(q);
 	}
 
 	function matchParts(suggestion: string): [string, string] {
