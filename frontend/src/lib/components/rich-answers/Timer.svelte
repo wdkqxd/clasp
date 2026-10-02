@@ -30,8 +30,8 @@
 		return duration > 0 ? { duration, start_on_load: false } : null;
 	}
 
-	let timerTotal = $state(data?.duration ?? 0);
-	let timerLeft = $state(data?.duration ?? 0);
+	let timerTotal = $state(0);
+	let timerLeft = $state(0);
 	let timerRunning = $state(false);
 	let timerId: ReturnType<typeof setInterval> | null = null;
 

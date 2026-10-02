@@ -5,8 +5,8 @@
 
 	let { crypto }: { crypto: RichCryptocurrency } = $props();
 
-	const q = crypto.quote;
-	const s = sym(crypto.vs_currency ?? 'usd');
+	const q = $derived(crypto.quote);
+	const s = $derived(sym(crypto.vs_currency ?? 'usd'));
 </script>
 
 {#if q}
