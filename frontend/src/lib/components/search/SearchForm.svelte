@@ -83,13 +83,8 @@
 		if (!focused) return;
 
 		if (bangMode) {
-			const term = query.slice(1).split(/\s/)[0];
-			if (!term) {
-				closeSuggestions();
-				return;
-			}
 			const timer = setTimeout(() => {
-				void loadBangs(term);
+				void loadBangs(query.slice(1).split(/\s/)[0]);
 			}, DEBOUNCE_MS);
 			return () => clearTimeout(timer);
 		}

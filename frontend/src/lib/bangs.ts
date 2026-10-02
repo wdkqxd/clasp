@@ -124,6 +124,53 @@ export async function resolveBang(q: string): Promise<BangMatch | null> {
 	};
 }
 
+const FEATURED_TRIGGERS = [
+	'g',
+	'yt',
+	'gh',
+	'gpt',
+	'w',
+	'ddg',
+	'so',
+	'r',
+	'imdb',
+	'mdn',
+	'claude',
+	'chatgpt',
+	'x',
+	'wa',
+	'scholar',
+	'arxiv',
+	'spotify',
+	'netflix',
+	'twitch',
+	'reddit',
+	'pin',
+	'ste',
+	'lb'
+];
+
+export async function featuredBangs(limit = 8): Promise<BangMatch[]> {
+	await buildIndex();
+	const triggers = [...FEATURED_TRIGGERS];
+	for (let i = triggers.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[triggers[i], triggers[j]] = [triggers[j], triggers[i]];
+	}
+	const seen = new Set<string>();
+	const out: BangMatch[] = [];
+	for (const trigger of triggers) {
+		const entry = triggerIndex?.get(trigger);
+		if (!entry) continue;
+		const name = entry.name.toLowerCase();
+		if (seen.has(name)) continue;
+		seen.add(name);
+		out.push({ trigger, name: entry.name, url: entry.url, host: entry.host });
+		if (out.length >= limit) break;
+	}
+	return out;
+}
+
 function fuzzy(query: string, target: string): number {
 	let t = 0;
 	let g = 0;
@@ -143,7 +190,7 @@ function fuzzy(query: string, target: string): number {
 
 export async function searchBangs(rawQuery: string, limit = 8): Promise<BangMatch[]> {
 	const query = rawQuery.trim().toLowerCase().replace(/\s+/g, '');
-	if (!query) return [];
+	if (!query) return featuredBangs(limit);
 
 	const entries = await buildIndex();
 	const scored: { trigger: string; entry: BangEntry; score: number }[] = [];
