@@ -36,7 +36,6 @@
 		onSearch: (q: string) => void;
 	} = $props();
 
-	const MIN_QUERY_LENGTH = 2;
 	const DEBOUNCE_MS = 140;
 
 	const settings = getSearchSettings();
@@ -90,7 +89,7 @@
 		}
 
 		const text = chip ? rest.trim() : query;
-		if (text.length < MIN_QUERY_LENGTH) {
+		if (!text) {
 			closeSuggestions();
 			return;
 		}
