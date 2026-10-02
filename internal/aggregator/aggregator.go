@@ -2,6 +2,7 @@ package aggregator
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"slices"
 	"sort"
@@ -41,6 +42,7 @@ type Aggregator struct {
 	engines          []engine.Engine
 	totalTimeout     time.Duration
 	perEngineTimeout time.Duration
+	fastTimeout      time.Duration
 }
 
 func New(engines []engine.Engine) *Aggregator {
@@ -48,7 +50,42 @@ func New(engines []engine.Engine) *Aggregator {
 		engines:          engines,
 		totalTimeout:     10 * time.Second,
 		perEngineTimeout: 5 * time.Second,
+		fastTimeout:      3 * time.Second,
 	}
+}
+
+// engineOutcome carries an engine result together with the engine it came from.
+type engineOutcome[T any] struct {
+	name string
+	val  T
+}
+
+// collectOutcomes waits for one outcome per engine, but gives up on stragglers
+// once timeout elapses instead of waiting for the slowest source. Engines that
+// did not report in time get fallback(name), so callers can mark them failed.
+func collectOutcomes[T any](names []string, ch <-chan engineOutcome[T], timeout time.Duration, fallback func(string) T) map[string]T {
+	pending := make(map[string]struct{}, len(names))
+	for _, n := range names {
+		pending[n] = struct{}{}
+	}
+
+	out := make(map[string]T, len(names))
+	timer := time.NewTimer(timeout)
+	defer timer.Stop()
+
+	for len(pending) > 0 {
+		select {
+		case o := <-ch:
+			out[o.name] = o.val
+			delete(pending, o.name)
+		case <-timer.C:
+			for n := range pending {
+				out[n] = fallback(n)
+			}
+			return out
+		}
+	}
+	return out
 }
 
 const (
@@ -102,28 +139,31 @@ func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, 
 	}
 
 	type outcome struct {
-		name string
 		res  engine.SearchResult
 		err  error
 		took time.Duration
 	}
 
-	ch := make(chan outcome, len(activeEngines))
+	names := make([]string, 0, len(activeEngines))
+	ch := make(chan engineOutcome[outcome], len(activeEngines))
 	for _, e := range activeEngines {
+		names = append(names, e.Name())
 		go func(e engine.Engine) {
 			ectx, cancel := context.WithTimeout(ctx, a.perEngineTimeout)
 			defer cancel()
 			start := time.Now()
 			res, err := e.Search(ectx, query, maxCandidates, page)
-			ch <- outcome{name: e.Name(), res: res, err: err, took: time.Since(start)}
+			ch <- engineOutcome[outcome]{
+				name: e.Name(),
+				val:  outcome{res: res, err: err, took: time.Since(start)},
+			}
 		}(e)
 	}
 
-	byName := make(map[string]outcome, len(activeEngines))
-	for i := 0; i < len(activeEngines); i++ {
-		o := <-ch
-		byName[o.name] = o
-	}
+	timeoutErr := fmt.Errorf("timeout after %s", a.fastTimeout)
+	byName := collectOutcomes(names, ch, a.fastTimeout, func(string) outcome {
+		return outcome{err: timeoutErr, took: a.fastTimeout}
+	})
 
 	seen := make(map[string]int)
 
@@ -181,7 +221,7 @@ func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, 
 				scoredResults = append(scoredResults, scored{res: r, score: contrib, nav: navRoot})
 			}
 		}
-		resp.Engines[o.name] = st
+		resp.Engines[e.Name()] = st
 	}
 
 	sort.SliceStable(scoredResults, func(x, y int) bool {
@@ -383,7 +423,6 @@ func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page 
 	}
 
 	type imgOutcome struct {
-		name string
 		res  []engine.ImageResult
 		err  error
 		took time.Duration
@@ -407,22 +446,26 @@ func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page 
 		Engines: make(map[string]Status, len(activeSearchers)),
 	}
 
-	ch := make(chan imgOutcome, len(activeSearchers))
+	names := make([]string, 0, len(activeSearchers))
+	ch := make(chan engineOutcome[imgOutcome], len(activeSearchers))
 	for _, as := range activeSearchers {
+		names = append(names, as.name)
 		go func(name string, s engine.ImageSearcher) {
 			ectx, cancel := context.WithTimeout(ctx, a.perEngineTimeout)
 			defer cancel()
 			start := time.Now()
 			res, err := s.ImageSearch(ectx, query, imageCandidates, page)
-			ch <- imgOutcome{name: name, res: res, err: err, took: time.Since(start)}
+			ch <- engineOutcome[imgOutcome]{
+				name: name,
+				val:  imgOutcome{res: res, err: err, took: time.Since(start)},
+			}
 		}(as.name, as.s)
 	}
 
-	byName := make(map[string]imgOutcome, len(activeSearchers))
-	for i := 0; i < len(activeSearchers); i++ {
-		o := <-ch
-		byName[o.name] = o
-	}
+	timeoutErr := fmt.Errorf("timeout after %s", a.fastTimeout)
+	byName := collectOutcomes(names, ch, a.fastTimeout, func(string) imgOutcome {
+		return imgOutcome{err: timeoutErr, took: a.fastTimeout}
+	})
 
 	seen := make(map[string]int)
 
