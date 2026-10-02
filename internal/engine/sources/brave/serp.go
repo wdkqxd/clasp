@@ -42,7 +42,7 @@ func parseSerpData(doc string) (map[string]any, error) {
 			return obj, nil
 		}
 	}
-	return nil, errors.New("brave serp data not found: layout changed or blocked")
+	return nil, errors.New("nothing was found. most likely, the page layout has changed")
 }
 
 func webResults(data map[string]any, limit int) ([]engine.Result, error) {
