@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { ArrowRight, Search } from '@lucide/svelte';
+	import { ArrowRight, Search, X } from '@lucide/svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import { suggest } from '../../api';
-	import { bangIcon, searchBangs, type BangMatch } from '../../bangs';
+	import { bangIcon, parseBang, resolveBang, searchBangs, type BangMatch } from '../../bangs';
 	import { getSearchSettings } from '../settings/searchSettings.svelte';
 
 	type ArrowTransition = { duration?: number };
@@ -53,8 +53,14 @@
 	let brokenIcons = $state<Record<string, true>>({});
 	let requestId = 0;
 
-	let bangMode = $derived(value.trim().startsWith('!'));
-	let bangTerm = $derived(bangMode ? value.trim().slice(1).split(/\s/)[0] : '');
+	let bang = $state<BangMatch | null>(null);
+	let parsed = $derived(parseBang(value));
+	let spaced = $derived(/^!\S+\s/.test(value.trimStart()));
+	let chip = $derived(
+		bang && spaced && parsed && parsed.trigger === bang.trigger ? bang : null
+	);
+	let rest = $derived(chip && parsed ? parsed.rest : value);
+	let bangMode = $derived(!chip && value.trim().startsWith('!'));
 	let itemCount = $derived(bangResults.length || suggestions.length);
 
 	let showSuggestions = $derived(focused && suggestionsOpen && itemCount > 0);
@@ -62,27 +68,42 @@
 
 	$effect(() => {
 		const query = value.trim();
+		let cancelled = false;
+		void resolveBang(query).then((found) => {
+			if (!cancelled) bang = found;
+		});
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	$effect(() => {
+		const query = value.trim();
 		const engine = settings.autocomplete;
 		if (!focused) return;
 
 		if (bangMode) {
-			if (!bangTerm) return;
+			const term = query.slice(1).split(/\s/)[0];
+			if (!term) {
+				closeSuggestions();
+				return;
+			}
 			const timer = setTimeout(() => {
-				void loadBangs(bangTerm);
+				void loadBangs(term);
 			}, DEBOUNCE_MS);
 			return () => clearTimeout(timer);
 		}
 
-		if (query.length < MIN_QUERY_LENGTH) return;
+		const text = chip ? rest.trim() : query;
+		if (text.length < MIN_QUERY_LENGTH) {
+			closeSuggestions();
+			return;
+		}
 
 		const timer = setTimeout(() => {
-			void loadSuggestions(query, engine);
+			void loadSuggestions(text, engine);
 		}, DEBOUNCE_MS);
 		return () => clearTimeout(timer);
-	});
-
-	$effect(() => {
-		if (!bangMode && value.trim().length < MIN_QUERY_LENGTH) closeSuggestions();
 	});
 
 	async function loadSuggestions(query: string, engine: string) {
@@ -123,16 +144,29 @@
 		suggestionsOpen = false;
 	}
 
-	function pick(suggestion: string) {
-		value = suggestion;
-		closeSuggestions();
-		input?.focus();
-		onSearch(suggestion);
+	function onInput(event: Event) {
+		const text = (event.currentTarget as HTMLInputElement).value;
+		value = chip && text ? `!${chip.trigger} ${text}` : chip ? `!${chip.trigger}` : text;
 	}
 
-	function pickBang(bang: BangMatch) {
-		const rest = value.trim().slice(1).replace(/^\S*/, '').trim();
-		const q = `!${bang.trigger}${rest ? ` ${rest}` : ''}`;
+	function clearBang() {
+		if (!chip) return;
+		value = `!${chip.trigger}`;
+		closeSuggestions();
+		input?.focus();
+	}
+
+	function pick(suggestion: string) {
+		const q = chip ? `!${chip.trigger} ${suggestion}` : suggestion;
+		value = q;
+		closeSuggestions();
+		input?.focus();
+		onSearch(q);
+	}
+
+	function pickBang(target: BangMatch) {
+		const tail = value.trim().slice(1).replace(/^\S*/, '').trim();
+		const q = `!${target.trigger}${tail ? ` ${tail}` : ''}`;
 		value = q;
 		closeSuggestions();
 		input?.focus();
@@ -140,7 +174,7 @@
 	}
 
 	function matchParts(suggestion: string): [string, string] {
-		const query = value.trim();
+		const query = chip ? rest.trim() : value.trim();
 		if (!query) return ['', suggestion];
 		const q = query.toLowerCase();
 		const s = suggestion.toLowerCase();
@@ -157,6 +191,11 @@
 	}
 
 	function onKeydown(event: KeyboardEvent) {
+		if (event.key === 'Backspace' && chip && input?.selectionStart === 0) {
+			event.preventDefault();
+			clearBang();
+			return;
+		}
 		if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
 			if (!showSuggestions) return;
 			event.preventDefault();
@@ -225,15 +264,41 @@
 			: 'pr-3'}"
 	>
 		<Search size={16} class="shrink-0 text-[#454545]" />
+		{#if chip}
+			<span
+				class="flex shrink-0 items-center gap-1.5 rounded-sm bg-[#1e1e1e] py-1 pl-1 pr-1.5 text-[12px] leading-none text-[#c0c0c0]"
+			>
+				<img
+					src={bangIcon(chip.host)}
+					alt=""
+					width="14"
+					height="14"
+					loading="lazy"
+					class="h-3.5 w-3.5 rounded-sm object-contain opacity-75"
+					onerror={() => (brokenIcons[chip.host] = true)}
+				/>
+				<span class="max-w-[120px] truncate">{chip.name}</span>
+				<button
+					type="button"
+					aria-label="Remove bang"
+					onmousedown={(event) => event.preventDefault()}
+					onclick={clearBang}
+					class="shrink-0 rounded-sm p-0.5 text-[#5c5c5c] transition-colors hover:bg-[#262626] hover:text-[#c0c0c0]"
+				>
+					<X size={11} />
+				</button>
+			</span>
+		{/if}
 		<input
 			bind:this={input}
-			bind:value
+			value={rest}
+			oninput={onInput}
 			type="search"
 			aria-label={placeholder}
 			autocomplete="off"
 			spellcheck="false"
 			enterkeyhint="search"
-			{placeholder}
+			placeholder={chip ? 'search' : placeholder}
 			onkeydown={onKeydown}
 			onfocus={() => (focused = true)}
 			onblur={() => {

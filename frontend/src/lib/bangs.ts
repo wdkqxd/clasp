@@ -16,11 +16,17 @@ async function load(): Promise<Record<string, string>> {
 void load();
 
 export async function checkBang(q: string): Promise<string | undefined> {
-	const m = /^!(\S+)\s*(.*)$/.exec(q.trim());
-	if (!m) return;
-	const url = (await load())[m[1].toLowerCase()];
+	const parsed = parseBang(q);
+	if (!parsed) return;
+	const url = (await load())[parsed.trigger];
 	if (!url) return;
-	return url.replace('%s', encodeURIComponent(m[2].trim()));
+	return url.replace('%s', encodeURIComponent(parsed.rest));
+}
+
+export function parseBang(q: string): { trigger: string; rest: string } | null {
+	const m = /^!(\S+)\s*(.*)$/.exec(q.trim());
+	if (!m) return null;
+	return { trigger: m[1].toLowerCase(), rest: m[2] };
 }
 
 export type BangMatch = {
@@ -42,6 +48,7 @@ type BangEntry = {
 };
 
 let index: BangEntry[] | null = null;
+let triggerIndex: Map<string, BangEntry> | null = null;
 let indexing: Promise<BangEntry[]> | null = null;
 
 function hostOf(url: string): string {
@@ -56,7 +63,9 @@ function domainOf(host: string): string {
 	const parts = host.split('.').filter(Boolean);
 	if (parts.length < 2) return host;
 	const tld = parts[parts.length - 1];
-	return tld.length === 2 && parts.length > 2 ? parts.slice(-3).join('.') : parts.slice(-2).join('.');
+	return tld.length === 2 && parts.length > 2
+		? parts.slice(-3).join('.')
+		: parts.slice(-2).join('.');
 }
 
 function nameOf(host: string): string {
@@ -71,23 +80,48 @@ async function buildIndex(): Promise<BangEntry[]> {
 		indexing = load()
 			.then((map) => {
 				const byDomain = new Map<string, BangEntry>();
+				const byTrigger = new Map<string, BangEntry>();
 				for (const [trigger, url] of Object.entries(map)) {
+					const key = trigger.toLowerCase();
 					const host = hostOf(url);
 					if (!host) continue;
 					const domain = domainOf(host);
 					const existing = byDomain.get(domain);
 					if (existing) {
-						existing.triggers.push(trigger);
+						existing.triggers.push(key);
+						byTrigger.set(key, existing);
 						continue;
 					}
-					byDomain.set(domain, { url, host, name: nameOf(host), triggers: [trigger] });
+					const entry: BangEntry = {
+						url,
+						host,
+						name: nameOf(host),
+						triggers: [key]
+					};
+					byDomain.set(domain, entry);
+					byTrigger.set(key, entry);
 				}
+				triggerIndex = byTrigger;
 				index = [...byDomain.values()];
 				return index;
 			})
 			.finally(() => (indexing = null));
 	}
 	return indexing;
+}
+
+export async function resolveBang(q: string): Promise<BangMatch | null> {
+	const parsed = parseBang(q);
+	if (!parsed) return null;
+	await buildIndex();
+	const entry = triggerIndex?.get(parsed.trigger);
+	if (!entry) return null;
+	return {
+		trigger: parsed.trigger,
+		name: entry.name,
+		url: entry.url,
+		host: entry.host
+	};
 }
 
 function fuzzy(query: string, target: string): number {
