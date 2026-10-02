@@ -95,6 +95,18 @@
 		onSearch(suggestion);
 	}
 
+	function matchParts(suggestion: string): [string, string] {
+		const query = value.trim();
+		if (!query) return ['', suggestion];
+		const q = query.toLowerCase();
+		const s = suggestion.toLowerCase();
+		const max = Math.min(q.length, s.length);
+		let len = 0;
+		while (len < max && q[len] === s[len]) len++;
+		if (len === 0) return ['', suggestion];
+		return [suggestion.slice(0, len), suggestion.slice(len)];
+	}
+
 	function moveActive(step: number) {
 		if (!showSuggestions) return;
 		activeIndex = (activeIndex + step + suggestions.length) % suggestions.length;
@@ -209,6 +221,7 @@
 			class="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-md border border-[#242424] bg-[#121212] p-1.5 shadow-2xl shadow-black/40"
 		>
 			{#each suggestions as suggestion, i (suggestion)}
+				{@const [match, rest] = matchParts(suggestion)}
 				<li>
 					<button
 						type="button"
@@ -226,7 +239,10 @@
 							: 'text-[#8a8a8a]'}"
 					>
 						<Search size={13} class="shrink-0 text-[#4a4a4a]" />
-						<span class="truncate">{suggestion}</span>
+						<span class="truncate">{match}{#if rest}<span class={i === activeIndex
+									? 'text-[#e8e8e8]'
+									: 'text-[#c0c0c0]'}>{rest}</span
+								>{/if}</span>
 					</button>
 				</li>
 			{/each}
