@@ -3,6 +3,7 @@
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import { suggest } from '../../api';
+	import { bangIcon, searchBangs, type BangMatch } from '../../bangs';
 	import { getSearchSettings } from '../settings/searchSettings.svelte';
 
 	type ArrowTransition = { duration?: number };
@@ -46,16 +47,33 @@
 	let showSubmit = $derived(focused && hasQuery);
 
 	let suggestions = $state<string[]>([]);
+	let bangResults = $state<BangMatch[]>([]);
 	let activeIndex = $state(-1);
 	let suggestionsOpen = $state(false);
+	let brokenIcons = $state<Record<string, true>>({});
 	let requestId = 0;
 
-	let showSuggestions = $derived(focused && suggestionsOpen && suggestions.length > 0);
+	let bangMode = $derived(value.trim().startsWith('!'));
+	let bangTerm = $derived(bangMode ? value.trim().slice(1).split(/\s/)[0] : '');
+	let itemCount = $derived(bangResults.length || suggestions.length);
+
+	let showSuggestions = $derived(focused && suggestionsOpen && itemCount > 0);
+	let showBangs = $derived(showSuggestions && bangResults.length > 0);
 
 	$effect(() => {
 		const query = value.trim();
 		const engine = settings.autocomplete;
-		if (!focused || query.length < MIN_QUERY_LENGTH) return;
+		if (!focused) return;
+
+		if (bangMode) {
+			if (!bangTerm) return;
+			const timer = setTimeout(() => {
+				void loadBangs(bangTerm);
+			}, DEBOUNCE_MS);
+			return () => clearTimeout(timer);
+		}
+
+		if (query.length < MIN_QUERY_LENGTH) return;
 
 		const timer = setTimeout(() => {
 			void loadSuggestions(query, engine);
@@ -64,7 +82,7 @@
 	});
 
 	$effect(() => {
-		if (value.trim().length < MIN_QUERY_LENGTH) closeSuggestions();
+		if (!bangMode && value.trim().length < MIN_QUERY_LENGTH) closeSuggestions();
 	});
 
 	async function loadSuggestions(query: string, engine: string) {
@@ -72,6 +90,7 @@
 		try {
 			const res = await suggest(query, engine);
 			if (id !== requestId) return;
+			bangResults = [];
 			suggestions = res.suggestions.filter((s) => s.toLowerCase() !== query.toLowerCase());
 			activeIndex = -1;
 			suggestionsOpen = suggestions.length > 0;
@@ -81,9 +100,25 @@
 		}
 	}
 
+	async function loadBangs(term: string) {
+		const id = ++requestId;
+		try {
+			const res = await searchBangs(term);
+			if (id !== requestId) return;
+			suggestions = [];
+			bangResults = res;
+			activeIndex = -1;
+			suggestionsOpen = res.length > 0;
+		} catch {
+			if (id !== requestId) return;
+			closeSuggestions();
+		}
+	}
+
 	function closeSuggestions() {
 		requestId += 1;
 		suggestions = [];
+		bangResults = [];
 		activeIndex = -1;
 		suggestionsOpen = false;
 	}
@@ -93,6 +128,15 @@
 		closeSuggestions();
 		input?.focus();
 		onSearch(suggestion);
+	}
+
+	function pickBang(bang: BangMatch) {
+		const rest = value.trim().slice(1).replace(/^\S*/, '').trim();
+		const q = `!${bang.trigger}${rest ? ` ${rest}` : ''}`;
+		value = q;
+		closeSuggestions();
+		input?.focus();
+		onSearch(q);
 	}
 
 	function matchParts(suggestion: string): [string, string] {
@@ -109,7 +153,7 @@
 
 	function moveActive(step: number) {
 		if (!showSuggestions) return;
-		activeIndex = (activeIndex + step + suggestions.length) % suggestions.length;
+		activeIndex = (activeIndex + step + itemCount) % itemCount;
 	}
 
 	function onKeydown(event: KeyboardEvent) {
@@ -122,7 +166,8 @@
 		}
 		if (event.key === 'Enter' && showSuggestions && activeIndex >= 0) {
 			event.preventDefault();
-			pick(suggestions[activeIndex]);
+			if (showBangs) pickBang(bangResults[activeIndex]);
+			else pick(suggestions[activeIndex]);
 			return;
 		}
 		if (event.key !== 'Escape') return;
@@ -212,40 +257,102 @@
 	</div>
 
 	{#if showSuggestions}
-		<ul
+		<div
 			data-suggestions
-			role="listbox"
-			aria-label="search suggestions"
 			in:fly={{ y: -4, duration: 140, easing: cubicOut }}
 			out:fly={{ y: -4, duration: 110, easing: cubicIn }}
 			class="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-md border border-[#242424] bg-[#121212] p-1.5 shadow-2xl shadow-black/40"
 		>
-			{#each suggestions as suggestion, i (suggestion)}
-				{@const [match, rest] = matchParts(suggestion)}
-				<li>
-					<button
-						type="button"
-						role="option"
-						aria-selected={i === activeIndex}
+			<ul
+				role="listbox"
+				aria-label={showBangs ? 'bang suggestions' : 'search suggestions'}
+				class={showBangs ? 'grid grid-cols-2 gap-1' : ''}
+			>
+			{#if showBangs}
+				{#each bangResults as bang, i (bang.trigger + bang.url)}
+					<li>
+						<button
+							type="button"
+							role="option"
+							aria-selected={i === activeIndex}
+							onmousedown={(event) => {
+								event.preventDefault();
+							}}
+							onclick={() => pickBang(bang)}
+							onmouseenter={() => (activeIndex = i)}
+							onmouseleave={() => (activeIndex = -1)}
+							class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] transition-all duration-100 ease-out active:scale-[0.99] {i ===
+							activeIndex
+								? 'bg-[#1e1e1e] text-[#d0d0d0]'
+								: 'text-[#8a8a8a]'}"
+						>
+							{#if !brokenIcons[bang.host]}
+								<img
+									src={bangIcon(bang.host)}
+									alt=""
+									width="14"
+									height="14"
+									loading="lazy"
+									class="h-3.5 w-3.5 shrink-0 rounded-sm object-contain opacity-75"
+									onerror={() => (brokenIcons[bang.host] = true)}
+								/>
+							{/if}
+							<span class="min-w-0 flex-1 truncate text-[#c0c0c0]">{bang.name}</span>
+							<span class="shrink-0 truncate text-[#8a8a8a]">!{bang.trigger}</span>
+						</button>
+					</li>
+				{/each}
+			{:else}
+				{#each suggestions as suggestion, i (suggestion)}
+					{@const [match, rest] = matchParts(suggestion)}
+					<li>
+						<button
+							type="button"
+							role="option"
+							aria-selected={i === activeIndex}
+							onmousedown={(event) => {
+								event.preventDefault();
+							}}
+							onclick={() => pick(suggestion)}
+							onmouseenter={() => (activeIndex = i)}
+							onmouseleave={() => (activeIndex = -1)}
+							class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] transition-all duration-100 ease-out active:scale-[0.99] {i ===
+							activeIndex
+								? 'bg-[#1e1e1e] text-[#d0d0d0]'
+								: 'text-[#8a8a8a]'}"
+						>
+							<Search size={13} class="shrink-0 text-[#4a4a4a]" />
+							<span class="truncate">{match}{#if rest}<span class={i === activeIndex
+										? 'text-[#e8e8e8]'
+										: 'text-[#c0c0c0]'}>{rest}</span
+									>{/if}</span>
+						</button>
+					</li>
+				{/each}
+			{/if}
+			</ul>
+			{#if showBangs}
+				<div class="mt-1.5 border-t border-[#1e1e1e]">
+					<a
+						href="https://helium.computer/bangs"
+						target="_blank"
+						rel="noreferrer"
 						onmousedown={(event) => {
 							event.preventDefault();
 						}}
-						onclick={() => pick(suggestion)}
-						onmouseenter={() => (activeIndex = i)}
-						onmouseleave={() => (activeIndex = -1)}
-						class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] transition-all duration-100 ease-out active:scale-[0.99] {i ===
-						activeIndex
-							? 'bg-[#1e1e1e] text-[#d0d0d0]'
-							: 'text-[#8a8a8a]'}"
+						class="flex items-center justify-center gap-1.5 px-2.5 pt-2 text-[11px] leading-none text-[#4a4a4a] transition-colors hover:text-[#8a8a8a]"
 					>
-						<Search size={13} class="shrink-0 text-[#4a4a4a]" />
-						<span class="truncate">{match}{#if rest}<span class={i === activeIndex
-									? 'text-[#e8e8e8]'
-									: 'text-[#c0c0c0]'}>{rest}</span
-								>{/if}</span>
-					</button>
-				</li>
-			{/each}
-		</ul>
+						<span>bangs by</span>
+						<svg viewBox="0 0 256 256" aria-hidden="true" class="size-3 shrink-0">
+							<path
+								d="M152.62 237.85L128 256L103.38 237.85L114.568 151.248L45.05 204.22L17 192L20.425 161.635L101.128 128L20.425 94.365L17 64L45.05 51.78L114.568 104.752L103.38 18.15L128 0L152.62 18.15L141.432 104.752L210.95 51.78L239 64L235.575 94.365L154.872 128L235.575 161.635L239 192L210.95 204.22L141.432 151.248L152.62 237.85Z"
+								fill="currentColor"
+							/>
+						</svg>
+						<span>helium</span>
+					</a>
+				</div>
+			{/if}
+		</div>
 	{/if}
 </form>
