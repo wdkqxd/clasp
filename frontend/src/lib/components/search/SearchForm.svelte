@@ -412,7 +412,7 @@
 								fill="currentColor"
 							/>
 						</svg>
-						<span>helium</span>
+						<span>Helium</span>
 					</a>
 				</div>
 			{/if}
