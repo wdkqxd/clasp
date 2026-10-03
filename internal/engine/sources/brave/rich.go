@@ -15,7 +15,7 @@ func parseRich(doc string) []engine.RichAnswer {
 	if i < 0 {
 		return nil
 	}
-	i += len(richMarker) - 1 // point at the opening '['
+	i += len(richMarker) - 1
 	end, ok := helpers.MatchObject(doc, i)
 	if !ok {
 		return nil
@@ -57,7 +57,6 @@ func richAnswerFromMap(m map[string]any) *engine.RichAnswer {
 		if a := richAnswerFor(name, payload); a != nil {
 			return a
 		}
-		// subtype matched but payload not usable -> stop scanning
 		if subtype == name {
 			break
 		}
@@ -125,7 +124,6 @@ func richPriceSeries(ts map[string]any) [][2]float64 {
 		}
 		out = append(out, [2]float64{t, v})
 	}
-	// downsample long intraday series so the response stays lean
 	const maxPoints = 96
 	if len(out) > maxPoints {
 		stride := (len(out) + maxPoints - 1) / maxPoints

@@ -60,9 +60,6 @@ type engineOutcome[T any] struct {
 	val  T
 }
 
-// collectOutcomes waits for one outcome per engine, but gives up on stragglers
-// once timeout elapses instead of waiting for the slowest source. Engines that
-// did not report in time get fallback(name), so callers can mark them failed.
 func collectOutcomes[T any](names []string, ch <-chan engineOutcome[T], timeout time.Duration, fallback func(string) T) map[string]T {
 	pending := make(map[string]struct{}, len(names))
 	for _, n := range names {

@@ -65,7 +65,6 @@ func NewClient(httpClient engine.HTTPClient) *Client {
 
 var errThrottled = errors.New("wikipedia: throttled")
 
-// waitSlot blocks until the next upstream call is allowed.
 func (c *Client) waitSlot(ctx context.Context) error {
 	c.mu.Lock()
 	now := time.Now()

@@ -78,7 +78,6 @@ func (d *DDG) ImageSearch(ctx context.Context, query string, limit, offset int) 
 		if r.Thumbnail == "" || r.Image == "" {
 			continue
 		}
-		// the raw image URL is hotlink-protected, serve it through DDG's proxy
 		proxied := "https://external-content.duckduckgo.com/iu/?u=" + url.QueryEscape(r.Image)
 		out = append(out, engine.ImageResult{
 			Title:     r.Title,

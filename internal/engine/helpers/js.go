@@ -205,8 +205,6 @@ func (p *jsParser) keyword() (any, error) {
 			return kw.val, nil
 		}
 	}
-	// pages ship precompiled bundles where object values are sometimes bare
-	// references to module-level variables we cannot resolve, treat them as empty
 	if ident := p.readIdentifier(); ident != "" {
 		return nil, nil
 	}

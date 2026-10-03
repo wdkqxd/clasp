@@ -94,7 +94,6 @@ func serveStatic(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimPrefix(r.URL.Path, "/")
 	filePath := filepath.Join(staticDir, filepath.Clean("/"+path))
 
-	// ensure resolved path is still under staticDir
 	absStatic, _ := filepath.Abs(staticDir)
 	absFile, _ := filepath.Abs(filePath)
 	if !strings.HasPrefix(absFile, absStatic) {

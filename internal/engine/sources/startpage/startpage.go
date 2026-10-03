@@ -117,8 +117,6 @@ func (s *Startpage) Search(ctx context.Context, query string, limit, offset int)
 	return engine.SearchResult{Results: results}, err
 }
 
-// passIfChallenged solves the anubis proof of work when startpage serves a
-// challenge, then refetches the page.
 func (s *Startpage) passIfChallenged(ctx context.Context, body, rawURL string) (string, error) {
 	if !hasChallenge(body) {
 		return body, nil
