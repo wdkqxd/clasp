@@ -23,17 +23,30 @@
 		openSet = next;
 	}
 
-	function host(u: string): string {
+	const MAX_URL_LEN = 32;
+
+	function displayURL(u: string): string {
+		let out: string;
 		try {
-			return new URL(u).hostname.replace(/^www\./, '');
+			const url = new URL(u);
+			out = url.hostname.replace(/^www\./, '');
+			const path = url.pathname;
+			if (path && path !== '/') {
+				out += path;
+			}
 		} catch {
-			return '';
+			out = u;
 		}
+		return out.length > MAX_URL_LEN ? `${out.slice(0, MAX_URL_LEN)}…` : out;
 	}
 
 	function favicon(u: string): string {
-		const h = host(u);
-		return h ? `https://icons.duckduckgo.com/ip3/${h}.ico` : '';
+		try {
+			const h = new URL(u).hostname.replace(/^www\./, '');
+			return h ? `https://icons.duckduckgo.com/ip3/${h}.ico` : '';
+		} catch {
+			return '';
+		}
 	}
 </script>
 
@@ -50,7 +63,7 @@
 					aria-expanded={isOpen(d.url)}
 					class="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left outline-none"
 				>
-					<span class="min-w-0 flex-1 text-[14px] leading-snug text-[#e2e2e2]">{d.title}</span>
+					<span class="min-w-0 flex-1 text-[15px] leading-snug text-[#c0c0c0]">{d.title}</span>
 					<span class="icon shrink-0 text-[#5c5c5c] transition-transform duration-200 disc-chevron"><ChevronDown /></span>
 				</button>
 
@@ -58,7 +71,7 @@
 					<div class="disc-body-inner">
 						<div class="px-4 pb-3.5">
 							{#if d.snippet}
-								<p class="max-w-[68ch] text-[13.5px] leading-relaxed text-[#b0b0b0] line-clamp-3">{d.snippet}</p>
+								<p class="max-w-[68ch] text-[13px] leading-relaxed text-[#707070] line-clamp-3">{d.snippet}</p>
 							{/if}
 
 							<div class="mt-2.5">
@@ -66,21 +79,20 @@
 									href={d.url}
 									target={settings.openInNewTab ? '_blank' : undefined}
 									rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
-									class="sitelink inline-flex items-center text-[12px] lowercase text-[#5c5c5c]"
-								>
-									<span>more on</span>
-									{#if favicon(d.url)}
-										<img
-											src={favicon(d.url)}
-											alt=""
-											width="14"
-											height="14"
-											loading="lazy"
-											class="ml-2 h-3.5 w-3.5 rounded-sm object-contain opacity-75"
-										/>
-									{/if}
-									<span class="ml-1">{host(d.url)}</span>
-								</a>
+								class="flex items-center gap-1.5 text-[12px] text-[#5c5c5c] transition-colors hover:text-[#888]"
+							>
+								{#if favicon(d.url)}
+									<img
+										src={favicon(d.url)}
+										alt=""
+										width="14"
+										height="14"
+										loading="lazy"
+										class="h-3.5 w-3.5 rounded-sm object-contain opacity-75"
+									/>
+								{/if}
+								<span class="truncate">{displayURL(d.url)}</span>
+							</a>
 							</div>
 						</div>
 					</div>
