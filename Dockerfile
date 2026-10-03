@@ -11,11 +11,11 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 COPY --from=frontend /app/build ./frontend/build
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o metasearch .
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o clasp .
 
 FROM alpine:3.20
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
-COPY --from=builder /app/metasearch .
+COPY --from=builder /app/clasp .
 EXPOSE 8080
-CMD ["./metasearch"]
+CMD ["./clasp"]

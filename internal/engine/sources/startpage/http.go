@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"metasearch/internal/engine"
+	"clasp/internal/engine"
 )
 
 func (s *Startpage) get(ctx context.Context, u string) (string, error) {

@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"metasearch/internal/engine"
+	"clasp/internal/engine"
 )
 
 var (

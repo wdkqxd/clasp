@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"metasearch/internal/engine"
+	"clasp/internal/engine"
 )
 
 func imageResults(data map[string]any, limit int) ([]engine.ImageResult, error) {

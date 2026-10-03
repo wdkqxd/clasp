@@ -15,7 +15,7 @@ import (
 
 	_ "golang.org/x/image/webp"
 
-	"metasearch/internal/engine"
+	"clasp/internal/engine"
 )
 
 var (

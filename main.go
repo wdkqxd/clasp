@@ -11,16 +11,16 @@ import (
 	"syscall"
 	"time"
 
-	"metasearch/internal/aggregator"
-	"metasearch/internal/api"
-	"metasearch/internal/bangs"
-	"metasearch/internal/engine"
-	"metasearch/internal/engine/helpers"
-	"metasearch/internal/engine/sources/brave"
-	"metasearch/internal/engine/sources/ddg"
-	"metasearch/internal/engine/sources/startpage"
-	"metasearch/internal/suggest"
-	"metasearch/internal/wikipedia"
+	"clasp/internal/aggregator"
+	"clasp/internal/api"
+	"clasp/internal/bangs"
+	"clasp/internal/engine"
+	"clasp/internal/engine/helpers"
+	"clasp/internal/engine/sources/brave"
+	"clasp/internal/engine/sources/ddg"
+	"clasp/internal/engine/sources/startpage"
+	"clasp/internal/suggest"
+	"clasp/internal/wikipedia"
 )
 
 func main() {
@@ -63,7 +63,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		log.Printf("metasearch listening on %s", addr)
+		log.Printf("clasp listening on %s", addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %v", err)
 		}

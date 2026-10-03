@@ -8,7 +8,7 @@ import (
 	tls_client "github.com/bogdanfinn/tls-client"
 	"github.com/bogdanfinn/tls-client/profiles"
 
-	"metasearch/internal/engine"
+	"clasp/internal/engine"
 )
 
 type BrowserClient struct {

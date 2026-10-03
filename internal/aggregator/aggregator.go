@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"metasearch/internal/engine"
+	"clasp/internal/engine"
 )
 
 type Status struct {

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"sync"
 
-	"metasearch/internal/engine"
+	"clasp/internal/engine"
 )
 
 const (

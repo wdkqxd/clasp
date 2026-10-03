@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"metasearch/internal/engine"
+	"clasp/internal/engine"
 )
 
 const (

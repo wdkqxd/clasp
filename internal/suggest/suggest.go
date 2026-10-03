@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"metasearch/internal/engine"
+	"clasp/internal/engine"
 )
 
 const (

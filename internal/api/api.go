@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"metasearch/internal/aggregator"
-	"metasearch/internal/bangs"
-	"metasearch/internal/suggest"
-	"metasearch/internal/wikipedia"
+	"clasp/internal/aggregator"
+	"clasp/internal/bangs"
+	"clasp/internal/suggest"
+	"clasp/internal/wikipedia"
 )
 
 type Searcher interface {

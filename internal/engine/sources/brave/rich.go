@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 
-	"metasearch/internal/engine"
-	"metasearch/internal/engine/helpers"
+	"clasp/internal/engine"
+	"clasp/internal/engine/helpers"
 )
 
 const richMarker = `{type:"rich",results:[`

@@ -1,4 +1,4 @@
-module metasearch
+module clasp
 
 go 1.26.0
 

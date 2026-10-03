@@ -12,8 +12,8 @@ import (
 	"strings"
 	"sync"
 
-	"metasearch/internal/engine"
-	"metasearch/internal/engine/helpers"
+	"clasp/internal/engine"
+	"clasp/internal/engine/helpers"
 )
 
 const endpoint = "https://html.duckduckgo.com/html/"

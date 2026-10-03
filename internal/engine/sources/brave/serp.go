@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"metasearch/internal/engine"
-	"metasearch/internal/engine/helpers"
+	"clasp/internal/engine"
+	"clasp/internal/engine/helpers"
 )
 
 const serpMarker = `{type:"data",data:`

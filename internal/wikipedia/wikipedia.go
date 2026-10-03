@@ -15,7 +15,7 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"metasearch/internal/engine"
+	"clasp/internal/engine"
 )
 
 type Article struct {

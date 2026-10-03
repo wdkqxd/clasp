@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"metasearch/internal/engine"
+	"clasp/internal/engine"
 )
 
 const imageEndpoint = "https://duckduckgo.com/i.js"

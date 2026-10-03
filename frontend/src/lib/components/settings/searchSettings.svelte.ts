@@ -1,4 +1,4 @@
-export const SEARCH_SETTINGS_KEY = 'metasearch.search.settings';
+export const SEARCH_SETTINGS_KEY = 'clasp.search.settings';
 
 export const SEARCH_ENGINES = ['Brave', 'DuckDuckGo', 'Startpage'] as const;
 export type SearchEngine = (typeof SEARCH_ENGINES)[number];
