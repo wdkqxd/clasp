@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>privacy — clasp</title>
+	<title>privacy / clasp</title>
 </svelte:head>
 
 <div class="mx-auto w-full max-w-2xl px-4 py-16 sm:py-24">
