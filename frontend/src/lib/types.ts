@@ -150,12 +150,6 @@ export interface WikipediaArticle {
 	extract?: string;
 	url: string;
 	thumbnail?: string;
-	facts?: WikipediaFact[];
-}
-
-export interface WikipediaFact {
-	label: string;
-	value: string;
 }
 
 export interface ImageResult {

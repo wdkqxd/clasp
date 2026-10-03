@@ -12,9 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
-
 	"clasp/internal/engine"
 )
 
@@ -24,12 +21,6 @@ type Article struct {
 	Extract     string `json:"extract,omitempty"`
 	URL         string `json:"url"`
 	Thumbnail   string `json:"thumbnail,omitempty"`
-	Facts       []Fact `json:"facts,omitempty"`
-}
-
-type Fact struct {
-	Label string `json:"label"`
-	Value string `json:"value"`
 }
 
 const (
@@ -37,9 +28,9 @@ const (
 	cacheTTL           = 10 * time.Minute
 	negativeCacheTTL   = 90 * time.Second
 	maxCacheEntries    = 512
-	upstreamInterval = 150 * time.Millisecond
-	throttleCooldown = 60 * time.Second
-	userAgent        = "clasp/1.0 (https://github.com/wdkq/clasp)"
+	upstreamInterval   = 150 * time.Millisecond
+	throttleCooldown   = 60 * time.Second
+	userAgent          = "clasp/1.0 (https://github.com/wdkq/clasp)"
 )
 
 type cacheEntry struct {
@@ -114,11 +105,6 @@ type apiResponse struct {
 				Description []string `json:"description"`
 			} `json:"terms"`
 			PageProps map[string]string `json:"pageprops"`
-			Revisions []struct {
-				Slots struct {
-					Main map[string]string `json:"main"`
-				} `json:"slots"`
-			} `json:"revisions"`
 		} `json:"pages"`
 	} `json:"query"`
 }
@@ -215,14 +201,12 @@ func (c *Client) searchLanguage(ctx context.Context, query, language string) (*A
 		"gsrnamespace": {"0"},
 		"gsrlimit":     {"1"},
 		"redirects":    {"1"},
-		"prop":         {"extracts|info|pageimages|pageterms|revisions"},
+		"prop":         {"extracts|info|pageimages|pageterms"},
 		"exintro":      {"1"},
 		"explaintext":  {"1"},
 		"inprop":       {"url"},
 		"pithumbsize":  {"320"},
 		"wbptterms":    {"description"},
-		"rvprop":       {"content"},
-		"rvslots":      {"main"},
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+"?"+params.Encode(), nil)
@@ -267,13 +251,6 @@ func (c *Client) searchLanguage(ctx context.Context, query, language string) (*A
 			Extract: strings.TrimSpace(page.Extract),
 			URL:     page.FullURL,
 		}
-		if len(page.Revisions) > 0 {
-			content := page.Revisions[0].Slots.Main["*"]
-			if content == "" {
-				content = page.Revisions[0].Slots.Main["content"]
-			}
-			article.Facts = parseFacts(content)
-		}
 		if page.Thumbnail != nil {
 			article.Thumbnail = page.Thumbnail.Source
 		}
@@ -286,164 +263,6 @@ func (c *Client) searchLanguage(ctx context.Context, query, language string) (*A
 		return article, nil
 	}
 	return nil, nil
-}
-
-func parseFacts(wikitext string) []Fact {
-	start := strings.Index(strings.ToLower(wikitext), "{{infobox")
-	if start < 0 {
-		return nil
-	}
-	depth := 0
-	end := len(wikitext)
-	for i := start; i+1 < len(wikitext); i++ {
-		switch wikitext[i : i+2] {
-		case "{{":
-			depth++
-			i++
-		case "}}":
-			depth--
-			i++
-			if depth == 0 {
-				end = i + 1
-				i = len(wikitext)
-			}
-		}
-	}
-
-	lines := strings.Split(wikitext[start:end], "\n")
-	facts := make([]Fact, 0, 6)
-	for _, line := range lines[1:] {
-		line = strings.TrimSpace(line)
-		if !strings.HasPrefix(line, "|") {
-			continue
-		}
-		parts := strings.SplitN(strings.TrimSpace(strings.TrimPrefix(line, "|")), "=", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		key := strings.TrimSpace(parts[0])
-		value := cleanWikiValue(parts[1])
-		if key == "" || value == "" || isTechnicalFact(key) {
-			continue
-		}
-		facts = append(facts, Fact{Label: factLabel(key), Value: value})
-		if len(facts) == 6 {
-			break
-		}
-	}
-	return facts
-}
-
-var (
-	reWikiComment   = regexp.MustCompile(`<!--.*?-->`)
-	reWikiPipedLink = regexp.MustCompile(`\[\[([^\]|]+)\|([^\]]+)\]\]`)
-	reWikiTemplate  = regexp.MustCompile(`\{\{[^{}]*\}\}`)
-	reWikiPlainLink = regexp.MustCompile(`\[\[([^\]]+)\]\]`)
-	reWikiRefBlock  = regexp.MustCompile(`(?i)<ref[^>]*>.*?</ref>`)
-	reWikiRefSelf   = regexp.MustCompile(`(?i)<ref[^/]*/>`)
-	reWikiTag       = regexp.MustCompile(`<[^>]+>`)
-	reWikiActing    = regexp.MustCompile(`\s*\(acting\)`)
-
-	titleCaser = cases.Title(language.English)
-)
-
-func cleanWikiValue(value string) string {
-	value = reWikiComment.ReplaceAllString(value, "")
-	value = reWikiPipedLink.ReplaceAllString(value, "$2")
-	value = expandUbl(value)
-	value = reWikiTemplate.ReplaceAllString(value, "")
-	value = reWikiPlainLink.ReplaceAllString(value, "$1")
-	value = reWikiRefBlock.ReplaceAllString(value, "")
-	value = reWikiRefSelf.ReplaceAllString(value, "")
-	value = reWikiTag.ReplaceAllString(value, "")
-	return strings.TrimSpace(strings.Join(strings.Fields(value), " "))
-}
-
-func expandUbl(s string) string {
-	needle := "{{ubl|"
-	lower := strings.ToLower(s)
-	for {
-		idx := strings.Index(lower, needle)
-		if idx < 0 {
-			break
-		}
-		start := idx
-		depth := 0
-		end := start
-		for i := start; i+1 < len(s); i++ {
-			if s[i] == '{' && s[i+1] == '{' {
-				depth++
-				i++
-			} else if s[i] == '}' && s[i+1] == '}' {
-				depth--
-				i++
-				if depth == 0 {
-					end = i + 1
-					break
-				}
-			}
-		}
-		if end <= start {
-			break
-		}
-		inner := s[start+len("{{") : end-len("}}")]
-		if !strings.HasPrefix(strings.ToLower(inner), "ubl|") {
-			lower = lower[:start+len("{{")] + lower[end:]
-			s = s[:start+len("{{")] + s[end:]
-			continue
-		}
-		inner = inner[len("ubl|"):]
-		items := splitTopLevel(inner, '|')
-		for i, item := range items {
-			item = strings.TrimSpace(item)
-			item = reWikiActing.ReplaceAllString(item, "")
-			items[i] = item
-		}
-		replacement := strings.Join(items, " / ")
-		s = s[:start] + replacement + s[end:]
-		lower = strings.ToLower(s)
-	}
-	return s
-}
-
-func splitTopLevel(s string, sep rune) []string {
-	var parts []string
-	braceDepth := 0
-	linkDepth := 0
-	cur := strings.Builder{}
-	runes := []rune(s)
-	for i := 0; i < len(runes); i++ {
-		r := runes[i]
-		if r == '{' && i+1 < len(runes) && runes[i+1] == '{' {
-			braceDepth++
-		} else if r == '}' && i+1 < len(runes) && runes[i+1] == '}' {
-			braceDepth--
-		} else if r == '[' && i+1 < len(runes) && runes[i+1] == '[' {
-			linkDepth++
-		} else if r == ']' && i+1 < len(runes) && runes[i+1] == ']' {
-			linkDepth--
-		}
-		if r == sep && braceDepth == 0 && linkDepth == 0 {
-			parts = append(parts, cur.String())
-			cur.Reset()
-			continue
-		}
-		cur.WriteRune(r)
-	}
-	if cur.Len() > 0 {
-		parts = append(parts, cur.String())
-	}
-	return parts
-}
-
-func isTechnicalFact(key string) bool {
-	key = strings.ToLower(key)
-	return strings.Contains(key, "image") || strings.Contains(key, "logo") || strings.Contains(key, "map") || strings.Contains(key, "caption") || strings.Contains(key, "module")
-}
-
-func factLabel(key string) string {
-	key = strings.ReplaceAll(strings.ReplaceAll(strings.TrimSpace(key), "_", " "), "-", " ")
-	return titleCaser.String(strings.ToLower(key))
 }
 
 var languagePattern = regexp.MustCompile(`^[a-z]{2,3}$`)
