@@ -19,6 +19,7 @@ import (
 	"clasp/internal/engine/sources/brave"
 	"clasp/internal/engine/sources/ddg"
 	"clasp/internal/engine/sources/startpage"
+	"clasp/internal/limiter"
 	"clasp/internal/suggest"
 	"clasp/internal/wikipedia"
 )
@@ -45,9 +46,11 @@ func main() {
 	suggestClient := suggest.NewClient(client)
 
 	apiHandler := api.New(agg, bangStore, wikipediaClient, suggestClient)
+	rl := limiter.New(limiter.LoadConfig())
+	defer rl.Close()
 
 	mux := http.NewServeMux()
-	mux.Handle("/api/", apiHandler)
+	mux.Handle("/api/", rl.Middleware(apiHandler))
 	mux.HandleFunc("/", serveStatic)
 
 	addr := ":" + port
