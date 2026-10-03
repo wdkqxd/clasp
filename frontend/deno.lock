@@ -8,6 +8,7 @@
     "npm:@sveltejs/vite-plugin-svelte@^7.1.2": "7.3.0_svelte@5.57.0_vite@8.3.0",
     "npm:@tailwindcss/vite@^4.3.3": "4.3.3_vite@8.3.0",
     "npm:currency.js@*": "2.0.4",
+    "npm:devalue@^5.9.4": "5.9.4",
     "npm:mathjs@^14.8.0": "14.9.1",
     "npm:numeral@*": "2.0.6",
     "npm:numis@*": "1.1.2",
@@ -370,8 +371,8 @@
     "detect-libc@2.1.2": {
       "integrity": "sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ=="
     },
-    "devalue@5.9.2": {
-      "integrity": "sha512-po4PAY5c53tw5XMocSnf8A/5OHhbbUftpr93aEN6BBoAdntUmK7vu7wOATqvt7cXO7m1Cl4gMVn6p7n6n4mj0w=="
+    "devalue@5.9.4": {
+      "integrity": "sha512-sPAT4pztbu6586/hrhOnMKS17IJrvg12mXiSPSS3W5qDeN2RGgvZ0diZCm31dBbnevfVmujNO3IM2wrS4Y2Rhg=="
     },
     "enhanced-resolve@5.25.0": {
       "integrity": "sha512-ghq3mhs649mvbarTCAlZn2wRhbfHmzAFiKxoWA14B3VtqnxtZt+wz8BroKXU0tF3GiJsnUldjVncQGZ8qk4rdA==",
@@ -797,6 +798,7 @@
       "npm:@sveltejs/kit@^2.63.0",
       "npm:@sveltejs/vite-plugin-svelte@^7.1.2",
       "npm:@tailwindcss/vite@^4.3.3",
+      "npm:devalue@^5.9.4",
       "npm:mathjs@^14.8.0",
       "npm:numis@^1.1.2",
       "npm:svelte-check@^4.6.0",
