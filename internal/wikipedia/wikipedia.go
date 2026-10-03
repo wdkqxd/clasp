@@ -243,9 +243,6 @@ func (c *Client) searchLanguage(ctx context.Context, query, language string) (*A
 		if _, disambiguation := page.PageProps["disambiguation"]; disambiguation {
 			return nil, nil
 		}
-		if !isLikelyMatch(query, page.Title) {
-			return nil, nil
-		}
 		article := &Article{
 			Title:   page.Title,
 			Extract: strings.TrimSpace(page.Extract),
@@ -266,14 +263,6 @@ func (c *Client) searchLanguage(ctx context.Context, query, language string) (*A
 }
 
 var languagePattern = regexp.MustCompile(`^[a-z]{2,3}$`)
-var wordsPattern = regexp.MustCompile(`[\p{L}\p{N}]+`)
-
-var ignoredQueryWords = map[string]struct{}{
-	"a": {}, "an": {}, "and": {}, "define": {}, "is": {}, "of": {}, "the": {}, "what": {}, "who": {},
-	"что": {}, "кто": {}, "такой": {}, "такое": {}, "определение": {}, "и": {}, "в": {}, "из": {}, "это": {},
-	"что такое": {}, "как": {}, "quien": {}, "quién": {}, "qué": {}, "que": {}, "es": {}, "una": {}, "un": {}, "el": {}, "la": {}, "los": {}, "las": {},
-	"was": {}, "were": {}, "how": {}, "wer": {}, "wie": {}, "ist": {}, "der": {}, "die": {}, "das": {},
-}
 
 func languageCandidates(query, requested string) []string {
 	requested = strings.ToLower(strings.TrimSpace(requested))
@@ -304,27 +293,4 @@ func languageCandidates(query, requested string) []string {
 	}
 
 	return []string{"en", "es", "fr", "de", "it", "pt", "nl", "pl", "tr"}
-}
-
-func isLikelyMatch(query, title string) bool {
-	queryWords := wordsPattern.FindAllString(strings.ToLower(query), -1)
-	titleWords := wordsPattern.FindAllString(strings.ToLower(title), -1)
-	if len(queryWords) == 0 || len(titleWords) == 0 {
-		return false
-	}
-	titleSet := make(map[string]struct{}, len(titleWords))
-	for _, word := range titleWords {
-		titleSet[word] = struct{}{}
-	}
-	found := 0
-	for _, word := range queryWords {
-		if _, ignored := ignoredQueryWords[word]; ignored {
-			continue
-		}
-		if _, ok := titleSet[word]; !ok {
-			return false
-		}
-		found++
-	}
-	return found > 0
 }
