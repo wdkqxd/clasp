@@ -17,5 +17,6 @@ FROM alpine:3.20
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=builder /app/clasp .
+COPY --from=frontend /app/build ./frontend/build
 EXPOSE 8080
 CMD ["./clasp"]
