@@ -2,7 +2,7 @@
 	let { count = 6 }: { count?: number } = $props();
 </script>
 
-<div class="space-y-10">
+<div class="space-y-8">
 	{#each Array(count) as _, i (i)}
 		<article class="result group">
 			<div class="mb-1.5"><div class="skeleton" style="width:140px;height:12px"></div></div>
