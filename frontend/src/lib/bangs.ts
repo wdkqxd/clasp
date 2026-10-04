@@ -5,9 +5,14 @@ async function load(): Promise<Record<string, string>> {
 	if (cache) return cache;
 	if (!loading) {
 		loading = fetch('/api/bangs')
-			.then((r) => (r.ok ? r.json() : {}))
-			.then((m) => (cache = m && typeof m === 'object' ? (m as Record<string, string>) : {}))
-			.catch(() => (cache = {}))
+			.then((r) => (r.ok ? r.json() : null))
+			.then((m) => {
+				if (m && typeof m === 'object' && Object.keys(m).length > 0) {
+					cache = m as Record<string, string>;
+				}
+				return cache ?? {};
+			})
+			.catch(() => cache ?? {})
 			.finally(() => (loading = null));
 	}
 	return loading;
@@ -79,6 +84,7 @@ async function buildIndex(): Promise<BangEntry[]> {
 	if (!indexing) {
 		indexing = load()
 			.then((map) => {
+				if (Object.keys(map).length === 0) return [] as BangEntry[];
 				const byDomain = new Map<string, BangEntry>();
 				const byTrigger = new Map<string, BangEntry>();
 				for (const [trigger, url] of Object.entries(map)) {

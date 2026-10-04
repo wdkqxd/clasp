@@ -90,11 +90,6 @@
 		const stateKey = `${tabKey}:${q}`;
 		if (stateKey === startedQuery) return;
 		startedQuery = stateKey;
-		feed.query = q;
-		submittedQuery = q;
-		selectedImageIndex = -1;
-		discussions = [];
-		rich = [];
 		const currentRequest = ++requestId;
 		checkBang(q).then((bang) => {
 			if (currentRequest !== requestId) return;
@@ -102,6 +97,11 @@
 				window.location.href = bang;
 				return;
 			}
+			feed.query = q;
+			submittedQuery = q;
+			selectedImageIndex = -1;
+			discussions = [];
+			rich = [];
 			search(q);
 		});
 	});
