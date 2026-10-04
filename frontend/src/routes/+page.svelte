@@ -46,14 +46,14 @@
 		</div>
 	</div>
 
-	<footer class="flex items-center justify-center gap-4 pb-6 text-[12px] text-[#3a3a3a]">
+	<footer class="flex items-center justify-center gap-5 pb-6 text-[13px] text-[#707070]">
 		<a
 			href="https://github.com/wdkqxd/clasp"
 			target={settings.openInNewTab ? '_blank' : undefined}
 			rel="noreferrer"
-			class="transition-colors hover:text-[#8a8a8a]">github</a
+			class="transition-colors hover:text-[#c0c0c0]">github</a
 		>
-		<a href="/privacy" class="transition-colors hover:text-[#8a8a8a]">privacy</a>
-		<a href="/about" class="transition-colors hover:text-[#8a8a8a]">about</a>
+		<a href="/privacy" class="transition-colors hover:text-[#c0c0c0]">privacy</a>
+		<a href="/about" class="transition-colors hover:text-[#c0c0c0]">about</a>
 	</footer>
 </div>
