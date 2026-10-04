@@ -8,8 +8,7 @@
 	import Answers from '$lib/components/rich-answers/Answers.svelte';
 	import ImageGrid from '$lib/components/image/ImageGrid.svelte';
 	import ImageDetailPanel from '$lib/components/image/ImageDetailPanel.svelte';
-	import SearchForm from '$lib/components/search/SearchForm.svelte';
-	import TabBar from '$lib/components/search/TabBar.svelte';
+	import SearchHeader from '$lib/components/search/SearchHeader.svelte';
 	import { SearchState } from '$lib/components/search/search.svelte';
 	import { ImageSearchState } from '$lib/components/image/imageSearch.svelte';
 	import { initBlocklist } from '$lib/components/image/aiBlocklist';
@@ -155,10 +154,7 @@
 {#if activeTab === 'Images'}
 	<div class="min-h-screen" class:pr-[420px]={sidebarOpen}>
 		<div class="w-full max-w-3xl pl-4 sm:pl-8 md:pl-16 lg:pl-28 xl:pl-44 pr-4 sm:pr-6 pt-8 sm:pt-10">
-			<header class="mb-5 min-h-[86px]">
-				<SearchForm bind:value={feed.query} {onSearch} placeholder={searchPlaceholder} />
-				<TabBar tabs={['Web', 'Images', 'Video']} active={activeTab} tookMs={imageFeed.tookMs} engineStatus={imageFeed.engineStatus} />
-			</header>
+			<SearchHeader feed={imageFeed} active={activeTab} {onSearch} placeholder={searchPlaceholder} />
 		</div>
 
 		<div class="w-full px-4 sm:px-6">
@@ -198,10 +194,7 @@
 	<div
 		class="w-full max-w-3xl pl-4 sm:pl-8 md:pl-16 lg:pl-28 xl:pl-44 pr-4 sm:pr-6 pt-8 sm:pt-10"
 	>
-		<header class="mb-5 min-h-[86px]">
-			<SearchForm bind:value={feed.query} {onSearch} placeholder={searchPlaceholder} />
-			<TabBar tabs={['Web', 'Images', 'Video']} active={activeTab} tookMs={feed.tookMs} engineStatus={feed.engineStatus} />
-		</header>
+		<SearchHeader feed={feed} active={activeTab} {onSearch} placeholder={searchPlaceholder} />
 
 		<main class="space-y-12">
 			<div class="relative flex flex-col md:block">
