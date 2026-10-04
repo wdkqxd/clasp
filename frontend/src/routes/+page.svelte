@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import { checkBang } from '$lib/bangs';
+	import { openBangOr } from '$lib/bangs';
 	import SearchForm from '$lib/components/search/SearchForm.svelte';
 	import SettingsPopup from '$lib/components/settings/SettingsPopup.svelte';
 	import { getSearchSettings } from '$lib/components/settings/searchSettings.svelte';
@@ -19,13 +19,7 @@
 	});
 
 	function onSearch(q: string) {
-		checkBang(q).then((bang) => {
-			if (bang) {
-				window.location.href = bang;
-				return;
-			}
-			goto(`/search?q=${encodeURIComponent(q)}`);
-		});
+		openBangOr(q, `/search?q=${encodeURIComponent(q)}`, goto);
 	}
 
 </script>

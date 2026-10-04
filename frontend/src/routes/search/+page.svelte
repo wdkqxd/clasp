@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { checkBang } from '$lib/bangs';
+	import { checkBang, openBangOr } from '$lib/bangs';
 	import Infobox from '$lib/components/infobox/Infobox.svelte';
 	import { wikipedia } from '$lib/api';
 	import ResultsList from '$lib/components/search/ResultsList.svelte';
@@ -107,16 +107,10 @@
 	});
 
 	function onSearch(q: string) {
-		checkBang(q).then((bang) => {
-			if (bang) {
-				window.location.href = bang;
-				return;
-			}
-			const isImages = page.url.searchParams.get('type') === 'images';
-			const params = new URLSearchParams({ q });
-			if (isImages) params.set('type', 'images');
-			goto(`/search?${params.toString()}`);
-		});
+		const isImages = page.url.searchParams.get('type') === 'images';
+		const params = new URLSearchParams({ q });
+		if (isImages) params.set('type', 'images');
+		openBangOr(q, `/search?${params.toString()}`, goto);
 	}
 
 	function selectImage(index: number) {
@@ -213,17 +207,3 @@
 		</main>
 	</div>
 {/if}
-
-<style>
-	.result-item {
-		animation: resultSlideIn 0.26s cubic-bezier(0.23, 1, 0.32, 1) backwards;
-		animation-delay: calc(var(--i) * 28ms);
-	}
-
-	@keyframes resultSlideIn {
-		from {
-			opacity: 0;
-			transform: translateY(6px);
-		}
-	}
-</style>

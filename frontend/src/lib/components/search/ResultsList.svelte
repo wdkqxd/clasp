@@ -57,18 +57,6 @@
 <div bind:this={sentinel} class="h-5"></div>
 
 <style>
-	.result-item {
-		animation: resultSlideIn 0.26s cubic-bezier(0.23, 1, 0.32, 1) backwards;
-		animation-delay: calc(var(--i) * 28ms);
-	}
-
-	@keyframes resultSlideIn {
-		from {
-			opacity: 0;
-			transform: translateY(6px);
-		}
-	}
-
 	.fade-out {
 		animation: fadeOutIn 0.2s ease-out;
 	}

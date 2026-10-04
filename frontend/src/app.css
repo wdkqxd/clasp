@@ -109,6 +109,16 @@ input::placeholder {
 .spin {
 	animation: spin 0.9s linear infinite;
 }
+.result-item {
+	animation: resultSlideIn 0.26s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+	animation-delay: calc(var(--i) * 28ms);
+}
+@keyframes resultSlideIn {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+}
 .spin svg {
 	display: block;
 	width: 100%;

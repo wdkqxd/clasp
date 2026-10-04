@@ -35,6 +35,19 @@ export async function checkBang(q: string): Promise<string | undefined> {
 	return url.replace('%s', encodeURIComponent(parsed.rest));
 }
 
+export async function openBangOr(
+	q: string,
+	href: string,
+	navigate: (url: string) => void
+): Promise<void> {
+	const bang = await checkBang(q);
+	if (bang) {
+		window.location.href = bang;
+		return;
+	}
+	navigate(href);
+}
+
 export function parseBang(q: string): { trigger: string; rest: string } | null {
 	const m = /^!(\S+)\s*(.*)$/.exec(q.trim());
 	if (!m) return null;
