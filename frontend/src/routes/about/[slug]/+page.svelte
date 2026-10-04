@@ -43,6 +43,12 @@
 	.prose :global(h2:first-child) {
 		margin-top: 0;
 	}
+	.prose :global(p) {
+		margin: 0;
+	}
+	.prose :global(p + p) {
+		margin-top: 1.25rem;
+	}
 	.prose :global(a) {
 		color: #8a8a8a;
 		text-decoration: underline;
