@@ -9,6 +9,7 @@
     "npm:@tailwindcss/vite@^4.3.3": "4.3.3_vite@8.3.0",
     "npm:currency.js@*": "2.0.4",
     "npm:devalue@^5.9.4": "5.9.4",
+    "npm:marked@^16.4.2": "16.4.2",
     "npm:mathjs@^14.8.0": "14.9.1",
     "npm:numeral@*": "2.0.6",
     "npm:numis@*": "1.1.2",
@@ -595,6 +596,10 @@
         "@jridgewell/sourcemap-codec"
       ]
     },
+    "marked@16.4.2": {
+      "integrity": "sha512-TI3V8YYWvkVf3KJe1dRkpnjs68JUPyEa5vjKrp1XEEJUAOaQc+Qj+L1qWbPd0SJuAdQkFU0h73sXXqwDYxsiDA==",
+      "bin": true
+    },
     "mathjs@14.9.1": {
       "integrity": "sha512-xhqv8Xjf+caWG3WlaPekg4v8QFOR3D5+8ycfcjMcPcnCNDgAONQLaLfyGgrggJrcHx2yUGCpACRpiD4GmXwX+Q==",
       "dependencies": [
@@ -799,6 +804,7 @@
       "npm:@sveltejs/vite-plugin-svelte@^7.1.2",
       "npm:@tailwindcss/vite@^4.3.3",
       "npm:devalue@^5.9.4",
+      "npm:marked@^16.4.2",
       "npm:mathjs@^14.8.0",
       "npm:numis@^1.1.2",
       "npm:svelte-check@^4.6.0",

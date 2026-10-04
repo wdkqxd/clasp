@@ -53,7 +53,7 @@
 			rel="noreferrer"
 			class="transition-colors hover:text-[#c0c0c0]">github</a
 		>
-		<a href="/privacy" class="transition-colors hover:text-[#c0c0c0]">privacy</a>
-		<a href="/about" class="transition-colors hover:text-[#c0c0c0]">about</a>
+		<a href="/about/privacy" class="transition-colors hover:text-[#c0c0c0]">privacy</a>
+		<a href="/about/general" class="transition-colors hover:text-[#c0c0c0]">about</a>
 	</footer>
 </div>

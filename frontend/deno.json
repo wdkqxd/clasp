@@ -11,6 +11,7 @@
     "@sveltejs/vite-plugin-svelte": "npm:@sveltejs/vite-plugin-svelte@^7.1.2",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.3.3",
     "devalue": "npm:devalue@^5.9.4",
+    "marked": "npm:marked@^16.4.2",
     "mathjs": "npm:mathjs@^14.8.0",
     "numis": "npm:numis@^1.1.2",
     "svelte": "npm:svelte@^5.56.1",
