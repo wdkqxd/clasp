@@ -41,23 +41,43 @@ func parseRich(doc string) []engine.RichAnswer {
 	return out
 }
 
-var richSubtypes = []string{"cryptocurrency"}
+type richSubtype struct {
+	name    string
+	aliases []string
+}
+
+var richSubtypes = []richSubtype{
+	{name: "cryptocurrency"},
+	{name: "stock", aliases: []string{"stocks"}},
+}
+
+func (s richSubtype) matches(subtype string) bool {
+	if subtype == "" || subtype == s.name {
+		return true
+	}
+	for _, a := range s.aliases {
+		if subtype == a {
+			return true
+		}
+	}
+	return false
+}
 
 func richAnswerFromMap(m map[string]any) *engine.RichAnswer {
 	subtype, _ := m["subtype"].(string)
 	subtype = strings.ToLower(subtype)
-	for _, name := range richSubtypes {
-		if subtype != "" && subtype != name {
+	for _, st := range richSubtypes {
+		if !st.matches(subtype) {
 			continue
 		}
-		payload, ok := m[name].(map[string]any)
+		payload, ok := m[st.name].(map[string]any)
 		if !ok || len(payload) == 0 {
 			continue
 		}
-		if a := richAnswerFor(name, payload); a != nil {
+		if a := richAnswerFor(st.name, payload); a != nil {
 			return a
 		}
-		if subtype == name {
+		if subtype != "" {
 			break
 		}
 	}
@@ -68,6 +88,8 @@ func richAnswerFor(name string, payload map[string]any) *engine.RichAnswer {
 	switch name {
 	case "cryptocurrency":
 		return richCryptocurrency(payload)
+	case "stock":
+		return richStock(payload)
 	}
 	return nil
 }
@@ -106,6 +128,95 @@ func richCryptocurrency(p map[string]any) *engine.RichAnswer {
 	return &engine.RichAnswer{Type: "cryptocurrency", Cryptocurrency: out}
 }
 
+func richStock(p map[string]any) *engine.RichAnswer {
+	q, ok := p["quote"].(map[string]any)
+	if !ok {
+		return nil
+	}
+	out := &engine.RichStock{TimeRange: richStr(p["time_range"])}
+	if ai, ok := p["asset_info"].(map[string]any); ok {
+		out.AssetInfo = &engine.RichStockAsset{
+			Symbol:   richStr(ai["symbol"]),
+			Name:     richStr(ai["name"]),
+			Category: richStr(ai["category"]),
+			Currency: richStr(ai["currency"]),
+			Country:  richStr(ai["country"]),
+			Exchange: richStr(ai["exchange"]),
+			MicCode:  richStr(ai["mic_code"]),
+		}
+	}
+	if xi, ok := p["exchange_info"].(map[string]any); ok {
+		out.ExchangeInfo = &engine.RichStockExchange{
+			Timezone:  richStr(xi["timezone"]),
+			OpenTime:  richStr(xi["open_time"]),
+			CloseTime: richStr(xi["close_time"]),
+		}
+	}
+	out.Quote = &engine.RichStockQuote{
+		Symbol:          richStr(q["symbol"]),
+		CompanyName:     richStr(q["company_name"]),
+		PrimaryExchange: richStr(q["primary_exchange"]),
+		Currency:        richStr(q["currency"]),
+		LatestPrice:     richFloatOrDefault(q["latest_price"]),
+		Open:            richFloatOrDefault(q["open"]),
+		High:            richFloatOrDefault(q["high"]),
+		Low:             richFloatOrDefault(q["low"]),
+		Close:           richFloatOrDefault(q["close"]),
+		Change:          richFloatOrDefault(q["change"]),
+		ChangePercent:   richFloatOrDefault(q["change_percent"]),
+		Volume:          richFloatOrDefault(q["volume"]),
+		MarketCap:       richFloatOrDefault(q["market_cap"]),
+		PeRatio:         richFloatOrDefault(q["pe_ratio"]),
+		Week52High:      richFloatOrDefault(q["week_52_high"]),
+		Week52Low:       richFloatOrDefault(q["week_52_low"]),
+		LatestUpdate:    richInt64OrZero(q["latest_update"]),
+	}
+	if ts, ok := p["timeseries"].(map[string]any); ok {
+		if series := richStockSeries(ts); len(series) > 1 {
+			out.Timeseries = &engine.RichStockSeries{
+				TimeRange: richStr(ts["time_range"]),
+				Close:     series,
+			}
+		}
+	}
+	return &engine.RichAnswer{Type: "stock", Stock: out}
+}
+
+func richStockSeries(ts map[string]any) [][2]float64 {
+	raw, ok := ts["timeseries"].([]any)
+	if !ok {
+		return nil
+	}
+	out := make([][2]float64, 0, len(raw))
+	for _, r := range raw {
+		m, ok := r.(map[string]any)
+		if !ok {
+			continue
+		}
+		t, tok := richFloat(m["timestamp"])
+		v, vok := richFloat(m["close"])
+		if !tok || !vok {
+			continue
+		}
+		out = append(out, [2]float64{t, v})
+	}
+	return downsampleSeries(out, maxSeriesPoints)
+}
+
+func downsampleSeries(out [][2]float64, maxPoints int) [][2]float64 {
+	if len(out) <= maxPoints {
+		return out
+	}
+	stride := (len(out) + maxPoints - 1) / maxPoints
+	sampled := make([][2]float64, 0, maxPoints)
+	for i := 0; i < len(out); i += stride {
+		sampled = append(sampled, out[i])
+	}
+	return sampled
+}
+
+const maxSeriesPoints = 96
+
 func richPriceSeries(ts map[string]any) [][2]float64 {
 	raw, ok := ts["ts_price"].([]any)
 	if !ok {
@@ -124,16 +235,7 @@ func richPriceSeries(ts map[string]any) [][2]float64 {
 		}
 		out = append(out, [2]float64{t, v})
 	}
-	const maxPoints = 96
-	if len(out) > maxPoints {
-		stride := (len(out) + maxPoints - 1) / maxPoints
-		sampled := make([][2]float64, 0, maxPoints)
-		for i := 0; i < len(out); i += stride {
-			sampled = append(sampled, out[i])
-		}
-		out = sampled
-	}
-	return out
+	return downsampleSeries(out, maxSeriesPoints)
 }
 
 func richStr(v any) string {
@@ -171,4 +273,9 @@ func intVal(v any) (int64, bool) {
 func richFloatOrDefault(v any) float64 {
 	f, _ := richFloat(v)
 	return f
+}
+
+func richInt64OrZero(v any) int64 {
+	i, _ := intVal(v)
+	return i
 }

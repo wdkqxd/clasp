@@ -5,7 +5,7 @@
 	import Stopwatch from './Stopwatch.svelte';
 	import UnitConversion from './UnitConversion.svelte';
 	import Timezones from './Timezones.svelte';
-	import Cryptocurrency from './Cryptocurrency.svelte';
+	import Asset from './Asset.svelte';
 	import Currency from './Currency.svelte';
 	import Unixtimestamp from './Unixtimestamp.svelte';
 	import Expression from './Expression.svelte';
@@ -13,7 +13,7 @@
 
 	let { items, query = '' }: { items: RichAnswer[]; query?: string } = $props();
 
-	const rest = $derived(items.filter((a) => a.type === 'topAnswer' || a.type === 'cryptocurrency'));
+	const rest = $derived(items.filter((a) => a.type === 'topAnswer' || a.type === 'cryptocurrency' || a.type === 'stock'));
 </script>
 
 {#if items.length > 0 || query}
@@ -29,8 +29,8 @@
 		{#each rest as a, i (i)}
 			{#if a.type === 'topAnswer' && a.topAnswer}
 				<TopAnswer topAnswer={a.topAnswer} />
-			{:else if a.type === 'cryptocurrency' && a.cryptocurrency}
-				<Cryptocurrency crypto={a.cryptocurrency} />
+			{:else if (a.type === 'cryptocurrency' || a.type === 'stock') && (a.cryptocurrency || a.stock)}
+				<Asset answer={a} />
 			{/if}
 		{/each}
 	</section>

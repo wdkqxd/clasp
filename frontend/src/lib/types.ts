@@ -35,7 +35,57 @@ export interface RichAnswer {
 	weather?: RichWeather;
 	cryptocurrency?: RichCryptocurrency;
 	currency?: RichCurrency;
+	stock?: RichStock;
 	topAnswer?: RichTopAnswer;
+}
+
+export interface RichStock {
+	asset_info?: RichStockAsset;
+	exchange_info?: RichStockExchange;
+	time_range?: string;
+	quote?: RichStockQuote;
+	timeseries?: RichStockSeries;
+}
+
+export interface RichStockAsset {
+	symbol: string;
+	name: string;
+	category?: string;
+	currency?: string;
+	country?: string;
+	exchange?: string;
+	mic_code?: string;
+}
+
+export interface RichStockExchange {
+	timezone?: string;
+	open_time?: string;
+	close_time?: string;
+}
+
+export interface RichStockQuote {
+	symbol: string;
+	company_name?: string;
+	primary_exchange?: string;
+	currency?: string;
+	latest_price: number;
+	open: number;
+	high: number;
+	low: number;
+	close: number;
+	change: number;
+	change_percent: number;
+	volume: number;
+	market_cap?: number;
+	pe_ratio?: number;
+	week_52_high?: number;
+	week_52_low?: number;
+	latest_update?: number;
+}
+
+export interface RichStockSeries {
+	time_range: string;
+	ts_close?: [number, number][];
 }
 
 export interface RichAnswerBlock {

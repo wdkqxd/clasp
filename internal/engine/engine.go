@@ -52,6 +52,7 @@ type ImageResult struct {
 type RichAnswer struct {
 	Type           string              `json:"type"`
 	Cryptocurrency *RichCryptocurrency `json:"cryptocurrency,omitempty"`
+	Stock          *RichStock          `json:"stock,omitempty"`
 	TopAnswer      *RichTopAnswer      `json:"topAnswer,omitempty"`
 }
 
@@ -94,6 +95,55 @@ type RichCryptoQuote struct {
 type RichCryptoSeries struct {
 	TimeRange string       `json:"time_range"`
 	TsPrice   [][2]float64 `json:"ts_price,omitempty"`
+}
+
+type RichStock struct {
+	AssetInfo    *RichStockAsset    `json:"asset_info,omitempty"`
+	ExchangeInfo *RichStockExchange `json:"exchange_info,omitempty"`
+	TimeRange    string             `json:"time_range"`
+	Quote        *RichStockQuote    `json:"quote,omitempty"`
+	Timeseries   *RichStockSeries   `json:"timeseries,omitempty"`
+}
+
+type RichStockAsset struct {
+	Symbol   string `json:"symbol"`
+	Name     string `json:"name"`
+	Category string `json:"category,omitempty"`
+	Currency string `json:"currency,omitempty"`
+	Country  string `json:"country,omitempty"`
+	Exchange string `json:"exchange,omitempty"`
+	MicCode  string `json:"mic_code,omitempty"`
+}
+
+type RichStockExchange struct {
+	Timezone  string `json:"timezone,omitempty"`
+	OpenTime  string `json:"open_time,omitempty"`
+	CloseTime string `json:"close_time,omitempty"`
+}
+
+type RichStockQuote struct {
+	Symbol          string  `json:"symbol"`
+	CompanyName     string  `json:"company_name,omitempty"`
+	PrimaryExchange string  `json:"primary_exchange,omitempty"`
+	Currency        string  `json:"currency,omitempty"`
+	LatestPrice     float64 `json:"latest_price"`
+	Open            float64 `json:"open"`
+	High            float64 `json:"high"`
+	Low             float64 `json:"low"`
+	Close           float64 `json:"close"`
+	Change          float64 `json:"change"`
+	ChangePercent   float64 `json:"change_percent"`
+	Volume          float64 `json:"volume"`
+	MarketCap       float64 `json:"market_cap,omitempty"`
+	PeRatio         float64 `json:"pe_ratio,omitempty"`
+	Week52High      float64 `json:"week_52_high,omitempty"`
+	Week52Low       float64 `json:"week_52_low,omitempty"`
+	LatestUpdate    int64   `json:"latest_update,omitempty"`
+}
+
+type RichStockSeries struct {
+	TimeRange string       `json:"time_range"`
+	Close     [][2]float64 `json:"ts_close,omitempty"`
 }
 
 type RichMetaURL struct {
