@@ -30,6 +30,16 @@ export interface Discussion {
 	snippet?: string;
 }
 
+export interface HealthResponse {
+	status: string;
+	uptime: string;
+	build?: {
+		version: string;
+		commit: string;
+		branch: string;
+	};
+}
+
 export interface RichAnswer {
 	type: string;
 	cryptocurrency?: RichCryptocurrency;

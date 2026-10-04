@@ -2,7 +2,18 @@ import type { SearchResponse } from './types';
 import type { WikipediaArticle } from './types';
 import type { ImageSearchResponse } from './types';
 import type { SuggestResponse } from './types';
+import type { HealthResponse } from './types';
 import type { SearchEngine } from './components/settings/searchSettings.svelte';
+
+export async function health(): Promise<HealthResponse | null> {
+	try {
+		const res = await fetch('/api/healthz');
+		if (!res.ok) return null;
+		return res.json();
+	} catch {
+		return null;
+	}
+}
 
 export async function search(
 	query: string,
