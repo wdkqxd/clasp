@@ -17,7 +17,7 @@
 </script>
 
 {#if items.length > 0 || query}
-	<section class="mb-0 space-y-5 border-[#262626] has-[>div]:mb-10 has-[>section]:mb-10">
+	<section class="mb-0 space-y-5 border-[#262626] has-[>div]:mb-8 has-[>section]:mb-8">
 		<Currency {query} />
 		<Weather {query} />
 		<Timer {query} />
