@@ -84,7 +84,7 @@ func main() {
 }
 
 func serveStatic(w http.ResponseWriter, r *http.Request) {
-	staticDir := "frontend/build"
+	staticDir := staticDir()
 
 	if r.URL.Path == "/" {
 		http.ServeFile(w, r, staticDir+"/200.html")
@@ -107,4 +107,11 @@ func serveStatic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.ServeFile(w, r, staticDir+"/200.html")
+}
+
+func staticDir() string {
+	if dir := os.Getenv("STATIC_DIR"); dir != "" {
+		return dir
+	}
+	return "frontend/build"
 }
