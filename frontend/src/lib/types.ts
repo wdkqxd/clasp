@@ -32,9 +32,7 @@ export interface Discussion {
 
 export interface RichAnswer {
 	type: string;
-	weather?: RichWeather;
 	cryptocurrency?: RichCryptocurrency;
-	currency?: RichCurrency;
 	stock?: RichStock;
 	topAnswer?: RichTopAnswer;
 }
