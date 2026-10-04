@@ -25,6 +25,13 @@ export async function checkBang(q: string): Promise<string | undefined> {
 	if (!parsed) return;
 	const url = (await load())[parsed.trigger];
 	if (!url) return;
+	if (!parsed.rest) {
+		try {
+			return new URL(url).origin;
+		} catch {
+			return url;
+		}
+	}
 	return url.replace('%s', encodeURIComponent(parsed.rest));
 }
 
