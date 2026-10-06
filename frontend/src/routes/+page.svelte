@@ -15,7 +15,7 @@
 	<title>clasp</title>
 </svelte:head>
 
-<div class="relative flex min-h-screen flex-col px-4">
+<div class="relative flex min-h-screen flex-col overflow-hidden px-4">
 	<div class="flex flex-1 items-center justify-center">
 		<div class="w-full max-w-xl">
 			<div class="mb-8 flex justify-center">
@@ -26,9 +26,9 @@
 	</div>
 
 	<footer
-		class="flex items-center justify-center gap-5 pb-6 text-[13px] text-[#707070] transition-opacity duration-200 ease-out {query.trim()
-			? 'pointer-events-none opacity-0'
-			: 'opacity-100'}"
+		class="flex items-center justify-center gap-5 pb-6 text-[13px] text-[#707070] transition-transform duration-[160ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] {query.trim()
+			? 'pointer-events-none translate-y-full'
+			: 'translate-y-0'}"
 		aria-hidden={query.trim().length > 0}
 	>
 		<a href="/settings" tabindex={query.trim() ? -1 : 0} class="transition-colors hover:text-[#c0c0c0]">settings</a>
