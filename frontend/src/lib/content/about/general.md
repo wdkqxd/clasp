@@ -1,5 +1,5 @@
 ---
-title: general
+title: about
 ---
 
 ## what it does
@@ -12,4 +12,4 @@ there is no database and no user account. the whole thing is one go binary that 
 
 ## source
 
-the code is open and nobody in particular maintains it. fork it, change it, run it yourself. issues and pull requests are welcome on [github](https://github.com/wdkqxd/clasp).
+the code is s open source and distributed under the AGPL-3.0 license. fork it, change it, run it yourself. issues and pull requests are welcome on [github](https://github.com/wdkqxd/clasp).
