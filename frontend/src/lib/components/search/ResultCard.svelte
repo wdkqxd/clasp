@@ -76,7 +76,10 @@ function cleanSnippet(s: string): string {
 			{/if}
 			{displayURL(result.url)}
 		</div>
-		<h2 class="text-[15px] text-[#c0c0c0] font-normal leading-snug mb-1.5 transition-colors">
+		<h2
+			class="truncate text-[16.5px] text-[#c0c0c0] font-normal leading-snug mb-1.5 transition-colors"
+			title={result.title}
+		>
 			{result.title}
 		</h2>
 		<p class="text-[13px] text-[#707070] leading-relaxed">{cleanSnippet(result.snippet)}</p>
