@@ -1,5 +1,5 @@
-import type { EngineStatus } from './types';
 import { getSearchSettings, type SearchEngine } from './components/settings/searchSettings.svelte';
+import type { EngineStatus } from './types';
 
 interface BaseResponse {
 	took_ms: number;

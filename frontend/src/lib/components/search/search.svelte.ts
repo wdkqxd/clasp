@@ -1,7 +1,7 @@
 import { search as apiSearch } from '../../api';
 import { BaseSearchState } from '../../baseSearchState.svelte';
-import type { SearchEngine } from '../settings/searchSettings.svelte';
 import type { SearchResponse, SearchResult } from '../../types';
+import type { SearchEngine } from '../settings/searchSettings.svelte';
 
 export const PAGE_SIZE = 10;
 

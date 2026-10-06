@@ -94,7 +94,9 @@ function domainOf(host: string): string {
 }
 
 function nameOf(host: string): string {
-	const label = domainOf(host).split('.')[0].replace(/^www[-_]/, '');
+	const label = domainOf(host)
+		.split('.')[0]
+		.replace(/^www[-_]/, '');
 	if (!label) return 'bang';
 	return label.charAt(0).toUpperCase() + label.slice(1).replace(/[-_]+/g, ' ');
 }
@@ -122,7 +124,7 @@ async function buildIndex(): Promise<BangEntry[]> {
 						url,
 						host,
 						name: nameOf(host),
-						triggers: [key]
+						triggers: [key],
 					};
 					byDomain.set(domain, entry);
 					byTrigger.set(key, entry);
@@ -146,7 +148,7 @@ export async function resolveBang(q: string): Promise<BangMatch | null> {
 		trigger: parsed.trigger,
 		name: entry.name,
 		url: entry.url,
-		host: entry.host
+		host: entry.host,
 	};
 }
 
@@ -173,7 +175,7 @@ const FEATURED_TRIGGERS = [
 	'reddit',
 	'pin',
 	'ste',
-	'lb'
+	'lb',
 ];
 
 export async function featuredBangs(limit = 8): Promise<BangMatch[]> {

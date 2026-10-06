@@ -2,8 +2,8 @@
   "private": true,
   "type": "module",
   "nodeModulesDir": "auto",
-
   "imports": {
+    "@biomejs/biome": "npm:@biomejs/biome@^2.5.15",
     "@lucide/svelte": "npm:@lucide/svelte@^1.49.0",
     "@sveltejs/adapter-auto": "npm:@sveltejs/adapter-auto@^7.0.1",
     "@sveltejs/adapter-static": "npm:@sveltejs/adapter-static@^3.0.10",
@@ -20,13 +20,14 @@
     "typescript": "npm:typescript@^6.0.3",
     "vite": "npm:vite@^8.0.16"
   },
-
   "tasks": {
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "lint": "biome check src",
+    "lint:fix": "biome check --write src"
   }
 }

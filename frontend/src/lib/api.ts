@@ -1,9 +1,11 @@
-import type { SearchResponse } from './types';
-import type { WikipediaArticle } from './types';
-import type { ImageSearchResponse } from './types';
-import type { SuggestResponse } from './types';
-import type { HealthResponse } from './types';
 import type { SearchEngine } from './components/settings/searchSettings.svelte';
+import type {
+	HealthResponse,
+	ImageSearchResponse,
+	SearchResponse,
+	SuggestResponse,
+	WikipediaArticle,
+} from './types';
 
 export async function health(): Promise<HealthResponse | null> {
 	try {
@@ -37,8 +39,13 @@ export async function suggest(query: string, engine: string): Promise<SuggestRes
 	return res.json();
 }
 
-export async function wikipedia(query: string, language = 'auto'): Promise<WikipediaArticle | null> {
-	const res = await fetch(`/api/wikipedia?q=${encodeURIComponent(query)}&lang=${encodeURIComponent(language)}`);
+export async function wikipedia(
+	query: string,
+	language = 'auto'
+): Promise<WikipediaArticle | null> {
+	const res = await fetch(
+		`/api/wikipedia?q=${encodeURIComponent(query)}&lang=${encodeURIComponent(language)}`
+	);
 	if (res.status === 404) return null;
 	if (!res.ok) throw new Error(`HTTP ${res.status}`);
 	return res.json();

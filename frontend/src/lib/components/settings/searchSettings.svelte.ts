@@ -6,14 +6,14 @@ export type SearchEngine = (typeof SEARCH_ENGINES)[number];
 export const ENGINE_API_NAMES: Record<SearchEngine, string> = {
 	Brave: 'brave',
 	DuckDuckGo: 'ddg',
-	Startpage: 'startpage'
+	Startpage: 'startpage',
 };
 
 export const AUTOCOMPLETE_PROVIDERS = [
 	{ value: 'kagi', label: 'kagi' },
 	{ value: 'ddg', label: 'duckduckgo' },
 	{ value: 'brave', label: 'brave' },
-	{ value: 'startpage', label: 'startpage' }
+	{ value: 'startpage', label: 'startpage' },
 ] as const;
 
 export type AutocompleteProvider = (typeof AUTOCOMPLETE_PROVIDERS)[number]['value'];

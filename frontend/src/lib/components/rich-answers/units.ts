@@ -18,7 +18,7 @@ const UNIT_ALIASES: Record<string, string> = {
 	fahrenheit: 'degF',
 	'°f': 'degF',
 	k: 'K',
-	kelvin: 'K'
+	kelvin: 'K',
 };
 
 const UNIT_LABELS: Record<string, string> = {
@@ -28,7 +28,7 @@ const UNIT_LABELS: Record<string, string> = {
 	'mi/h': 'mph',
 	'km/h': 'km/h',
 	day: 'day',
-	week: 'week'
+	week: 'week',
 };
 
 function unitName(unit: string): string | null {
@@ -69,14 +69,15 @@ export function parseConversion(query: string): {
 		from_unit: from,
 		to_unit: to,
 		from_label: UNIT_LABELS[from] ?? match[2].trim(),
-		to_label: UNIT_LABELS[to] ?? match[3].trim()
+		to_label: UNIT_LABELS[to] ?? match[3].trim(),
 	};
 }
 
 export function convertUnit(amount: number, from: string, to: string): string {
 	const result = new math.Unit(amount, from).toNumber(to);
 	if (!Number.isFinite(result)) return String(amount);
-	if (Math.abs(result) >= 1000) return result.toLocaleString(undefined, { maximumFractionDigits: 2 });
+	if (Math.abs(result) >= 1000)
+		return result.toLocaleString(undefined, { maximumFractionDigits: 2 });
 	if (Math.abs(result) >= 1) return result.toFixed(4).replace(/\.?0+$/, '');
 	return String(Number.parseFloat(result.toPrecision(4)));
 }

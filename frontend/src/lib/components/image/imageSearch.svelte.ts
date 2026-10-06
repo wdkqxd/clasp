@@ -1,7 +1,7 @@
 import { imageSearch } from '../../api';
 import { BaseSearchState } from '../../baseSearchState.svelte';
+import type { ImageResult, ImageSearchResponse } from '../../types';
 import type { SearchEngine } from '../settings/searchSettings.svelte';
-import type { ImageSearchResponse, ImageResult } from '../../types';
 
 export const IMAGE_PAGE_SIZE = 90;
 

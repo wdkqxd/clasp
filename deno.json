@@ -5,6 +5,8 @@
     "dev:frontend": "cd frontend && deno task dev",
     "build": "cd frontend && deno task build",
     "start": "go run .",
-    "check": "cd frontend && deno task check"
+    "check": "cd frontend && deno task check",
+    "lint": "cd frontend && deno task lint",
+    "lint:fix": "cd frontend && deno task lint:fix"
   }
 }

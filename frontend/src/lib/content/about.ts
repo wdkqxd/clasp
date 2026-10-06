@@ -3,7 +3,7 @@ import { marked } from 'marked';
 const sources = import.meta.glob('./about/*.md', {
 	query: '?raw',
 	import: 'default',
-	eager: true
+	eager: true,
 }) as Record<string, string>;
 
 export type AboutDoc = {

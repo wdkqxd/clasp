@@ -1,5 +1,12 @@
 export function sym(code: string): string {
-	const map: Record<string, string> = { usd: '$', eur: '€', gbp: '£', rub: '₽', jpy: '¥', cny: '¥' };
+	const map: Record<string, string> = {
+		usd: '$',
+		eur: '€',
+		gbp: '£',
+		rub: '₽',
+		jpy: '¥',
+		cny: '¥',
+	};
 	return map[code.toLowerCase()] ?? '';
 }
 

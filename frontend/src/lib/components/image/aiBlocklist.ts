@@ -9,7 +9,7 @@ const triggers = [
 	'ai generated',
 	'ai-generated',
 	'ai art',
-  'stable diffusion',
+	'stable diffusion',
 	'midjourney',
 	'dall-e',
 	'dalle',
@@ -117,7 +117,7 @@ function hasAITitle(title: string): boolean {
 function matchesRules(url: string, hostname: string): boolean {
 	const lowerUrl = url.toLowerCase();
 	const lowerHost = hostname.toLowerCase();
-	for (const { kind, rx } of rules!) {
+	for (const { kind, rx } of rules ?? []) {
 		if (kind === 'plain') {
 			const t = rx as string;
 			if (lowerUrl.includes(t) || lowerHost.includes(t)) return true;
@@ -133,7 +133,11 @@ export async function initBlocklist(): Promise<void> {
 	rules = await fetchRules();
 }
 
-export function shouldBlockImage(img: { url?: string; title?: string; hostname?: string }): boolean {
+export function shouldBlockImage(img: {
+	url?: string;
+	title?: string;
+	hostname?: string;
+}): boolean {
 	if (!rules) return false;
 
 	const hostname = img.hostname || '';
