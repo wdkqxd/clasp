@@ -54,12 +54,10 @@
 
 	let bang = $state<BangMatch | null>(null);
 	let parsed = $derived(parseBang(value));
-	let spaced = $derived(/^!\S+\s/.test(value.trimStart()));
-	let chip = $derived(
-		bang && spaced && parsed && parsed.trigger === bang.trigger ? bang : null
-	);
+	let chip = $derived(bang && parsed?.settled && parsed.trigger === bang.trigger ? bang : null);
 	let rest = $derived(chip && parsed ? parsed.rest : value);
-	let bangMode = $derived(!chip && value.trim().startsWith('!'));
+	let bangTerm = $derived(bangTermOf(value));
+	let bangMode = $derived(bangTerm !== null);
 	let itemCount = $derived(bangResults.length || suggestions.length);
 
 	let showSuggestions = $derived(focused && suggestionsOpen && itemCount > 0);
@@ -82,13 +80,14 @@
 		if (!focused) return;
 
 		if (bangMode) {
+			const term = bangTerm ?? '';
 			const timer = setTimeout(() => {
-				void loadBangs(query.slice(1).split(/\s/)[0]);
+				void loadBangs(term);
 			}, DEBOUNCE_MS);
 			return () => clearTimeout(timer);
 		}
 
-		const text = chip ? rest.trim() : query;
+		const text = (chip ? rest.trim() : query).replace(/\s*!$/, '');
 		if (!text) {
 			closeSuggestions();
 			return;
@@ -140,12 +139,27 @@
 
 	function onInput(event: Event) {
 		const text = (event.currentTarget as HTMLInputElement).value;
-		value = chip && text ? `!${chip.trigger} ${text}` : chip ? `!${chip.trigger}` : text;
+		if (!chip || !parsed) {
+			value = text;
+			return;
+		}
+		const at = Math.min(parsed.index, text.length);
+		const gap = at > 0 && !/\s$/.test(text) ? ' ' : '';
+		value = `${text.slice(0, at)}${gap}!${chip.trigger} ${text.slice(at)}`;
+	}
+
+	function bangTermOf(text: string): string | null {
+		const parts = text.trimStart().split(/\s+/);
+		const last = parts[parts.length - 1] ?? '';
+		if (!last.startsWith('!')) return null;
+		const term = last.slice(1);
+		if (!term && parts.length > 1) return null;
+		return term;
 	}
 
 	function clearBang() {
-		if (!chip) return;
-		value = `!${chip.trigger}`;
+		if (!chip || !parsed) return;
+		value = parsed.index === 0 ? `!${chip.trigger}` : parsed.rest;
 		closeSuggestions();
 		input?.focus();
 	}
@@ -159,8 +173,10 @@
 	}
 
 	function pickBang(target: BangMatch) {
-		const tail = value.trim().slice(1).replace(/^\S*/, '').trim();
-		value = `!${target.trigger} ${tail}`;
+		const text = value.trimStart();
+		const cut = text.lastIndexOf(' ');
+		const head = cut >= 0 ? text.slice(0, cut + 1) : '';
+		value = `${head}!${target.trigger} `;
 		closeSuggestions();
 		input?.focus();
 	}

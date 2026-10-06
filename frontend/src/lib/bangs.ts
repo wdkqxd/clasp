@@ -48,10 +48,29 @@ export async function openBangOr(
 	navigate(href);
 }
 
-export function parseBang(q: string): { trigger: string; rest: string } | null {
-	const m = /^!(\S+)\s*(.*)$/.exec(q.trim());
+const RE_BANG = /(^|\s)!([^\s!]+)/;
+
+export type ParsedBang = {
+	trigger: string;
+	rest: string;
+	index: number;
+	settled: boolean;
+};
+
+export function parseBang(q: string): ParsedBang | null {
+	const text = q.trimStart();
+	const m = RE_BANG.exec(text);
 	if (!m) return null;
-	return { trigger: m[1].toLowerCase(), rest: m[2] };
+	const end = m.index + m[0].length;
+	const rest = `${text.slice(0, m.index)} ${text.slice(end)}`
+		.replace(/\s+/g, ' ')
+		.trim();
+	return {
+		trigger: m[2].toLowerCase(),
+		rest,
+		index: m.index,
+		settled: /\s/.test(text.slice(end, end + 1)),
+	};
 }
 
 export type BangMatch = {
