@@ -59,7 +59,7 @@
 				onclick={onprev}
 				aria-label="Previous image"
 			>
-				<span class="icon"><ChevronLeft /></span>
+				<ChevronLeft class="size-4" />
 			</button>
 			<button
 				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-100 cursor-pointer disabled:opacity-30"
@@ -67,14 +67,14 @@
 				onclick={onnext}
 				aria-label="Next image"
 			>
-				<span class="icon"><ChevronRight /></span>
+				<ChevronRight class="size-4" />
 			</button>
 			<button
 				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-100 cursor-pointer"
 				onclick={onclose}
 				aria-label="Close detail panel"
 			>
-				<span class="icon"><X /></span>
+				<X class="size-4" />
 			</button>
 		</div>
 	</div>
@@ -127,7 +127,7 @@
 				class="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#262626] bg-[#1e1e1e] px-3 py-1.5 text-[12px] text-[#d0d0d0] no-underline transition-colors duration-150 ease-out hover:bg-[#262626] hover:text-[#e0e0e0] active:scale-[0.97]"
 			>
 				view source
-				<span class="icon h-3.5 w-3.5"><ArrowUpRight /></span>
+				<ArrowUpRight class="size-3.5" />
 			</a>
 		</div>
 	</div>

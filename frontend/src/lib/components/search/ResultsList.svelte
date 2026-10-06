@@ -26,7 +26,7 @@
 </script>
 
 {#if feed.loading}
-	<div class="fade-out">
+	<div class="animate-fade-in">
 		<SkeletonResults />
 	</div>
 {:else if feed.error && feed.items.length === 0}
@@ -39,7 +39,7 @@
 			{#if discussions.length > 0 && i === PAGE_SIZE - 1}
 				<Discussions items={discussions} />
 			{/if}
-			<div class="result-item" style="--i:{Math.min(baseIndex + i, 10)}">
+			<div class="animate-result-in" style="animation-delay:{Math.min(baseIndex + i, 10) * 28}ms">
 				<ResultCard result={r} />
 			</div>
 		{/each}
@@ -51,18 +51,7 @@
 
 {#if feed.loadingMore}
 	<div class="flex justify-center py-4">
-		<span class="inline-block w-7 h-7 spin text-[#5c5c5c]"><Loader /></span>
+		<span class="inline-block animate-spin text-[#5c5c5c]"><Loader size={28} /></span>
 	</div>
 {/if}
 <div bind:this={sentinel} class="h-5"></div>
-
-<style>
-	.fade-out {
-		animation: fadeOutIn 0.2s ease-out;
-	}
-
-	@keyframes fadeOutIn {
-		from { opacity: 0; }
-		to { opacity: 1; }
-	}
-</style>

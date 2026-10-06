@@ -163,7 +163,7 @@
 
 			{#if imageFeed.loadingMore}
 				<div class="flex justify-center py-4">
-					<span class="inline-block w-7 h-7 spin text-[#5c5c5c]"><Loader /></span>
+					<span class="inline-block animate-spin text-[#5c5c5c]"><Loader size={28} /></span>
 				</div>
 			{/if}
 			<div bind:this={imageSentinel}></div>
@@ -200,7 +200,7 @@
 						<ResultsList feed={feed} baseIndex={2} discussions={discussions} />
 					</section>
 					{#if wikipediaAnswer && !feed.loading}
-						<aside class="result-item order-first mt-0 mb-12 w-full min-w-0 md:absolute md:left-[calc(100%+3rem)] md:top-0 md:order-none md:mb-0 md:mt-0 md:w-[320px]" style="--i:1">
+						<aside class="animate-result-in order-first mt-0 mb-12 w-full min-w-0 md:absolute md:left-[calc(100%+3rem)] md:top-0 md:order-none md:mb-0 md:mt-0 md:w-[320px]" style="animation-delay:28ms">
 							<Infobox article={wikipediaAnswer} />
 						</aside>
 					{/if}

@@ -64,7 +64,9 @@
 					class="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left outline-none"
 				>
 					<span class="min-w-0 flex-1 text-[15px] leading-snug text-[#c0c0c0]">{d.title}</span>
-					<span class="icon shrink-0 text-[#5c5c5c] transition-transform duration-200 disc-chevron"><ChevronDown /></span>
+					<span class="shrink-0 transition-transform duration-200 disc-chevron"
+						><ChevronDown class="size-4 text-[#5c5c5c]" /></span
+					>
 				</button>
 
 				<div class="disc-body">

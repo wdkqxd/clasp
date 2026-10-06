@@ -4,7 +4,7 @@
 
 <div class="space-y-8">
 	{#each Array(count) as _, i (i)}
-		<article class="result group">
+		<article>
 			<div class="mb-1.5"><div class="skeleton" style="width:140px;height:12px"></div></div>
 			<div class="mb-1.5"><div class="skeleton" style="width:70%;height:15px"></div></div>
 			<div class="mb-1"><div class="skeleton" style="height:13px"></div></div>

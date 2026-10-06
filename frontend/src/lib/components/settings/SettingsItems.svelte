@@ -37,9 +37,7 @@
 					<option value={f.value}>{f.label}</option>
 				{/each}
 			</select>
-			<span class="pointer-events-none absolute right-0 icon icon-sm text-[#5c5c5c]">
-				<ChevronDown />
-			</span>
+			<ChevronDown class="pointer-events-none absolute right-0 size-3.5 text-[#5c5c5c]" />
 		</div>
 	</div>
 
@@ -66,9 +64,7 @@
 						<option value={provider.value}>{provider.label}</option>
 					{/each}
 				</select>
-				<span class="pointer-events-none absolute right-0 icon icon-sm text-[#5c5c5c]">
-					<ChevronDown />
-				</span>
+				<ChevronDown class="pointer-events-none absolute right-0 size-3.5 text-[#5c5c5c]" />
 			</div>
 		</div>
 

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { Check, Copy } from '@lucide/svelte';
 
-	let { active, size = 'h-4 w-4' }: { active: boolean; size?: string } = $props();
+	let { active, size = 16 }: { active: boolean; size?: number } = $props();
+
+	const cls = 'shrink-0 text-[#5c5c5c] opacity-0 transition-opacity group-hover:opacity-70';
 </script>
 
-<span class="icon shrink-0 text-[#5c5c5c] opacity-0 transition-opacity group-hover:opacity-70 {size}">
-	{#if active}
-		<Check />
-	{:else}
-		<Copy />
-	{/if}
-</span>
+{#if active}
+	<Check {size} class={cls} />
+{:else}
+	<Copy {size} class={cls} />
+{/if}

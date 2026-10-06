@@ -81,7 +81,7 @@
 					: 'text-[#4a4a4a] hover:text-[#6a6a6a]'} transition-colors"
 				onclick={tab === 'Video' ? (e) => e.preventDefault() : undefined}
 			>
-				<span class="icon"><Icon /></span>
+				<Icon class="size-4" />
 				{tab}
 			</a>
 		{/each}
@@ -100,7 +100,7 @@
 			onclick={() => (settingsOpen = !settingsOpen)}
 			class="inline-flex items-center text-[#4a4a4a] hover:text-[#9a9a9a] transition-colors {settingsOpen ? 'text-[#9a9a9a]' : ''}"
 		>
-			<span class="icon icon-sm translate-y-[2px]"><Settings2 /></span>
+			<Settings2 class="size-3.5 translate-y-[2px]" />
 		</button>
 
 			<div

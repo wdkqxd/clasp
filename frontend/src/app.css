@@ -56,6 +56,27 @@
 	--color-base-800: #1e1e1e;
 	--color-base-700: #262626;
 	--color-base-600: #2e2e2e;
+
+	--animate-shimmer: shimmer 1.4s infinite;
+	--animate-result-in: result-in 0.26s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+	--animate-fade-in: fade-in 0.2s ease-out;
+
+	@keyframes shimmer {
+		100% {
+			transform: translateX(100%);
+		}
+	}
+	@keyframes result-in {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+	}
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+		}
+	}
 }
 
 body {
@@ -66,24 +87,6 @@ body {
 
 input::placeholder {
 	color: #5c5c5c;
-}
-
-.result a:hover h2 {
-	text-decoration: underline;
-	text-underline-offset: 3px;
-}
-
-.result a:visited h2 {
-	color: #83709f;
-}
-
-.sitelink:hover {
-	text-decoration: underline;
-	text-underline-offset: 3px;
-}
-
-.sitelink:visited {
-	color: #83709f;
 }
 
 .skeleton {
@@ -98,52 +101,9 @@ input::placeholder {
 	inset: 0;
 	transform: translateX(-100%);
 	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-	animation: shimmer 1.4s infinite;
-}
-@keyframes shimmer {
-	100% {
-		transform: translateX(100%);
-	}
+	animation: var(--animate-shimmer);
 }
 
-.spin {
-	animation: spin 0.9s linear infinite;
-}
-.result-item {
-	animation: resultSlideIn 0.26s cubic-bezier(0.23, 1, 0.32, 1) backwards;
-	animation-delay: calc(var(--i) * 28ms);
-}
-@keyframes resultSlideIn {
-	from {
-		opacity: 0;
-		transform: translateY(6px);
-	}
-}
-.spin svg {
-	display: block;
-	width: 100%;
-	height: 100%;
-}
-
-.icon {
-	display: inline-block;
-	width: 1rem;
-	height: 1rem;
-}
-.icon-sm {
-	width: 0.9rem;
-	height: 0.9rem;
-}
-.icon svg {
-	display: block;
-	width: 100%;
-	height: 100%;
-}
-@keyframes spin {
-	100% {
-		transform: rotate(360deg);
-	}
-}
 ::view-transition-group(root) {
 	animation-duration: 220ms;
 	animation-timing-function: ease;
