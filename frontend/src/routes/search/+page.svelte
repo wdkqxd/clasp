@@ -147,7 +147,7 @@
 
 {#if activeTab === 'Images'}
 	<div class="min-h-screen" class:pr-[420px]={sidebarOpen}>
-		<div class="w-full max-w-3xl pl-4 sm:pl-8 md:pl-16 lg:pl-28 xl:pl-44 pr-4 sm:pr-6 pt-8 sm:pt-10">
+		<div class="w-full max-w-3xl pl-4 sm:pl-8 md:pl-16 lg:pl-28 xl:pl-44 pr-4 sm:pr-6 pt-4 sm:pt-6">
 			<SearchHeader feed={imageFeed} active={activeTab} {onSearch} placeholder={searchPlaceholder} />
 		</div>
 
@@ -186,7 +186,7 @@
 	</div>
 {:else}
 	<div
-		class="w-full max-w-3xl pl-4 sm:pl-8 md:pl-16 lg:pl-28 xl:pl-44 pr-4 sm:pr-6 pt-8 sm:pt-10"
+		class="w-full max-w-3xl pl-4 sm:pl-8 md:pl-16 lg:pl-28 xl:pl-44 pr-4 sm:pr-6 pt-4 sm:pt-6"
 	>
 		<SearchHeader feed={feed} active={activeTab} {onSearch} placeholder={searchPlaceholder} />
 
