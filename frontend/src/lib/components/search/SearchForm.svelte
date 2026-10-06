@@ -251,9 +251,7 @@
 
 <form onsubmit={submit} class="relative w-full">
 	<div
-		class="flex items-center gap-2.5 rounded-md border border-[#242424] bg-[#121212] pl-3 transition-colors duration-200 ease-out focus-within:border-[#3d3d3d] {hasQuery
-			? 'pr-1.5'
-			: 'pr-3'}"
+		class="flex items-center gap-2.5 rounded-md border border-[#242424] bg-[#121212] pl-3 pr-1.5 transition-colors duration-200 ease-out focus-within:border-[#3d3d3d]"
 	>
 		<Search size={16} class="shrink-0 text-[#454545]" />
 		{#if chip}
