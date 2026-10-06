@@ -85,7 +85,7 @@
 			<img
 				src={image.thumbnail}
 				alt={image.title}
-				class="w-full max-h-[70vh] object-contain rounded"
+				class="w-full max-h-[70vh] object-contain rounded-md"
 			/>
 		</div>
 
