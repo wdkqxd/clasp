@@ -44,7 +44,6 @@ export interface RichAnswer {
 	type: string;
 	cryptocurrency?: RichCryptocurrency;
 	stock?: RichStock;
-	topAnswer?: RichTopAnswer;
 }
 
 export interface RichStock {
@@ -94,27 +93,6 @@ export interface RichStockQuote {
 export interface RichStockSeries {
 	time_range: string;
 	ts_close?: [number, number][];
-}
-
-export interface RichAnswerBlock {
-	kind: string;
-	text?: string;
-	items?: string[];
-}
-
-export interface RichTopAnswer {
-	question: string;
-	blocks?: RichAnswerBlock[];
-	author?: string;
-	upvotes?: number;
-	title?: string;
-	url: string;
-	meta_url?: RichMetaURL;
-}
-
-export interface RichMetaURL {
-	hostname?: string;
-	favicon?: string;
 }
 
 export interface RichWeatherCurrent {

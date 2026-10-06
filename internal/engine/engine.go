@@ -53,23 +53,6 @@ type RichAnswer struct {
 	Type           string              `json:"type"`
 	Cryptocurrency *RichCryptocurrency `json:"cryptocurrency,omitempty"`
 	Stock          *RichStock          `json:"stock,omitempty"`
-	TopAnswer      *RichTopAnswer      `json:"topAnswer,omitempty"`
-}
-
-type RichTopAnswer struct {
-	Question string            `json:"question"`
-	Blocks   []RichAnswerBlock `json:"blocks"`
-	Author   string            `json:"author,omitempty"`
-	Upvotes  int               `json:"upvotes,omitempty"`
-	Title    string            `json:"title,omitempty"`
-	URL      string            `json:"url"`
-	MetaURL  *RichMetaURL      `json:"meta_url,omitempty"`
-}
-
-type RichAnswerBlock struct {
-	Kind  string   `json:"kind"`
-	Text  string   `json:"text,omitempty"`
-	Items []string `json:"items,omitempty"`
 }
 
 type RichCryptocurrency struct {
@@ -144,11 +127,6 @@ type RichStockQuote struct {
 type RichStockSeries struct {
 	TimeRange string       `json:"time_range"`
 	Close     [][2]float64 `json:"ts_close,omitempty"`
-}
-
-type RichMetaURL struct {
-	Hostname string `json:"hostname,omitempty"`
-	Favicon  string `json:"favicon,omitempty"`
 }
 
 type SearchResult struct {
