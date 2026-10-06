@@ -147,8 +147,10 @@
 
 {#if activeTab === 'Images'}
 	<div class="min-h-screen" class:pr-[420px]={sidebarOpen}>
-		<div class="w-full max-w-3xl pl-4 sm:pl-8 md:pl-16 lg:pl-28 xl:pl-44 pr-4 sm:pr-6 pt-4 sm:pt-6">
-			<SearchHeader feed={imageFeed} active={activeTab} {onSearch} placeholder={searchPlaceholder} />
+		<div class="w-full pl-4 pr-4 sm:pl-8 sm:pr-6 md:pl-16 lg:pl-28 xl:pl-44 pt-4 sm:pt-6">
+			<div class="w-full max-w-[600px]">
+				<SearchHeader feed={imageFeed} active={activeTab} {onSearch} placeholder={searchPlaceholder} />
+			</div>
 		</div>
 
 		<div class="w-full px-4 sm:px-6">
@@ -185,25 +187,25 @@
 		{/if}
 	</div>
 {:else}
-	<div
-		class="w-full max-w-3xl pl-4 sm:pl-8 md:pl-16 lg:pl-28 xl:pl-44 pr-4 sm:pr-6 pt-4 sm:pt-6"
-	>
-		<SearchHeader feed={feed} active={activeTab} {onSearch} placeholder={searchPlaceholder} />
+	<div class="w-full pl-4 pr-4 sm:pl-8 sm:pr-6 md:pl-16 lg:pl-28 xl:pl-44 pt-4 sm:pt-6">
+		<div class="w-full max-w-[600px]">
+			<SearchHeader feed={feed} active={activeTab} {onSearch} placeholder={searchPlaceholder} />
 
-		<main class="space-y-12">
-			<div class="relative flex flex-col md:block">
-				<section class="order-last min-w-0 md:order-none">
-					<div>
-						<Answers items={rich} query={submittedQuery} />
-					</div>
-					<ResultsList feed={feed} baseIndex={2} discussions={discussions} />
-				</section>
-				{#if wikipediaAnswer && !feed.loading}
-					<aside class="result-item order-first mt-0 mb-12 w-full min-w-0 md:absolute md:left-[calc(100%+3rem)] md:top-0 md:order-none md:mb-0 md:mt-0 md:w-[320px]" style="--i:1">
-						<Infobox article={wikipediaAnswer} />
-					</aside>
-				{/if}
-			</div>
-		</main>
+			<main class="space-y-12">
+				<div class="relative flex flex-col md:block">
+					<section class="order-last min-w-0 md:order-none">
+						<div>
+							<Answers items={rich} query={submittedQuery} />
+						</div>
+						<ResultsList feed={feed} baseIndex={2} discussions={discussions} />
+					</section>
+					{#if wikipediaAnswer && !feed.loading}
+						<aside class="result-item order-first mt-0 mb-12 w-full min-w-0 md:absolute md:left-[calc(100%+3rem)] md:top-0 md:order-none md:mb-0 md:mt-0 md:w-[320px]" style="--i:1">
+							<Infobox article={wikipediaAnswer} />
+						</aside>
+					{/if}
+				</div>
+			</main>
+		</div>
 	</div>
 {/if}
