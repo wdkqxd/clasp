@@ -7,6 +7,7 @@
 	import { getSearchSettings } from '../settings/searchSettings.svelte';
 
 	type ArrowTransition = { duration?: number };
+	type BadgeTransition = { duration?: number };
 
 	function arrowIn(node: Element, { duration = 190 }: ArrowTransition = {}) {
 		return {
@@ -23,6 +24,17 @@
 			easing: cubicOut,
 			css: (t: number) =>
 				`opacity: ${t}; filter: blur(${(1 - t) * 4}px); transform: scale(${0.35 + 0.65 * t});`
+		};
+	}
+
+	function badgeIn(node: Element, { duration = 200 }: BadgeTransition = {}) {
+		return {
+			duration,
+			easing: cubicOut,
+			css: (t: number) => {
+				const scale = 0.88 + 0.12 * t + Math.sin(t * Math.PI) * 0.05;
+				return `opacity: ${t}; transform: scale(${scale});`;
+			}
 		};
 	}
 
@@ -272,7 +284,8 @@
 		<Search size={16} class="shrink-0 text-[#454545]" />
 		{#if chip}
 			<span
-				class="flex shrink-0 items-center gap-1.5 rounded-sm bg-[#1e1e1e] py-1 pl-1 pr-1.5 text-[12px] leading-none text-[#c0c0c0]"
+				in:badgeIn
+				class="flex shrink-0 origin-left items-center gap-1.5 rounded-sm bg-[#1e1e1e] py-1 pl-1 pr-1.5 text-[12px] leading-none text-[#c0c0c0]"
 			>
 				<img
 					src={bangIcon(chip.host)}
