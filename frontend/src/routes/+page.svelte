@@ -4,6 +4,8 @@
 	import SearchForm from '$lib/components/search/SearchForm.svelte';
 	import logo from '$lib/assets/logo.svg';
 
+	let query = $state('');
+
 	function onSearch(q: string) {
 		openBangOr(q, `/search?q=${encodeURIComponent(q)}`, goto);
 	}
@@ -19,13 +21,18 @@
 			<div class="mb-8 flex justify-center">
 				<img src={logo} alt="" class="block h-12 w-auto" />
 			</div>
-			<SearchForm {onSearch} />
+			<SearchForm bind:value={query} {onSearch} />
 		</div>
 	</div>
 
-	<footer class="flex items-center justify-center gap-5 pb-6 text-[13px] text-[#707070]">
-		<a href="/settings" class="transition-colors hover:text-[#c0c0c0]">settings</a>
-		<a href="/about/privacy" class="transition-colors hover:text-[#c0c0c0]">privacy</a>
-		<a href="/about/general" class="transition-colors hover:text-[#c0c0c0]">about</a>
+	<footer
+		class="flex items-center justify-center gap-5 pb-6 text-[13px] text-[#707070] transition-opacity duration-200 ease-out {query.trim()
+			? 'pointer-events-none opacity-0'
+			: 'opacity-100'}"
+		aria-hidden={query.trim().length > 0}
+	>
+		<a href="/settings" tabindex={query.trim() ? -1 : 0} class="transition-colors hover:text-[#c0c0c0]">settings</a>
+		<a href="/about/privacy" tabindex={query.trim() ? -1 : 0} class="transition-colors hover:text-[#c0c0c0]">privacy</a>
+		<a href="/about/general" tabindex={query.trim() ? -1 : 0} class="transition-colors hover:text-[#c0c0c0]">about</a>
 	</footer>
 </div>
