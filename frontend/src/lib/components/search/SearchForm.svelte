@@ -338,7 +338,7 @@
 							onmouseleave={() => (activeIndex = -1)}
 							class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] transition-all duration-100 ease-out active:scale-[0.99] {i ===
 							activeIndex
-								? 'bg-[#1e1e1e] text-[#d0d0d0]'
+								? 'bg-[#1e1e1e] text-[#a0a0a0]'
 								: 'text-[#8a8a8a]'}"
 						>
 							{#if !brokenIcons[bang.host]}
@@ -352,7 +352,10 @@
 									onerror={() => (brokenIcons[bang.host] = true)}
 								/>
 							{/if}
-							<span class="min-w-0 flex-1 truncate text-[#c0c0c0]">{bang.name}</span>
+							<span
+								class="min-w-0 flex-1 truncate {i === activeIndex ? 'text-[#c4c4c4]' : 'text-[#b0b0b0]'}"
+								>{bang.name}</span
+							>
 							<span class="shrink-0 truncate text-[#8a8a8a]">!{bang.trigger}</span>
 						</button>
 					</li>
@@ -373,13 +376,13 @@
 							onmouseleave={() => (activeIndex = -1)}
 							class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] transition-all duration-100 ease-out active:scale-[0.99] {i ===
 							activeIndex
-								? 'bg-[#1e1e1e] text-[#d0d0d0]'
+								? 'bg-[#1e1e1e] text-[#a0a0a0]'
 								: 'text-[#8a8a8a]'}"
 						>
 							<Search size={13} class="shrink-0 text-[#4a4a4a]" />
 							<span class="truncate">{match}{#if rest}<span class={i === activeIndex
-										? 'text-[#e8e8e8]'
-										: 'text-[#c0c0c0]'}>{rest}</span
+										? 'text-[#c4c4c4]'
+										: 'text-[#b0b0b0]'}>{rest}</span
 									>{/if}</span>
 						</button>
 					</li>
