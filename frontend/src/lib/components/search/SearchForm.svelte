@@ -421,22 +421,22 @@
 			{#if showBangs}
 				<div class="mt-1.5 border-t border-[#1e1e1e]">
 					<a
-						href="https://helium.computer/bangs"
-						target="_blank"
-						rel="noreferrer"
-						onmousedown={(event) => {
-							event.preventDefault();
-						}}
-						class="flex items-center justify-center gap-1.5 px-2.5 pt-2 text-[11px] leading-none text-[#4a4a4a] transition-colors hover:text-[#8a8a8a]"
+    					href="https://helium.computer/bangs"
+    					target="_blank"
+    					rel="noreferrer"
+    					onmousedown={(event) => {
+    						event.preventDefault();
+    					}}
+						class="flex items-center justify-center px-1 pt-2 text-[11px] leading-none text-[#4a4a4a] transition-colors hover:text-[#8a8a8a]"
 					>
-						<span>bangs by</span>
+						<span class="mr-1.5">bangs by</span>
 						<svg viewBox="0 0 256 256" aria-hidden="true" class="size-3 shrink-0">
 							<path
 								d="M152.62 237.85L128 256L103.38 237.85L114.568 151.248L45.05 204.22L17 192L20.425 161.635L101.128 128L20.425 94.365L17 64L45.05 51.78L114.568 104.752L103.38 18.15L128 0L152.62 18.15L141.432 104.752L210.95 51.78L239 64L235.575 94.365L154.872 128L235.575 161.635L239 192L210.95 204.22L141.432 151.248L152.62 237.85Z"
 								fill="currentColor"
 							/>
 						</svg>
-						<span>Helium</span>
+						<span class="ml-0.5">Helium</span>
 					</a>
 				</div>
 			{/if}
