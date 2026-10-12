@@ -1,8 +1,15 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { Info, Settings2, ShieldCheck } from '@lucide/svelte';
 	import { openBangOr } from '$lib/bangs';
 	import SearchForm from '$lib/components/search/SearchForm.svelte';
 	import logo from '$lib/assets/logo.svg';
+
+	const links = [
+		{ href: '/settings', label: 'settings', icon: Settings2 },
+		{ href: '/about/privacy', label: 'privacy', icon: ShieldCheck },
+		{ href: '/about/general', label: 'about', icon: Info }
+	];
 
 	let query = $state('');
 
@@ -26,13 +33,22 @@
 	</div>
 
 	<footer
-		class="flex items-center justify-center gap-5 pb-6 text-[13px] text-[#707070] transition-transform duration-[160ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] {query.trim()
+		class="flex items-start justify-center gap-1 pb-3 transition-transform duration-[160ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] {query.trim()
 			? 'pointer-events-none translate-y-full'
 			: 'translate-y-0'}"
 		aria-hidden={query.trim().length > 0}
 	>
-		<a href="/settings" tabindex={query.trim() ? -1 : 0} class="transition-colors hover:text-[#c0c0c0]">settings</a>
-		<a href="/about/privacy" tabindex={query.trim() ? -1 : 0} class="transition-colors hover:text-[#c0c0c0]">privacy</a>
-		<a href="/about/general" tabindex={query.trim() ? -1 : 0} class="transition-colors hover:text-[#c0c0c0]">about</a>
+		{#each links as { href, label, icon: Icon } (href)}
+			<a
+				{href}
+				tabindex={query.trim() ? -1 : 0}
+				class="group inline-flex w-[76px] flex-col items-center gap-1 rounded-md px-3 py-2 text-[13px] text-[#707070] no-underline transition-all duration-150 ease-out hover:bg-[#1a1a1a] hover:text-[#c0c0c0] active:scale-[0.94] active:duration-75"
+			>
+				<span class="pointer-events-none">
+					<Icon class="size-4" strokeWidth={1.75} />
+				</span>
+				{label}
+			</a>
+		{/each}
 	</footer>
 </div>

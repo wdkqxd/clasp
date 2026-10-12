@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "npm:@biomejs/biome@*": "2.5.15",
     "npm:@biomejs/biome@2.5.15": "2.5.15",
     "npm:@biomejs/biome@^2.5.15": "2.5.15",
     "npm:@cospired/i18n-iso-languages@^4.2.0": "4.2.0",
