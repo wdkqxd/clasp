@@ -18,7 +18,8 @@
     "svelte-check": "npm:svelte-check@^4.6.0",
     "tailwindcss": "npm:tailwindcss@^4.3.3",
     "typescript": "npm:typescript@^6.0.3",
-    "vite": "npm:vite@^8.0.16"
+    "vite": "npm:vite@^8.0.16",
+    "@cospired/i18n-iso-languages": "npm:@cospired/i18n-iso-languages@^4.2.0"
   },
   "tasks": {
     "dev": "vite dev",

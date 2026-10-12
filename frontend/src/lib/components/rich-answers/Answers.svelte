@@ -9,6 +9,7 @@
 	import Currency from './Currency.svelte';
 	import Unixtimestamp from './Unixtimestamp.svelte';
 	import Expression from './Expression.svelte';
+	import Translator from './Translator.svelte';
 
 	let { items, query = '' }: { items: RichAnswer[]; query?: string } = $props();
 
@@ -25,6 +26,7 @@
 		<Timezones {query} />
 		<Unixtimestamp {query} />
 		<Expression {query} />
+		<Translator {query} />
 		{#each rest as a, i (i)}
 			{#if (a.type === 'cryptocurrency' || a.type === 'stock') && (a.cryptocurrency || a.stock)}
 				<Asset answer={a} />
