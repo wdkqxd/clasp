@@ -1,0 +1,12 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:playwright-core@1.49.0": "1.49.0"
+  },
+  "npm": {
+    "playwright-core@1.49.0": {
+      "integrity": "sha512-R+3KKTQF3npy5GTiKH/T+kdhoJfJojjHESR1YEWhYuEKRVfVaxH3+4+GvXE5xyCngCxhxnykk0Vlah9v8fs3jA==",
+      "bin": true
+    }
+  }
+}
