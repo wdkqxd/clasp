@@ -8,7 +8,7 @@ we believe privacy is important, so we don't collect, store, or sell any data re
 
 ## analytics
 
-we look at anonymous, aggregated numbers through described [our own plausible instance](https://analytics.wdkq.cc) it sets no cookies and builds no fingerprint, so a single visit cannot be traced back to you.
+we look at anonymous, aggregated numbers through [our own plausible instance](https://analytics.wdkq.cc) it sets no cookies and builds no fingerprint, so a single visit cannot be traced back to you.
 
 if you would rather we counted nothing at all, you can switch it off in the settings at any time. how it works is described [here](https://plausible.io/privacy-focused-web-analytics).
 
