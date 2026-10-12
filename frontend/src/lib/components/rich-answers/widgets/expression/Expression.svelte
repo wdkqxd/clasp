@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { all, create } from 'mathjs';
-	import CopyButton from './CopyButton.svelte';
+	import CopyButton from '../../shared/CopyButton.svelte';
 
 	const math = create(all, {});
 

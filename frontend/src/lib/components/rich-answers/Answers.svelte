@@ -1,15 +1,15 @@
 <script lang="ts">
 	import type { RichAnswer } from '../../types';
-	import Weather from './Weather.svelte';
-	import Timer from './Timer.svelte';
-	import Stopwatch from './Stopwatch.svelte';
-	import UnitConversion from './UnitConversion.svelte';
-	import Timezones from './Timezones.svelte';
-	import Asset from './Asset.svelte';
-	import Currency from './Currency.svelte';
-	import Unixtimestamp from './Unixtimestamp.svelte';
-	import Expression from './Expression.svelte';
-	import Translator from './Translator.svelte';
+	import Weather from './widgets/weather/Weather.svelte';
+	import Timer from './widgets/timer/Timer.svelte';
+	import Stopwatch from './widgets/stopwatch/Stopwatch.svelte';
+	import UnitConversion from './widgets/unit-conversion/UnitConversion.svelte';
+	import Timezones from './widgets/timezones/Timezones.svelte';
+	import Asset from './widgets/asset/Asset.svelte';
+	import Currency from './widgets/currency/Currency.svelte';
+	import Unixtimestamp from './widgets/unixtimestamp/Unixtimestamp.svelte';
+	import Expression from './widgets/expression/Expression.svelte';
+	import Translator from './widgets/translator/Translator.svelte';
 
 	let { items, query = '' }: { items: RichAnswer[]; query?: string } = $props();
 

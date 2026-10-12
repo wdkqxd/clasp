@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { getCurrencyByCode, parseMoney } from 'numis';
-	import type { RichCurrency } from '../../types';
-	import Sparkline from './Sparkline.svelte';
-	import { price, price2 } from './format';
-	import CopyButton from './CopyButton.svelte';
+	import type { RichCurrency } from '../../../../types';
+	import Sparkline from '../../shared/Sparkline.svelte';
+	import { price, price2 } from '../../shared/format';
+	import CopyButton from '../../shared/CopyButton.svelte';
 
 	let { query = '' }: { query?: string } = $props();
 
@@ -19,7 +19,7 @@
 		quote: string;
 		rate: number;
 	}
-	
+
 	let resolved = $state<RichCurrency | null>(null);
 	let requestId = 0;
 

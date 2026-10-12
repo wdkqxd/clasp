@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { RichAnswer } from '../../types';
-	import Sparkline from './Sparkline.svelte';
-	import { sym, price, price2 } from './format';
+	import type { RichAnswer } from '../../../../types';
+	import Sparkline from '../../shared/Sparkline.svelte';
+	import { sym, price, price2 } from '../../shared/format';
 
 	let { answer }: { answer: RichAnswer } = $props();
 

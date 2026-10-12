@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { convertUnit, parseConversion } from './units';
-	import CopyButton from './CopyButton.svelte';
+	import CopyButton from '../../shared/CopyButton.svelte';
 
 	let { query = '' }: { query?: string } = $props();
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ArrowLeftRight, Volume2, X } from '@lucide/svelte';
-	import CopyButton from './CopyButton.svelte';
+	import CopyButton from '../../shared/CopyButton.svelte';
 	import LangPicker from './LangPicker.svelte';
 	import { browserLanguage, langByCode } from './languages';
 	import { parseTranslateQuery } from './translateIntent';

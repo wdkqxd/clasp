@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CopyButton from './CopyButton.svelte';
+	import CopyButton from '../../shared/CopyButton.svelte';
 
 	let { query = '' }: { query?: string } = $props();
 
@@ -82,8 +82,5 @@
 			<CopyButton active={copied} />
 		</button>
 		<div class="mt-2 text-[13px] text-[#707070]">{human}</div>
-		{#if isNow}
-			<div class="mt-1 text-[12px] text-[#505050]">current unix time</div>
-		{/if}
 	</div>
 {/if}

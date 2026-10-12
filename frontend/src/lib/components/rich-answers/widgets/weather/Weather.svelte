@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { RichWeather, RichWeatherCond } from '../../types';
+	import type { RichWeather, RichWeatherCond } from '../../../../types';
 
 	let { query = '' }: { query?: string } = $props();
 
