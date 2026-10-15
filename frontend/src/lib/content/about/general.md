@@ -4,12 +4,17 @@ title: about
 
 ## what it does
 
-clasp is a small open-source metasearch engine. it asks brave, duckduckgo and startpage at the same time, merges what comes back and re-ranks it, so no single engine takes over the page.
+сlasp is a small, open-source metasearch engine built with privacy in mind. it doesn't track users or log search queries, and it's ad-free.
 
 ## how it works
 
-there is no database and no user account. the whole thing is one go binary that fetches and parses results in memory, which makes it cheap to run on a tiny machine and easy to read.
+сlasp anonymizes your queries before sending them to search engines, then filters and re-ranks the results for you so you get the highest-quality results possible.
+
+we only use search engines that claim to protect your privacy.
+
+## quality of life
+we're striving to build the best index, and we're mostly inspired by kagi. we already have an ai slop filter for images, and we plan to add filters for ai and seo spam in search results in the future.
 
 ## source
 
-the code is s open source and distributed under the AGPL-3.0 license. fork it, change it, run it yourself. issues and pull requests are welcome on [github](https://github.com/wdkqxd/clasp).
+the code is open source and distributed under the [AGPL-3.0](https://github.com/wdkqxd/clasp/blob/main/LICENSE) license. you can always fork the repository, submit a pull request or change it for yourself.

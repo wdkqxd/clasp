@@ -8,9 +8,11 @@ we believe privacy is important, so we don't collect, store, or sell any data re
 
 ## analytics
 
-we look at anonymous, aggregated numbers through [our own plausible instance](https://analytics.wdkq.cc) it sets no cookies and builds no fingerprint, so a single visit cannot be traced back to you.
+we look at anonymous, aggregated numbers through [our own plausible instance](https://analytics.wdkq.cc) it sets no cookies and builds no fingerprint, so a single visit cannot be traced back to you. 
 
-if you would rather we counted nothing at all, you can switch it off in the settings at any time. how it works is described [here](https://plausible.io/privacy-focused-web-analytics).
+plausible is designed with privacy in mind and is gdpr-compliant. you can find out what plausible does with your data [here](https://plausible.io/privacy-focused-web-analytics).
+
+if you would rather we counted nothing at all, you can switch it off in the settings at any time. 
 
 ## queries
 
@@ -20,4 +22,4 @@ all queries are processed in RAM and sent to search engines in anonymized form, 
 
 ## self-hosted instances
 
-we do our best to keep this instance private. anyone can run their own copy of clasp though, and we can neither see nor control what they do with it, so we cannot answer for it. read the source before you trust one. it is all on [github](https://github.com/wdkqxd/clasp).
+we do our best to keep this instance private. anyone can run their own copy of clasp though, and we can neither see nor control what they do with it, so we cannot answer for it. read the source before you trust one.
