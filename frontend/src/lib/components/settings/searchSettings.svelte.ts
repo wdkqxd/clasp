@@ -22,6 +22,7 @@ export type FontChoice = 'jetbrains' | 'system';
 
 export type SearchSettings = {
 	engines: SearchEngine[];
+	imageEngines: SearchEngine[];
 	showEngineBadges: boolean;
 	openInNewTab: boolean;
 	font: FontChoice;
@@ -31,6 +32,7 @@ export type SearchSettings = {
 
 const defaults: SearchSettings = {
 	engines: [...SEARCH_ENGINES],
+	imageEngines: [...SEARCH_ENGINES],
 	showEngineBadges: false,
 	openInNewTab: false,
 	font: 'jetbrains',
@@ -39,14 +41,23 @@ const defaults: SearchSettings = {
 };
 
 function load(): SearchSettings {
-	if (typeof localStorage === 'undefined') return { ...defaults, engines: [...defaults.engines] };
+	if (typeof localStorage === 'undefined')
+		return {
+			...defaults,
+			engines: [...defaults.engines],
+			imageEngines: [...defaults.imageEngines],
+		};
 	try {
 		const parsed = JSON.parse(localStorage.getItem(SEARCH_SETTINGS_KEY) ?? 'null') ?? {};
 		const engines = Array.isArray(parsed.engines)
 			? SEARCH_ENGINES.filter((engine) => parsed.engines.includes(engine))
 			: [...defaults.engines];
+		const imageEngines = Array.isArray(parsed.imageEngines)
+			? SEARCH_ENGINES.filter((engine) => parsed.imageEngines.includes(engine))
+			: [...defaults.imageEngines];
 		return {
 			engines: engines.length > 0 ? engines : [...defaults.engines],
+			imageEngines: imageEngines.length > 0 ? imageEngines : [...defaults.imageEngines],
 			showEngineBadges:
 				typeof parsed.showEngineBadges === 'boolean'
 					? parsed.showEngineBadges
@@ -61,7 +72,11 @@ function load(): SearchSettings {
 				typeof parsed.hideAIImages === 'boolean' ? parsed.hideAIImages : defaults.hideAIImages,
 		};
 	} catch {
-		return { ...defaults, engines: [...defaults.engines] };
+		return {
+			...defaults,
+			engines: [...defaults.engines],
+			imageEngines: [...defaults.imageEngines],
+		};
 	}
 }
 

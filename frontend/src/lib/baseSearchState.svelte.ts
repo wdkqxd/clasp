@@ -20,9 +20,11 @@ export abstract class BaseSearchState<TItem, TResponse extends BaseResponse> {
 	#seen = new Set<string>();
 
 	protected readonly pageSize: number;
+	protected readonly engineSetting: 'engines' | 'imageEngines';
 
-	constructor(pageSize: number) {
+	constructor(pageSize: number, engineSetting: 'engines' | 'imageEngines' = 'engines') {
 		this.pageSize = pageSize;
+		this.engineSetting = engineSetting;
 	}
 
 	protected abstract fetchResults(
@@ -50,7 +52,7 @@ export abstract class BaseSearchState<TItem, TResponse extends BaseResponse> {
 		this.#seen = new Set();
 		try {
 			const settings = getSearchSettings();
-			const res = await this.fetchResults(q, 0, this.pageSize, settings.engines);
+			const res = await this.fetchResults(q, 0, this.pageSize, settings[this.engineSetting]);
 			this.tookMs = res.took_ms;
 			this.engineStatus = res.engines ?? {};
 			this.#append(this.getResults(res), this.getHasMore(res));
@@ -70,7 +72,12 @@ export abstract class BaseSearchState<TItem, TResponse extends BaseResponse> {
 		const next = this.page + 1;
 		try {
 			const settings = getSearchSettings();
-			const res = await this.fetchResults(this.query, next, this.pageSize, settings.engines);
+			const res = await this.fetchResults(
+				this.query,
+				next,
+				this.pageSize,
+				settings[this.engineSetting]
+			);
 			this.tookMs = res.took_ms;
 			this.engineStatus = res.engines ?? {};
 			this.page = next;

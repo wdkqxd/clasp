@@ -7,7 +7,7 @@ export const IMAGE_PAGE_SIZE = 90;
 
 export class ImageSearchState extends BaseSearchState<ImageResult, ImageSearchResponse> {
 	constructor() {
-		super(IMAGE_PAGE_SIZE);
+		super(IMAGE_PAGE_SIZE, 'imageEngines');
 	}
 
 	protected async fetchResults(

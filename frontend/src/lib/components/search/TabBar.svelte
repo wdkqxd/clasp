@@ -25,6 +25,7 @@
 
 	let settingsOpen = $state(false);
 	const settings = getSearchSettings();
+	const engines = $derived(active === 'Images' ? settings.imageEngines : settings.engines);
 
 	const icons = {
 		Web: Globe,
@@ -40,10 +41,13 @@
 	}
 
 	function toggleEngine(engine: SearchEngine) {
-		if (settings.engines.includes(engine) && settings.engines.length === 1) return;
-		settings.engines = settings.engines.includes(engine)
-			? settings.engines.filter((item) => item !== engine)
-			: [...settings.engines, engine];
+		const current = engines;
+		if (current.includes(engine) && current.length === 1) return;
+		const next = current.includes(engine)
+			? current.filter((item) => item !== engine)
+			: [...current, engine];
+		if (active === 'Images') settings.imageEngines = next;
+		else settings.engines = next;
 		saveSearchSettings();
 	}
 
@@ -133,8 +137,8 @@
 											<span class="shrink-0 text-[11px] text-[#5c5c5c]">{status.took_ms} ms</span>
 										{/if}
 									</span>
-									<span class="relative h-3.5 w-6 shrink-0 rounded-full transition-colors {settings.engines.includes(engine) ? 'bg-[#777]' : 'bg-[#292929]'}">
-										<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform {settings.engines.includes(engine) ? 'translate-x-3' : 'translate-x-0.5'}"></span>
+									<span class="relative h-3.5 w-6 shrink-0 rounded-full transition-colors {engines.includes(engine) ? 'bg-[#777]' : 'bg-[#292929]'}">
+										<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform {engines.includes(engine) ? 'translate-x-3' : 'translate-x-0.5'}"></span>
 									</span>
 								</button>
 							{/each}
