@@ -78,13 +78,8 @@ function load(): SearchSettings {
 				: defaults.autocomplete,
 			hideAIImages:
 				typeof parsed.hideAIImages === 'boolean' ? parsed.hideAIImages : defaults.hideAIImages,
-			imageType: IMAGE_TYPE_FILTERS.some((type) => type === parsed.imageType)
-				? parsed.imageType
-				: defaults.imageType,
-			transparentOnly:
-				typeof parsed.transparentOnly === 'boolean'
-					? parsed.transparentOnly
-					: defaults.transparentOnly,
+			imageType: defaults.imageType,
+			transparentOnly: defaults.transparentOnly,
 		};
 	} catch {
 		return {
@@ -103,6 +98,17 @@ export function getSearchSettings(): SearchSettings {
 
 export function saveSearchSettings(): void {
 	if (typeof localStorage !== 'undefined') {
-		localStorage.setItem(SEARCH_SETTINGS_KEY, JSON.stringify(searchSettings));
+		localStorage.setItem(
+			SEARCH_SETTINGS_KEY,
+			JSON.stringify({
+				engines: searchSettings.engines,
+				imageEngines: searchSettings.imageEngines,
+				showEngineBadges: searchSettings.showEngineBadges,
+				openInNewTab: searchSettings.openInNewTab,
+				font: searchSettings.font,
+				autocomplete: searchSettings.autocomplete,
+				hideAIImages: searchSettings.hideAIImages,
+			})
+		);
 	}
 }

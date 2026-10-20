@@ -1,13 +1,20 @@
 import { imageSearch } from '../../api';
 import { BaseSearchState } from '../../baseSearchState.svelte';
 import type { ImageResult, ImageSearchResponse } from '../../types';
-import type { SearchEngine } from '../settings/searchSettings.svelte';
+import { getSearchSettings, type SearchEngine } from '../settings/searchSettings.svelte';
 
 export const IMAGE_PAGE_SIZE = 90;
 
 export class ImageSearchState extends BaseSearchState<ImageResult, ImageSearchResponse> {
 	constructor() {
 		super(IMAGE_PAGE_SIZE, 'imageEngines');
+	}
+
+	async run(query: string): Promise<ImageSearchResponse | null> {
+		const settings = getSearchSettings();
+		settings.imageType = 'any';
+		settings.transparentOnly = false;
+		return super.run(query);
 	}
 
 	protected async fetchResults(
