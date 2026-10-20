@@ -1,3 +1,5 @@
+.git
+node_modules
 frontend/node_modules
 frontend/.svelte-kit
 frontend/build
@@ -5,4 +7,3 @@ bin/
 *.exe
 *.test
 .env
-.git

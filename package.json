@@ -1,0 +1,15 @@
+{
+  "name": "clasp",
+  "private": true,
+  "packageManager": "pnpm@12.11.2",
+  "scripts": {
+    "dev": "pnpm run dev:go & pnpm run dev:frontend",
+    "dev:go": "go run .",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build": "pnpm --filter frontend build",
+    "start": "go run .",
+    "check": "pnpm --filter frontend check",
+    "lint": "pnpm --filter frontend lint",
+    "lint:fix": "pnpm --filter frontend lint:fix"
+  }
+}
