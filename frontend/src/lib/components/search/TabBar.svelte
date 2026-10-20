@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Clapperboard, Globe, Image, Settings2 } from '@lucide/svelte';
+	import { ChevronDown, Clapperboard, Globe, Image, Settings2 } from '@lucide/svelte';
 	import { fade } from 'svelte/transition';
 	import {
 		ENGINE_API_NAMES,
 		getSearchSettings,
 		IMAGE_ENGINES,
+		IMAGE_TYPE_FILTERS,
 		WEB_ENGINES,
 		saveSearchSettings,
+		type ImageTypeFilter,
 		type SearchEngine
 	} from '../settings/searchSettings.svelte';
 	import type { EngineStatus } from '../../types';
@@ -148,7 +150,28 @@
 					</div>
 
 					{#if active === 'Images'}
-						<div class="border-t border-[#292929] pt-3">
+						<div class="space-y-2 border-t border-[#292929] pt-3">
+							<div class="flex items-center justify-between text-[12px] text-[#9b9b9b]">
+								<span>type</span>
+								<div class="relative flex items-center">
+									<select
+										value={settings.imageType}
+										onchange={(event) => {
+											settings.imageType = (event.currentTarget as HTMLSelectElement)
+												.value as ImageTypeFilter;
+											saveSearchSettings();
+										}}
+										class="w-16 cursor-pointer appearance-none rounded border border-[#292929] bg-[#1a1a1a] py-0.5 pl-1.5 pr-5 text-[11px] text-[#9b9b9b] outline-none transition-colors hover:border-[#3a3a3a] hover:text-[#d0d0d0] focus:border-[#3a3a3a]"
+									>
+										{#each IMAGE_TYPE_FILTERS as type}
+											<option value={type}>{type}</option>
+										{/each}
+									</select>
+									<ChevronDown
+										class="pointer-events-none absolute right-1 size-2.5 text-[#5c5c5c]"
+									/>
+								</div>
+							</div>
 							<button
 								type="button"
 								class="flex w-full items-center justify-between text-left text-[12px] text-[#9b9b9b]"
@@ -157,9 +180,22 @@
 									saveSearchSettings();
 								}}
 							>
-								<span>hide ai images</span>
+								<span>hide ai</span>
 								<span class="relative h-3.5 w-6 rounded-full transition-colors {settings.hideAIImages ? 'bg-[#777]' : 'bg-[#292929]'}">
 									<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform {settings.hideAIImages ? 'translate-x-3' : 'translate-x-0.5'}"></span>
+								</span>
+							</button>
+							<button
+								type="button"
+								class="flex w-full items-center justify-between text-left text-[12px] text-[#9b9b9b]"
+								onclick={() => {
+									settings.transparentOnly = !settings.transparentOnly;
+									saveSearchSettings();
+								}}
+							>
+								<span>transparent only</span>
+								<span class="relative h-3.5 w-6 rounded-full transition-colors {settings.transparentOnly ? 'bg-[#777]' : 'bg-[#292929]'}">
+									<span class="absolute top-0.5 h-2.5 w-2.5 rounded-full bg-[#d0d0d0] transition-transform {settings.transparentOnly ? 'translate-x-3' : 'translate-x-0.5'}"></span>
 								</span>
 							</button>
 						</div>

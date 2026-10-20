@@ -20,25 +20,74 @@
 	} = $props();
 
 	const MAX_URL_LEN = 32;
+	let transparency = $state<Record<string, boolean | null>>({});
 
-	let visibleImages = $derived(
-		settings.hideAIImages
-			? images.filter(
-					(img) =>
-						!shouldBlockImage({
-							url: img.url,
-							title: img.title,
-							hostname: (() => {
-								try {
-									return new URL(img.url).hostname;
-								} catch {
-									return '';
-								}
-							})()
-						})
-				)
-			: images
+	function extensionFromURL(raw: string): string {
+		if (!raw) return '';
+		try {
+			const url = new URL(raw);
+			const proxied = url.searchParams.get('u');
+			const path = proxied ? new URL(proxied).pathname : url.pathname;
+			return path.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1] ?? '';
+		} catch {
+			return '';
+		}
+	}
+
+	function imageExtension(image: ImageResult): string {
+		for (const raw of [image.source_url, image.thumbnail, image.url]) {
+			const ext = extensionFromURL(raw ?? '');
+			if (ext) return ext;
+		}
+		return '';
+	}
+
+	function imageKey(image: ImageResult): string {
+		return image.thumbnail || image.source_url || image.url;
+	}
+
+	function isVisible(image: ImageResult): boolean {
+		if (
+			settings.hideAIImages &&
+			shouldBlockImage({
+				url: image.url,
+				title: image.title,
+				hostname: (() => {
+					try {
+						return new URL(image.url).hostname;
+					} catch {
+						return '';
+					}
+				})()
+			})
+		) {
+			return false;
+		}
+		if (settings.imageType !== 'any' && imageExtension(image) !== settings.imageType) return false;
+		return true;
+	}
+
+	let visibleItems = $derived(
+		images.map((image, index) => ({ image, index })).filter(({ image }) => isVisible(image))
 	);
+
+	let transparencyPending = $derived(
+		settings.transparentOnly &&
+			visibleItems.some(({ image }) => transparency[imageKey(image)] === undefined)
+	);
+
+	let hasTransparentItems = $derived(
+		visibleItems.some(({ image }) => transparency[imageKey(image)] === true)
+	);
+
+	function setTransparency(image: ImageResult, value: boolean | null) {
+		const key = imageKey(image);
+		if (key) transparency[key] = value;
+	}
+
+	function transparencyState(image: ImageResult): boolean | null | undefined {
+		return transparency[imageKey(image)];
+	}
 
 	function span(image: ImageResult): string {
 		const w = image.width || 400;
@@ -72,11 +121,9 @@
 		}
 	}
 
-	function openSidebar(e: MouseEvent, visibleIndex: number) {
+	function openSidebar(e: MouseEvent, index: number) {
 		e.preventDefault();
-		const image = visibleImages[visibleIndex];
-		const realIndex = images.indexOf(image);
-		onselect?.(realIndex);
+		onselect?.(index);
 	}
 </script>
 
@@ -92,25 +139,32 @@
 			</div>
 		{/each}
 	</div>
-{:else if visibleImages.length === 0}
+{:else if visibleItems.length === 0}
+	<p class="text-[#555] text-sm text-center py-12">no images found</p>
+{:else if settings.transparentOnly && !transparencyPending && !hasTransparentItems}
 	<p class="text-[#555] text-sm text-center py-12">no images found</p>
 {:else}
 	<div in:fade={{ duration: 300 }} class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3 pb-5" style="grid-auto-flow: dense; grid-auto-rows: 220px;">
-		{#each visibleImages as image, i}
+		{#each visibleItems as { image, index } (imageKey(image) || index)}
+			{@const transState = transparencyState(image)}
 			<div
 				class="flex flex-col text-left rounded-lg overflow-hidden image-card"
 				class:col-span-2={span(image) === 'col-span-2'}
+				class:invisible={settings.transparentOnly && transState === undefined}
+				class:hidden={settings.transparentOnly && (transState === false || transState === null)}
 			>
 				<a
 					href={image.url}
 					class="overflow-hidden rounded-lg bg-[#1a1a1a] w-full h-full relative block cursor-pointer"
-					class:selected={selectedIndex === i}
-					onclick={(e) => openSidebar(e, i)}
+					class:selected={selectedIndex === index}
+					onclick={(e) => openSidebar(e, index)}
 				>
 					<ImageThumb
 						src={image.thumbnail}
 						alt={image.title}
-						selected={selectedIndex === i}
+						selected={selectedIndex === index}
+						detectTransparency={settings.transparentOnly && transState === undefined}
+						ontransparency={(value) => setTransparency(image, value)}
 					/>
 				</a>
 				<div class="flex flex-col gap-0.5 mt-2 px-0.5 image-info">
