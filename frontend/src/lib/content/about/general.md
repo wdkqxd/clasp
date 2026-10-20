@@ -13,7 +13,8 @@ title: about
 we only use search engines that claim to protect your privacy.
 
 ## quality of life
-we're striving to build the best index, and we're mostly inspired by kagi. we already have an ai slop filter for images, and we plan to add filters for ai and seo spam in search results in the future.
+
+we believe quality-of-life features are one of the most important parts of a search engine, so we focus on what could improve your experience. we also strive to make search results as accurate and relevant to your query as possible.
 
 ## source
 
