@@ -72,51 +72,6 @@ func (s *Startpage) ImageSearch(ctx context.Context, query string, limit, offset
 	return results, nil
 }
 
-func (s *Startpage) Search(ctx context.Context, query string, limit, offset int) (engine.SearchResult, error) {
-	pageNum := offset + 1
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	u, err := url.Parse(endpoint)
-	if err != nil {
-		return engine.SearchResult{}, err
-	}
-	q := u.Query()
-	q.Set("query", query)
-	q.Set("language", "english")
-	u.RawQuery = q.Encode()
-
-	body, err := s.get(ctx, u.String())
-	if err != nil {
-		return engine.SearchResult{}, err
-	}
-	body, err = s.passIfChallenged(ctx, body, u.String())
-	if err != nil {
-		return engine.SearchResult{}, err
-	}
-
-	if pageNum == 1 {
-		results, err := parseResults(body, limit)
-		return engine.SearchResult{Results: results}, err
-	}
-
-	form, ok := pageForm(body, pageNum)
-	if !ok {
-		return engine.SearchResult{}, errors.New("startpage: no pagination form for page " + strconv.Itoa(pageNum))
-	}
-	form.Set("query", query)
-	form.Set("page", strconv.Itoa(pageNum))
-
-	body, err = s.post(ctx, endpoint, form)
-	if err != nil {
-		return engine.SearchResult{}, err
-	}
-
-	results, err := parseResults(body, limit)
-	return engine.SearchResult{Results: results}, err
-}
-
 func (s *Startpage) passIfChallenged(ctx context.Context, body, rawURL string) (string, error) {
 	if !hasChallenge(body) {
 		return body, nil

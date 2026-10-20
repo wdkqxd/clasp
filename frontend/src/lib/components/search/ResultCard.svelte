@@ -34,8 +34,7 @@
 
 	const ENGINE_LABELS: Record<string, string> = {
 		brave: 'brave',
-		ddg: 'duckduckgo',
-		startpage: 'startpage'
+		ddg: 'duckduckgo'
 	};
 
 	function engineLabel(e: string): string {

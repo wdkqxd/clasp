@@ -40,21 +40,29 @@ type ImageResponse struct {
 
 type Aggregator struct {
 	engines          []engine.Engine
+	imageEngines     []engine.ImageSearcher
 	totalTimeout     time.Duration
 	perEngineTimeout time.Duration
 	fastTimeout      time.Duration
 }
 
-func New(engines []engine.Engine) *Aggregator {
+func New(engines []engine.Engine, imageEngines ...engine.ImageSearcher) *Aggregator {
+	if len(imageEngines) == 0 {
+		for _, e := range engines {
+			if is, ok := e.(engine.ImageSearcher); ok {
+				imageEngines = append(imageEngines, is)
+			}
+		}
+	}
 	return &Aggregator{
 		engines:          engines,
+		imageEngines:     imageEngines,
 		totalTimeout:     10 * time.Second,
 		perEngineTimeout: 5 * time.Second,
 		fastTimeout:      3 * time.Second,
 	}
 }
 
-// engineOutcome carries an engine result together with the engine it came from.
 type engineOutcome[T any] struct {
 	name string
 	val  T
@@ -105,6 +113,27 @@ func selectEngines(all []engine.Engine, enabled []string) []engine.Engine {
 		selected[name] = true
 	}
 	out := make([]engine.Engine, 0, len(all))
+	for _, e := range all {
+		if selected[strings.ToLower(e.Name())] {
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+func selectImageEngines(all []engine.ImageSearcher, enabled []string) []engine.ImageSearcher {
+	if len(enabled) == 0 {
+		return all
+	}
+	selected := make(map[string]bool, len(enabled))
+	for _, name := range enabled {
+		name = strings.ToLower(strings.TrimSpace(name))
+		if name == "duckduckgo" {
+			name = "ddg"
+		}
+		selected[name] = true
+	}
+	out := make([]engine.ImageSearcher, 0, len(all))
 	for _, e := range all {
 		if selected[strings.ToLower(e.Name())] {
 			out = append(out, e)
@@ -429,13 +458,11 @@ func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page 
 		name string
 		s    engine.ImageSearcher
 	}
-	for _, e := range selectEngines(a.engines, enabled) {
-		if is, ok := e.(engine.ImageSearcher); ok {
-			activeSearchers = append(activeSearchers, struct {
-				name string
-				s    engine.ImageSearcher
-			}{name: e.Name(), s: is})
-		}
+	for _, s := range selectImageEngines(a.imageEngines, enabled) {
+		activeSearchers = append(activeSearchers, struct {
+			name string
+			s    engine.ImageSearcher
+		}{name: s.Name(), s: s})
 	}
 
 	resp := ImageResponse{

@@ -34,13 +34,20 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create browser client: %v", err)
 	}
+	braveEngine := brave.New(client)
+	ddgEngine := ddg.New(client)
+	startpageEngine := startpage.New(client)
 	engines := []engine.Engine{
-		brave.New(client),
-		ddg.New(client),
-		startpage.New(client),
+		braveEngine,
+		ddgEngine,
+	}
+	imageEngines := []engine.ImageSearcher{
+		braveEngine,
+		ddgEngine,
+		startpageEngine,
 	}
 
-	agg := aggregator.New(engines)
+	agg := aggregator.New(engines, imageEngines...)
 	bangStore := bangs.New(context.Background())
 	wikipediaClient := wikipedia.NewClient(client)
 	suggestClient := suggest.NewClient(client)

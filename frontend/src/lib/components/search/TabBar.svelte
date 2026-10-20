@@ -5,7 +5,8 @@
 	import {
 		ENGINE_API_NAMES,
 		getSearchSettings,
-		SEARCH_ENGINES,
+		IMAGE_ENGINES,
+		WEB_ENGINES,
 		saveSearchSettings,
 		type SearchEngine
 	} from '../settings/searchSettings.svelte';
@@ -26,6 +27,7 @@
 	let settingsOpen = $state(false);
 	const settings = getSearchSettings();
 	const engines = $derived(active === 'Images' ? settings.imageEngines : settings.engines);
+	const engineOptions = $derived(active === 'Images' ? IMAGE_ENGINES : WEB_ENGINES);
 
 	const icons = {
 		Web: Globe,
@@ -115,7 +117,7 @@
 				<div class="space-y-3">
 					<div>
 						<div class="space-y-2">
-							{#each SEARCH_ENGINES as engine}
+							{#each engineOptions as engine}
 								{@const status = engineStatusFor(engine)}
 								<button
 									type="button"

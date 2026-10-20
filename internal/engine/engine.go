@@ -143,6 +143,7 @@ type Engine interface {
 }
 
 type ImageSearcher interface {
+	Name() string
 	ImageSearch(ctx context.Context, query string, limit, offset int) ([]ImageResult, error)
 }
 

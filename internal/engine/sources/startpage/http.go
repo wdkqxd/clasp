@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"net/url"
 	"regexp"
 	"strings"
 
@@ -17,16 +16,6 @@ func (s *Startpage) get(ctx context.Context, u string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	setHeaders(req, s.cookies)
-	return s.do(ctx, req)
-}
-
-func (s *Startpage) post(ctx context.Context, u string, form url.Values) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, u, strings.NewReader(form.Encode()))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	setHeaders(req, s.cookies)
 	return s.do(ctx, req)
 }
