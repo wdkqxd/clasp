@@ -1,13 +1,14 @@
 FROM node:24-alpine AS frontend
+ENV NODE_OPTIONS=--use-openssl-ca
 WORKDIR /app
-RUN npm install -g pnpm@12.11.2
+RUN npm install -g pnpm@12.14.0
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY frontend/package.json ./frontend/
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY frontend/ ./frontend/
 RUN pnpm --filter frontend build
 
-FROM golang:1.26-alpine AS builder
+FROM golang:1.26.10-alpine AS builder
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
@@ -15,7 +16,7 @@ COPY . .
 COPY --from=frontend /app/frontend/build ./frontend/build
 RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o clasp .
 
-FROM alpine:3.20
+FROM alpine:3.24
 RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=builder /app/clasp .
