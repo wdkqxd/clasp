@@ -21,9 +21,6 @@ export type AutocompleteProvider = (typeof AUTOCOMPLETE_PROVIDERS)[number]['valu
 
 export type FontChoice = 'jetbrains' | 'system';
 
-export const IMAGE_TYPE_FILTERS = ['any', 'gif', 'svg'] as const;
-export type ImageTypeFilter = (typeof IMAGE_TYPE_FILTERS)[number];
-
 export type SearchSettings = {
 	engines: SearchEngine[];
 	imageEngines: SearchEngine[];
@@ -32,7 +29,6 @@ export type SearchSettings = {
 	font: FontChoice;
 	autocomplete: AutocompleteProvider;
 	hideAIImages: boolean;
-	imageType: ImageTypeFilter;
 	transparentOnly: boolean;
 };
 
@@ -44,7 +40,6 @@ const defaults: SearchSettings = {
 	font: 'jetbrains',
 	autocomplete: 'kagi',
 	hideAIImages: false,
-	imageType: 'any',
 	transparentOnly: false,
 };
 
@@ -78,7 +73,6 @@ function load(): SearchSettings {
 				: defaults.autocomplete,
 			hideAIImages:
 				typeof parsed.hideAIImages === 'boolean' ? parsed.hideAIImages : defaults.hideAIImages,
-			imageType: defaults.imageType,
 			transparentOnly: defaults.transparentOnly,
 		};
 	} catch {

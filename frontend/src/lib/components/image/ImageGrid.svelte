@@ -22,26 +22,6 @@
 	const MAX_URL_LEN = 32;
 	let transparency = $state<Record<string, boolean | null>>({});
 
-	function extensionFromURL(raw: string): string {
-		if (!raw) return '';
-		try {
-			const url = new URL(raw);
-			const proxied = url.searchParams.get('u');
-			const path = proxied ? new URL(proxied).pathname : url.pathname;
-			return path.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1] ?? '';
-		} catch {
-			return '';
-		}
-	}
-
-	function imageExtension(image: ImageResult): string {
-		for (const raw of [image.source_url, image.thumbnail, image.url]) {
-			const ext = extensionFromURL(raw ?? '');
-			if (ext) return ext;
-		}
-		return '';
-	}
-
 	function imageKey(image: ImageResult): string {
 		return image.thumbnail || image.source_url || image.url;
 	}
@@ -63,7 +43,6 @@
 		) {
 			return false;
 		}
-		if (settings.imageType !== 'any' && imageExtension(image) !== settings.imageType) return false;
 		return true;
 	}
 
