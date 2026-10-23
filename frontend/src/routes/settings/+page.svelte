@@ -20,7 +20,7 @@
 
 	<h1 class="mt-10 text-[20px] leading-tight font-normal text-[#d0d0d0]">settings</h1>
 
-	<div class="mt-8 max-w-xl">
+	<div class="mt-6">
 		<SettingsItems />
 	</div>
 </div>
