@@ -1,7 +1,7 @@
 <div align="center">
     <br/>
     <p>
-        <img src="resources/icon.png" alt="clasp logo" width="100" />
+        <img src="frontend/src/lib/assets/logo.svg" alt="clasp logo" width="50" />
     </p>
     <p>
         search without the noise
