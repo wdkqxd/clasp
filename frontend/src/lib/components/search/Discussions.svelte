@@ -80,7 +80,7 @@
 								<a
 									href={d.url}
 									target={settings.openInNewTab ? '_blank' : undefined}
-									rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
+									rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
 								class="flex items-center gap-1.5 text-[12px] text-[#5c5c5c] transition-colors hover:text-[#888]"
 							>
 								{#if favicon(d.url)}

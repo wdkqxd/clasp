@@ -59,7 +59,7 @@ function cleanSnippet(s: string): string {
 	<a
 		href={result.url}
 		target={settings.openInNewTab ? '_blank' : undefined}
-		rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
+		rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
 		class="block visited:[&_h2]:text-[#83709f]"
 	>
 		<div class="mb-1.5 flex items-center gap-1.5 text-[12px] tracking-wide text-[#5c5c5c]">
@@ -96,7 +96,7 @@ function cleanSnippet(s: string): string {
 				<a
 					href={link.url}
 					target={settings.openInNewTab ? '_blank' : undefined}
-					rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
+					rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
 					class="text-[12px] text-[#5c5c5c] underline-offset-[3px] transition-colors hover:underline visited:text-[#83709f]"
 				>
 					{link.title}

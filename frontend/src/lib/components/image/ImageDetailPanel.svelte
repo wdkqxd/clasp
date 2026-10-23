@@ -93,14 +93,14 @@
 			<a
 				href={image.url}
 				target={settings.openInNewTab ? '_blank' : undefined}
-				rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
+				rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
 				class="text-[16px] text-[#c0c0c0] font-normal leading-snug no-underline hover:underline hover:text-[#fff] transition-colors"
 			>{image.title}</a>
 
 			<a
 				href={image.url}
 				target={settings.openInNewTab ? '_blank' : undefined}
-				rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
+				rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
 				class="flex items-center gap-1.5 text-[12px] text-[#5c5c5c] hover:text-[#888] no-underline transition-colors"
 			>
 				{#if image.url}
@@ -123,7 +123,7 @@
 			<a
 				href={image.source_url}
 				target={settings.openInNewTab ? '_blank' : undefined}
-				rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
+				rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
 				class="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#262626] bg-[#1e1e1e] px-3 py-1.5 text-[12px] text-[#d0d0d0] no-underline transition-colors duration-150 ease-out hover:bg-[#262626] hover:text-[#e0e0e0] active:scale-[0.97]"
 			>
 				view source

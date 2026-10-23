@@ -151,13 +151,13 @@
 						href={image.url}
 						class="text-xs text-[#ccc] leading-[1.35] line-clamp-1 no-underline"
 						target={settings.openInNewTab ? '_blank' : undefined}
-						rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
+						rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
 					>{image.title}</a>
 					<a
 						href={image.url}
 						class="flex items-center gap-1.5 no-underline"
 						target={settings.openInNewTab ? '_blank' : undefined}
-						rel={settings.openInNewTab ? 'noopener noreferrer' : undefined}
+						rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
 					>
 						{#if image.url}
 							<img
