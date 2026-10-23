@@ -1,8 +1,3 @@
-import iso from '@cospired/i18n-iso-languages';
-import en from '@cospired/i18n-iso-languages/langs/en.json';
-
-iso.registerLocale(en);
-
 export interface Language {
 	code: string;
 	name: string;
@@ -11,24 +6,85 @@ export interface Language {
 
 export const AUTO: Language = { code: 'auto', name: 'detect language' };
 
-const RTL = new Set(['ar', 'fa', 'he', 'ur', 'ps', 'sd', 'ug', 'yi']);
+const RTL = new Set(['ar', 'fa', 'he', 'ur']);
 
-export const LANGUAGES: Language[] = (() => {
-	const written: Record<string, string> = {
-		'zh-CN': 'chinese (simplified)',
-		'zh-TW': 'chinese (traditional)',
-	};
-	const shadowed = new Set(Object.keys(written).map((c) => c.split('-')[0]));
-	const codes = [
-		...Object.keys(iso.getAlpha2Codes()).filter((c) => !shadowed.has(c)),
-		...Object.keys(written),
-	].sort();
+const LANG_LIST: [string, string][] = [
+	['af', 'afrikaans'],
+	['sq', 'albanian'],
+	['am', 'amharic'],
+	['ar', 'arabic'],
+	['hy', 'armenian'],
+	['az', 'azerbaijani'],
+	['be', 'belarusian'],
+	['bn', 'bengali'],
+	['bs', 'bosnian'],
+	['bg', 'bulgarian'],
+	['zh-CN', 'chinese (simplified)'],
+	['zh-TW', 'chinese (traditional)'],
+	['hr', 'croatian'],
+	['cz', 'czech'],
+	['dk', 'danish'],
+	['nl', 'dutch'],
+	['en', 'english'],
+	['et', 'estonian'],
+	['fi', 'finnish'],
+	['fr', 'french'],
+	['ka', 'georgian'],
+	['de', 'german'],
+	['el', 'greek'],
+	['gu', 'gujarati'],
+	['he', 'hebrew'],
+	['hi', 'hindi'],
+	['hu', 'hungarian'],
+	['is', 'icelandic'],
+	['id', 'indonesian'],
+	['it', 'italian'],
+	['ja', 'japanese'],
+	['kn', 'kannada'],
+	['kk', 'kazakh'],
+	['km', 'khmer'],
+	['ko', 'korean'],
+	['ky', 'kyrgyz'],
+	['lo', 'lao'],
+	['lv', 'latvian'],
+	['lt', 'lithuanian'],
+	['mk', 'macedonian'],
+	['ms', 'malay'],
+	['ml', 'malayalam'],
+	['mt', 'maltese'],
+	['mr', 'marathi'],
+	['mn', 'mongolian'],
+	['my', 'burmese'],
+	['ne', 'nepali'],
+	['no', 'norwegian'],
+	['ps', 'pashto'],
+	['fa', 'persian'],
+	['pl', 'polish'],
+	['pt', 'portuguese'],
+	['pa', 'punjabi'],
+	['ro', 'romanian'],
+	['ru', 'russian'],
+	['sr', 'serbian'],
+	['si', 'sinhala'],
+	['sk', 'slovak'],
+	['sl', 'slovenian'],
+	['es', 'spanish'],
+	['sw', 'swahili'],
+	['sv', 'swedish'],
+	['tl', 'filipino'],
+	['ta', 'tamil'],
+	['te', 'telugu'],
+	['th', 'thai'],
+	['tr', 'turkish'],
+	['uk', 'ukrainian'],
+	['ur', 'urdu'],
+	['uz', 'uzbek'],
+	['vi', 'vietnamese'],
+];
 
-	return codes.map((code) => {
-		const name = (written[code] ?? iso.getName(code, 'en') ?? code).toLowerCase();
-		return RTL.has(code.slice(0, 2)) ? { code, name, rtl: true } : { code, name };
-	});
-})();
+export const LANGUAGES: Language[] = LANG_LIST.map(([code, name]) =>
+	RTL.has(code.slice(0, 2)) ? { code, name, rtl: true } : { code, name }
+).sort((a, b) => a.name.localeCompare(b.name));
 
 const byCode = new Map(LANGUAGES.map((l) => [l.code, l]));
 
@@ -38,16 +94,16 @@ export function langByCode(code: string): Language | null {
 
 const FLAG_OVERRIDES: Record<string, string> = {
 	af: 'za',
+	sq: 'al',
 	am: 'et',
 	ar: 'sa',
+	hy: 'am',
+	be: 'by',
 	bn: 'bd',
-	ca: 'es',
 	el: 'gr',
 	en: 'gb',
 	et: 'ee',
 	fa: 'ir',
-	ga: 'ie',
-	gl: 'es',
 	gu: 'in',
 	he: 'il',
 	hi: 'in',
@@ -58,7 +114,6 @@ const FLAG_OVERRIDES: Record<string, string> = {
 	kn: 'in',
 	ko: 'kr',
 	ky: 'kg',
-	lb: 'lu',
 	lo: 'la',
 	ml: 'in',
 	mr: 'in',
@@ -66,9 +121,9 @@ const FLAG_OVERRIDES: Record<string, string> = {
 	my: 'mm',
 	ne: 'np',
 	pa: 'in',
-	sr: 'rs',
 	si: 'lk',
 	sl: 'si',
+	sr: 'rs',
 	sv: 'se',
 	sw: 'tz',
 	ta: 'in',
@@ -77,7 +132,6 @@ const FLAG_OVERRIDES: Record<string, string> = {
 	uk: 'ua',
 	ur: 'pk',
 	vi: 'vn',
-	cy: 'gb',
 	'zh-CN': 'cn',
 	'zh-TW': 'tw',
 };
@@ -89,7 +143,7 @@ export function matchesLanguage(lang: Language, query: string): boolean {
 export function flagUrl(code: string): string | null {
 	if (code === 'auto') return null;
 	const country = FLAG_OVERRIDES[code] ?? code.slice(0, 2).toLowerCase();
-	const src = `https://flagcdn.com/w80/${country}.png`;
+	const src = `https://flagcdn.com/w40/${country}.png`;
 	return `https://external-content.duckduckgo.com/iu/?u=${src}`;
 }
 
