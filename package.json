@@ -1,7 +1,7 @@
 {
   "name": "clasp",
   "private": true,
-  "packageManager": "pnpm@12.14.0",
+  "packageManager": "pnpm@12.15.0",
   "scripts": {
     "dev": "pnpm run dev:go & pnpm run dev:frontend",
     "dev:go": "go run .",
