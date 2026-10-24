@@ -109,8 +109,8 @@
 {#if loading && images.length === 0}
 	<div out:fade={{ duration: 200 }} class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3 pb-5" style="grid-auto-flow: dense; grid-auto-rows: 220px;">
 		{#each Array(20) as _, i (i)}
-			<div class="flex flex-col rounded-lg overflow-hidden">
-				<div class="skeleton flex-1 rounded-lg"></div>
+			<div class="flex flex-col rounded-md overflow-hidden">
+				<div class="skeleton flex-1 rounded-md"></div>
 				<div class="flex flex-col gap-1 mt-2 px-0.5">
 					<div class="skeleton h-3 rounded" style="width: {60 + (i % 3) * 15}%"></div>
 					<div class="skeleton h-2.5 rounded" style="width: {40 + (i % 2) * 20}%"></div>
@@ -127,14 +127,14 @@
 		{#each visibleItems as { image, index } (imageKey(image) || index)}
 			{@const transState = transparencyState(image)}
 			<div
-				class="flex flex-col text-left rounded-lg overflow-hidden image-card"
+				class="flex flex-col text-left rounded-md overflow-hidden image-card"
 				class:col-span-2={span(image) === 'col-span-2'}
 				class:invisible={settings.transparentOnly && transState === undefined}
 				class:hidden={settings.transparentOnly && (transState === false || transState === null)}
 			>
 				<a
 					href={image.url}
-					class="overflow-hidden rounded-lg bg-[#1a1a1a] w-full h-full relative block cursor-pointer"
+					class="overflow-hidden rounded-md bg-[#1a1a1a] w-full h-full relative block cursor-pointer"
 					class:selected={selectedIndex === index}
 					onclick={(e) => openSidebar(e, index)}
 				>
