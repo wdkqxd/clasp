@@ -1,18 +1,8 @@
-<div align="center">
-    <br/>
-    <p>
-        <img src="frontend/src/lib/assets/logo.svg" alt="clasp logo" width="50" />
-    </p>
-    <p>
-        search without the noise
-        <br/>
-        <a href="https://clasp.wdkq.cc">
-            clasp.wdkq.cc
-        </a>
-    </p>
-</div>
+<p align="center">
+   <img src="assets/banner.png"/>
+   <br/>
+</p>
 
-### about
 сlasp is a small, open-source metasearch engine built with privacy in mind. it doesn't track users or log search queries, and it's ad-free.
 
 ### how it works?
