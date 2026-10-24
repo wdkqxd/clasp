@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Clapperboard, Globe, Image, Settings2 } from '@lucide/svelte';
+	import { Search, Settings2 } from '@lucide/svelte';
+	import { tick } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import {
 		ENGINE_API_NAMES,
@@ -25,15 +26,13 @@
 	} = $props();
 
 	let settingsOpen = $state(false);
+	let tabsEl = $state<HTMLDivElement | null>(null);
+	let indicatorLeft = $state(0);
+	let indicatorWidth = $state(0);
+	let indicatorReady = $state(false);
 	const settings = getSearchSettings();
 	const engines = $derived(active === 'Images' ? settings.imageEngines : settings.engines);
 	const engineOptions = $derived(active === 'Images' ? IMAGE_ENGINES : WEB_ENGINES);
-
-	const icons = {
-		Web: Globe,
-		Images: Image,
-		Video: Clapperboard
-	} as const;
 
 	function tabHref(tab: string): string {
 		const q = page.url.searchParams.get('q') ?? '';
@@ -57,6 +56,29 @@
 		return engineStatus[ENGINE_API_NAMES[engine]];
 	}
 
+	function updateIndicator() {
+		if (!tabsEl) return;
+		const activeEl = tabsEl.querySelector<HTMLElement>('[data-active="true"]');
+		if (!activeEl) return;
+
+		indicatorLeft = activeEl.offsetLeft;
+		indicatorWidth = activeEl.offsetWidth;
+		if (!indicatorReady && indicatorWidth > 0) indicatorReady = true;
+	}
+
+	$effect(() => {
+		const _ = active;
+		const __ = tabs;
+		tick().then(() => updateIndicator());
+	});
+
+	$effect(() => {
+		if (!tabsEl) return;
+		const ro = new ResizeObserver(() => updateIndicator());
+		ro.observe(tabsEl);
+		return () => ro.disconnect();
+	});
+
 	$effect(() => {
 		if (!settingsOpen) return;
 		const closeOnOutside = (event: MouseEvent) => {
@@ -77,17 +99,32 @@
 </script>
 
 <nav class="relative flex items-center gap-5 pt-3 text-[13px] font-medium" data-search-settings>
-	<div class="flex items-center gap-5">
+	<div
+		bind:this={tabsEl}
+		class="relative inline-flex max-w-full items-center rounded-[5px] bg-[#141414] p-[3px]"
+	>
+		<span
+			class="pointer-events-none absolute left-0 top-[3px] bottom-[3px] rounded-[3px] border border-[#2f2f2f] bg-[#222222] {indicatorReady
+				? 'transition-[transform,width] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]'
+				: ''}"
+			style:transform="translateX({indicatorLeft}px)"
+			style:width="{indicatorWidth}px"
+			style:opacity={indicatorReady && indicatorWidth > 0 ? 1 : 0}
+		></span>
+
 		{#each tabs as tab}
-			{@const Icon = icons[tab as keyof typeof icons] ?? Globe}
+			{@const isActive = tab.toLowerCase() === active.toLowerCase()}
 			<a
 				href={tab === 'Video' ? '#' : tabHref(tab)}
-				class="inline-flex items-center gap-1.5 {tab.toLowerCase() === active.toLowerCase()
-					? 'text-[#8a8a8a]'
-					: 'text-[#4a4a4a] hover:text-[#6a6a6a]'} transition-colors"
+				data-active={isActive}
+				class="relative z-10 inline-flex cursor-pointer items-center gap-1.5 rounded-[3px] px-2.5 py-1 text-[12px] leading-tight select-none transition-colors duration-150 {isActive
+					? 'text-[#c0c0c0]'
+					: 'text-[#6a6a6a] hover:text-[#9a9a9a]'}"
 				onclick={tab === 'Video' ? (e) => e.preventDefault() : undefined}
 			>
-				<Icon class="size-4" />
+				{#if tab === 'All'}
+					<Search class="size-3.5" />
+				{/if}
 				{tab}
 			</a>
 		{/each}

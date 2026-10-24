@@ -25,7 +25,7 @@
 <header class="mb-5 min-h-[86px]">
 	<SearchForm bind:value={feed.query} {onSearch} {placeholder} />
 	<TabBar
-		tabs={['Web', 'Images', 'Video']}
+		tabs={['All', 'Images', 'Video']}
 		{active}
 		tookMs={feed.tookMs}
 		engineStatus={feed.engineStatus}

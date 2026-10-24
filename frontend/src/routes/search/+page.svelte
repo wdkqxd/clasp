@@ -26,7 +26,7 @@
 	let imageSentinel = $state<HTMLElement | null>(null);
 	let selectedImageIndex = $state(-1);
 
-	let activeTab = $derived(page.url.searchParams.get('type') === 'images' ? 'Images' : 'Web');
+	let activeTab = $derived(page.url.searchParams.get('type') === 'images' ? 'Images' : 'All');
 	let searchPlaceholder = $derived(activeTab === 'Images' ? 'search images' : 'search the web');
 
 	$effect(() => {
@@ -145,14 +145,21 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
+<div class="w-full" class:pr-[420px]={sidebarOpen}>
+	<div class="w-full pl-4 pr-4 sm:pl-8 sm:pr-6 md:pl-16 lg:pl-28 xl:pl-44 pt-4 sm:pt-6">
+		<div class="w-full max-w-[600px]">
+			<SearchHeader
+				feed={activeTab === 'Images' ? imageFeed : feed}
+				active={activeTab}
+				{onSearch}
+				placeholder={searchPlaceholder}
+			/>
+		</div>
+	</div>
+</div>
+
 {#if activeTab === 'Images'}
 	<div class="min-h-screen" class:pr-[420px]={sidebarOpen}>
-		<div class="w-full pl-4 pr-4 sm:pl-8 sm:pr-6 md:pl-16 lg:pl-28 xl:pl-44 pt-4 sm:pt-6">
-			<div class="w-full max-w-[600px]">
-				<SearchHeader feed={imageFeed} active={activeTab} {onSearch} placeholder={searchPlaceholder} />
-			</div>
-		</div>
-
 		<div class="w-full px-4 sm:px-6">
 			<ImageGrid
 				images={imageFeed.items}
@@ -187,10 +194,8 @@
 		{/if}
 	</div>
 {:else}
-	<div class="w-full pl-4 pr-4 sm:pl-8 sm:pr-6 md:pl-16 lg:pl-28 xl:pl-44 pt-4 sm:pt-6">
+	<div class="w-full pl-4 pr-4 sm:pl-8 sm:pr-6 md:pl-16 lg:pl-28 xl:pl-44">
 		<div class="w-full max-w-[600px]">
-			<SearchHeader feed={feed} active={activeTab} {onSearch} placeholder={searchPlaceholder} />
-
 			<main class="space-y-12">
 				<div class="relative flex flex-col md:block">
 					<section class="order-last min-w-0 md:order-none">
