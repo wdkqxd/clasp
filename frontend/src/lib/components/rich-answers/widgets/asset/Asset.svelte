@@ -47,7 +47,7 @@
 </script>
 
 {#if v}
-	<div class="overflow-hidden rounded-md border border-[#292929] bg-[#121212] shadow-2xl shadow-black/30">
+	<div class="overflow-hidden rounded-[5px] border border-[#292929] bg-[#121212] shadow-2xl shadow-black/30">
 		<div class="p-4 pb-3">
 			<div class="flex items-center gap-1.5">
 				<span class="text-[12px] tracking-wide text-[#5c5c5c]">{v.name}</span>

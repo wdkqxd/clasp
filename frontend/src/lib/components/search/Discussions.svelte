@@ -54,7 +54,7 @@
 	<div class="space-y-2.5">
 		{#each items as d (d.url)}
 			<div
-				class="disc-item rounded-md border border-[#262626] bg-[#121212] transition-colors duration-300 ease-out hover:bg-[#181818]"
+				class="disc-item rounded-[5px] border border-[#262626] bg-[#121212] transition-colors duration-300 ease-out hover:bg-[#181818]"
 				class:open={isOpen(d.url)}
 			>
 				<button

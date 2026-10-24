@@ -85,7 +85,7 @@
 			<img
 				src={image.thumbnail}
 				alt={image.title}
-				class="w-full max-h-[70vh] object-contain rounded-md"
+				class="w-full max-h-[70vh] object-contain rounded-[5px]"
 			/>
 		</div>
 
@@ -124,7 +124,7 @@
 				href={image.source_url}
 				target={settings.openInNewTab ? '_blank' : undefined}
 				rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
-				class="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#262626] bg-[#1e1e1e] px-3 py-1.5 text-[12px] text-[#d0d0d0] no-underline transition-colors duration-150 ease-out hover:bg-[#262626] hover:text-[#e0e0e0] active:scale-[0.97]"
+				class="inline-flex cursor-pointer items-center gap-1.5 rounded-[5px] border border-[#262626] bg-[#1e1e1e] px-3 py-1.5 text-[12px] text-[#d0d0d0] no-underline transition-colors duration-150 ease-out hover:bg-[#262626] hover:text-[#e0e0e0] active:scale-[0.97]"
 			>
 				view source
 				<ArrowUpRight class="size-3.5" />

@@ -159,7 +159,7 @@
 
 {#if data}
 	{@const w = data}
-	<div class="rounded-md border border-[#292929] bg-[#121212] p-4 shadow-2xl shadow-black/30">
+	<div class="rounded-[5px] border border-[#292929] bg-[#121212] p-4 shadow-2xl shadow-black/30">
 		<div class="flex items-center justify-between gap-3">
 			<span class="text-[12px] tracking-wide text-[#5c5c5c]">{loc}</span>
 			{#if w.current_weather?.weather?.description}

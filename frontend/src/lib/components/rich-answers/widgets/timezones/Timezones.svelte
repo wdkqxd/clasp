@@ -115,7 +115,7 @@
 
 {#if data?.timezones?.length}
 	{@const list = data.timezones.slice(0, 6)}
-	<div class="rounded-md border border-[#292929] bg-[#121212] p-4 shadow-2xl shadow-black/30">
+	<div class="rounded-[5px] border border-[#292929] bg-[#121212] p-4 shadow-2xl shadow-black/30">
 		<div class="flex flex-col gap-1.5">
 			{#each list as tz, i (i)}
 				{@const t = tzTimeOf(tz)}

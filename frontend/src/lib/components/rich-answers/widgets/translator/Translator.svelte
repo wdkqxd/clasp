@@ -38,7 +38,7 @@
 </script>
 
 {#if show}
-	<div class="@container rounded-md border border-[#292929] bg-[#121212]">
+	<div class="@container rounded-[5px] border border-[#292929] bg-[#121212]">
 		<div class="flex items-center gap-1 border-b border-[#262626] px-2 py-2">
 			<div class="min-w-0 flex-1">
 				<LangPicker bind:value={from} detect align="start" />
@@ -59,7 +59,7 @@
 		</div>
 
 		<div class="grid grid-cols-2 max-[560px]:grid-cols-1">
-			<div class="relative flex min-h-[150px] flex-col rounded-bl-md max-[560px]:min-h-[112px] max-[560px]:border-b max-[560px]:border-[#1c1c1c] border-r border-[#1c1c1c]">
+			<div class="relative flex min-h-[150px] flex-col rounded-bl-[5px] max-[560px]:min-h-[112px] max-[560px]:border-b max-[560px]:border-[#1c1c1c] border-r border-[#1c1c1c]">
 				<textarea
 					class="block w-full flex-1 resize-none bg-transparent px-4 pt-3.5 pr-[52px] pb-2 text-[15px] leading-relaxed text-[#d0d0d0] outline-none placeholder:text-[#3d3d3d] {text.length <= 80
 						? 'text-[18px]'
@@ -103,7 +103,7 @@
 				</div>
 			</div>
 
-			<div class="flex min-h-[150px] flex-col rounded-br-md bg-[#151515] max-[560px]:min-h-[112px] max-[560px]:rounded-br-none max-[560px]:rounded-bl-md">
+			<div class="flex min-h-[150px] flex-col rounded-br-[5px] bg-[#151515] max-[560px]:min-h-[112px] max-[560px]:rounded-br-none max-[560px]:rounded-bl-[5px]">
 				<div
 					class="max-h-[280px] flex-1 overflow-y-auto px-4 pt-3.5 pb-2 text-[15px] leading-relaxed break-words whitespace-pre-wrap text-[#d0d0d0] {text.length <=
 					80 ? 'text-[18px]'

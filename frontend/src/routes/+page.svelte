@@ -94,7 +94,7 @@
 				<a
 					{href}
 					tabindex={menuOpen ? 0 : -1}
-					class="inline-flex w-[76px] flex-col items-center gap-1 rounded-md px-3 py-2 text-[13px] text-[#707070] no-underline transition-all duration-150 ease-out hover:bg-[#1a1a1a] hover:text-[#c0c0c0] active:scale-[0.94] active:duration-75"
+					class="inline-flex w-[76px] flex-col items-center gap-1 rounded-[5px] px-3 py-2 text-[13px] text-[#707070] no-underline transition-all duration-150 ease-out hover:bg-[#1a1a1a] hover:text-[#c0c0c0] active:scale-[0.94] active:duration-75"
 				>
 					<span class="pointer-events-none">
 						<Icon class="size-4" strokeWidth={1.75} />

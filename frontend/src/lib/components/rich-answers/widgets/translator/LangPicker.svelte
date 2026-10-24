@@ -90,7 +90,7 @@
 <div bind:this={root} class="relative" class:open>
 	<button
 		type="button"
-		class="flex min-h-10 w-full max-w-full cursor-pointer items-center gap-2 rounded-md border border-transparent bg-[#1a1a1a] px-2.5 py-2 text-[13px] text-[#d0d0d0] transition-[background-color,border-color] duration-100 ease-out hover:bg-[#212121] {open
+		class="flex min-h-10 w-full max-w-full cursor-pointer items-center gap-2 rounded-[5px] border border-transparent bg-[#1a1a1a] px-2.5 py-2 text-[13px] text-[#d0d0d0] transition-[background-color,border-color] duration-100 ease-out hover:bg-[#212121] {open
 			? 'border-[#333] bg-[#212121]'
 			: ''}"
 		aria-haspopup="listbox"
@@ -142,7 +142,7 @@
 	</button>
 
 	<div
-		class="absolute top-full left-0 z-30 mt-1.5 w-[min(280px,calc(100vw-40px))] origin-top-left rounded-md border border-[#292929] bg-[#121212] shadow-2xl shadow-black/30 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] {align ===
+		class="absolute top-full left-0 z-30 mt-1.5 w-[min(280px,calc(100vw-40px))] origin-top-left rounded-[5px] border border-[#292929] bg-[#121212] shadow-2xl shadow-black/30 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] {align ===
 		'end'
 			? 'right-0 left-auto origin-top-right'
 			: ''} {open
@@ -170,7 +170,7 @@
 						type="button"
 						role="option"
 						aria-selected={lang.code === value}
-						class="flex w-full shrink-0 cursor-pointer items-center gap-2.5 rounded-md border-none bg-transparent px-2.5 py-1.5 text-left text-[13px] text-[#c0c0c0] transition-colors duration-100 hover:bg-[#1e1e1e] {i === active
+						class="flex w-full shrink-0 cursor-pointer items-center gap-2.5 rounded-[5px] border-none bg-transparent px-2.5 py-1.5 text-left text-[13px] text-[#c0c0c0] transition-colors duration-100 hover:bg-[#1e1e1e] {i === active
 							? 'bg-[#1e1e1e]'
 							: ''}"
 						onclick={() => pick(lang.code)}

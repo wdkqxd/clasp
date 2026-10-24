@@ -32,7 +32,7 @@
 </script>
 
 {#if query.trim().match(STOPWATCH_RE)}
-	<div class="rounded-md border border-[#292929] bg-[#121212] p-4 shadow-2xl shadow-black/30">
+	<div class="rounded-[5px] border border-[#292929] bg-[#121212] p-4 shadow-2xl shadow-black/30">
 		<div class="font-mono text-[32px] leading-none text-[#e0e0e0]">{fmtSw(swMs)}</div>
 		<div class="mt-3 flex items-center gap-2 text-[12px]">
 			<button

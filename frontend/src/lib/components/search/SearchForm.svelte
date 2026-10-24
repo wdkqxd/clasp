@@ -279,7 +279,7 @@
 
 <form onsubmit={submit} class="relative w-full">
 	<div
-		class="flex items-center gap-2.5 rounded-md border border-[#242424] bg-[#121212] pl-3 pr-1.5 transition-colors duration-200 ease-out focus-within:border-[#3d3d3d]"
+		class="flex items-center gap-2.5 rounded-[5px] border border-[#242424] bg-[#121212] pl-3 pr-1.5 transition-colors duration-200 ease-out focus-within:border-[#3d3d3d]"
 	>
 		{#if chip}
 			<span
@@ -344,7 +344,7 @@
 			data-suggestions
 			in:fly={{ y: -4, duration: 140, easing: cubicOut }}
 			out:fly={{ y: -4, duration: 110, easing: cubicIn }}
-			class="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-md border border-[#242424] bg-[#121212] p-1.5 shadow-2xl shadow-black/40"
+			class="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-[5px] border border-[#242424] bg-[#121212] p-1.5 shadow-2xl shadow-black/40"
 		>
 			<ul
 				role="listbox"
@@ -364,7 +364,7 @@
 							onclick={() => pickBang(bang)}
 							onmouseenter={() => (activeIndex = i)}
 							onmouseleave={() => (activeIndex = -1)}
-							class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] transition-all duration-100 ease-out active:scale-[0.99] {i ===
+							class="flex w-full items-center gap-2.5 rounded-[5px] px-2.5 py-2 text-left text-[13px] transition-all duration-100 ease-out active:scale-[0.99] {i ===
 							activeIndex
 								? 'bg-[#1e1e1e] text-[#a0a0a0]'
 								: 'text-[#8a8a8a]'}"
@@ -402,7 +402,7 @@
 							onclick={() => pick(suggestion)}
 							onmouseenter={() => (activeIndex = i)}
 							onmouseleave={() => (activeIndex = -1)}
-							class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] transition-all duration-100 ease-out active:scale-[0.99] {i ===
+							class="flex w-full items-center gap-2.5 rounded-[5px] px-2.5 py-2 text-left text-[13px] transition-all duration-100 ease-out active:scale-[0.99] {i ===
 							activeIndex
 								? 'bg-[#1e1e1e] text-[#a0a0a0]'
 								: 'text-[#8a8a8a]'}"

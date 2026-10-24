@@ -29,7 +29,7 @@
 
 {#if data}
 	{@const u = data}
-	<div class="rounded-md border border-[#292929] bg-[#121212] p-4 shadow-2xl shadow-black/30">
+	<div class="rounded-[5px] border border-[#292929] bg-[#121212] p-4 shadow-2xl shadow-black/30">
 		<p class="text-[16px] text-[#c0c0c0]">
 			<span class="text-[#707070]">{u.amount} {plural(u.from_label, u.amount)} =</span>
 			<button

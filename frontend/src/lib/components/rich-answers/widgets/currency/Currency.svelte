@@ -136,7 +136,7 @@
 
 {#if data}
 	{@const c = data}
-	<div class="overflow-hidden rounded-md border border-[#292929] bg-[#121212] shadow-2xl shadow-black/30">
+	<div class="overflow-hidden rounded-[5px] border border-[#292929] bg-[#121212] shadow-2xl shadow-black/30">
 		<div class="p-4 pb-3">
 			<p class="text-[16px] text-[#c0c0c0]">
 				<span class="text-[#707070]">{price(c.amount)} {c.from_currency_name || c.from_currency_code} =</span>
