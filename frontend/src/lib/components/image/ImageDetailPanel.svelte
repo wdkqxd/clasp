@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { ImageResult } from '../../types';
 	import { getSearchSettings } from '../settings/searchSettings.svelte';
-	import { ChevronLeft, ChevronRight, ArrowUpRight, X } from '@lucide/svelte';
+	import { ChevronLeft, ChevronRight, ArrowUpRight, Check, Copy, Download, X } from '@lucide/svelte';
 
 	const settings = getSearchSettings();
+	let copied = $state(false);
 
 	let {
 		image,
@@ -22,6 +23,7 @@
 	} = $props();
 
 	const MAX_URL_LEN = 40;
+	const DOWNLOAD_PROXY = 'https://wsrv.nl/?url=';
 
 	function displayURL(u: string): string {
 		let out: string;
@@ -44,6 +46,54 @@
 			return `https://icons.duckduckgo.com/ip3/${h}.ico`;
 		} catch {
 			return '';
+		}
+	}
+
+	function imageLink(): string {
+		return image.source_url || image.thumbnail || image.url;
+	}
+
+	function copyLink() {
+		navigator.clipboard?.writeText(imageLink());
+		copied = true;
+		setTimeout(() => (copied = false), 1200);
+	}
+
+	function downloadName(url: string): string {
+		try {
+			const name = new URL(url).pathname.split('/').pop() ?? '';
+			if (/\.[a-z0-9]{2,5}$/i.test(name)) return name;
+		} catch {
+			// ignore malformed urls
+		}
+		const base = image.title
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-+|-+$/g, '')
+			.slice(0, 48);
+		return base || 'image';
+	}
+
+	async function downloadImage() {
+		const url = imageLink();
+		if (!url) return;
+		try {
+			const res = await fetch(`${DOWNLOAD_PROXY}${encodeURIComponent(url)}`);
+			if (!res.ok) throw new Error('failed to download image');
+			const blob = await res.blob();
+			const ext = blob.type.split('/')[1]?.split('+')[0] ?? '';
+			let name = downloadName(url);
+			if (ext && !/\.[a-z0-9]{2,5}$/i.test(name)) {
+				name += `.${ext === 'jpeg' ? 'jpg' : ext}`;
+			}
+			const objectURL = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = objectURL;
+			a.download = name;
+			a.click();
+			setTimeout(() => URL.revokeObjectURL(objectURL), 1000);
+		} catch {
+			window.open(url, '_blank', 'noopener,noreferrer');
 		}
 	}
 </script>
@@ -119,7 +169,7 @@
 			{/if}
 		</div>
 
-		<div class="pt-1">
+		<div class="flex items-center gap-1.5 pt-1">
 			<a
 				href={image.source_url}
 				target={settings.openInNewTab ? '_blank' : undefined}
@@ -129,6 +179,28 @@
 				view source
 				<ArrowUpRight class="size-3.5" />
 			</a>
+			<button
+				type="button"
+				title="copy image link"
+				aria-label="Copy image link"
+				onclick={copyLink}
+				class="inline-flex size-8 cursor-pointer items-center justify-center rounded-[4px] border border-[#262626] bg-[#1e1e1e] text-[#d0d0d0] transition-colors duration-150 ease-out hover:bg-[#262626] hover:text-[#e0e0e0] active:scale-[0.97]"
+			>
+				{#if copied}
+					<Check class="size-3.5" />
+				{:else}
+					<Copy class="size-3.5" />
+				{/if}
+			</button>
+			<button
+				type="button"
+				title="download image"
+				aria-label="Download image"
+				onclick={downloadImage}
+				class="inline-flex size-8 cursor-pointer items-center justify-center rounded-[4px] border border-[#262626] bg-[#1e1e1e] text-[#d0d0d0] transition-colors duration-150 ease-out hover:bg-[#262626] hover:text-[#e0e0e0] active:scale-[0.97]"
+			>
+				<Download class="size-3.5" />
+			</button>
 		</div>
 	</div>
 </div>
