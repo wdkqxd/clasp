@@ -21,10 +21,17 @@
 		const activeBtn = containerEl.querySelector<HTMLButtonElement>('[data-active="true"]');
 		if (!activeBtn) return;
 
+		// don't reset positions while the container is hidden
+		if (activeBtn.offsetWidth <= 0) return;
+
 		activeLeft = activeBtn.offsetLeft;
 		activeWidth = activeBtn.offsetWidth;
-		if (!ready && activeWidth > 0) {
-			ready = true;
+
+		// enable the transition after the first real measurement
+		if (!ready) {
+			requestAnimationFrame(() => {
+				ready = true;
+			});
 		}
 	}
 
