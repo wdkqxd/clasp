@@ -14,7 +14,7 @@ if you would rather we counted nothing at all, you can switch it off in the sett
 
 ## queries
 
-your query travels from your browser to this server, and from here to the search engines you turned on. it is never written to disk and never handed to anyone else.
+your query travels from your browser to a server, and from here to the search engines you turned on. it is never written to disk and never handed to anyone else.
 
 all queries are processed in RAM and sent to search engines in anonymized form, so searches cannot be traced back to anyone.
 
