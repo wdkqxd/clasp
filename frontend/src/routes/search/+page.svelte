@@ -107,6 +107,10 @@
 	});
 
 	function onSearch(q: string) {
+		if (!q) {
+			void goto('/', { replaceState: true });
+			return;
+		}
 		const isImages = page.url.searchParams.get('type') === 'images';
 		const params = new URLSearchParams({ q });
 		if (isImages) params.set('type', 'images');

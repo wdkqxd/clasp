@@ -24,6 +24,7 @@
 	const settings = getSearchSettings();
 
 	function onSearch(q: string) {
+		if (!q) return;
 		openBangOr(q, `/search?q=${encodeURIComponent(q)}`, goto);
 	}
 

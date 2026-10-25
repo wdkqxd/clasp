@@ -246,7 +246,6 @@
 	function submit(event: SubmitEvent) {
 		event.preventDefault();
 		const q = value.trim();
-		if (!q) return;
 		closeSuggestions();
 		onSearch(q);
 	}
