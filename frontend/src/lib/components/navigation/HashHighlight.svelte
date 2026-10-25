@@ -1,64 +1,55 @@
 <script lang="ts">
 	import { page } from '$app/state';
 
-	let top = $state(0);
-	let left = $state(0);
-	let width = $state(0);
-	let height = $state(0);
-	let active = $state(false);
-
 	$effect(() => {
 		const hash = page.url.hash;
-		if (!hash) {
-			active = false;
-			return;
-		}
+		if (!hash) return;
 
 		let showTimer: ReturnType<typeof setTimeout> | undefined;
 		let hideTimer: ReturnType<typeof setTimeout> | undefined;
-		let frame = 0;
+		let dimmed: HTMLElement[] = [];
 
-		active = false;
+		const undim = (fade: boolean) => {
+			for (const el of dimmed) {
+				el.style.opacity = '1';
+				if (fade) {
+					setTimeout(() => {
+						el.style.transition = '';
+						el.style.opacity = '';
+					}, 320);
+				} else {
+					el.style.transition = '';
+					el.style.opacity = '';
+				}
+			}
+			dimmed = [];
+		};
 
 		showTimer = setTimeout(() => {
 			const id = decodeURIComponent(hash.slice(1));
 			const heading = id ? document.getElementById(id) : null;
 			if (!heading) return;
 
-			heading.scrollIntoView();
+			const target = heading.closest('section') ?? heading;
+			const root = target.parentElement;
+			if (!root) return;
 
-			frame = requestAnimationFrame(() => {
-				const target = heading.closest('section') ?? heading;
-				const rect = target.getBoundingClientRect();
-				const pad = 10;
+			for (const section of root.querySelectorAll('section')) {
+				if (section === target) continue;
+				section.style.transition = 'opacity 300ms ease';
+				section.style.opacity = '0.35';
+				dimmed.push(section);
+			}
 
-				top = rect.top - pad;
-				left = rect.left - pad;
-				width = rect.width + pad * 2;
-				height = rect.height + pad * 2;
-				active = true;
-
-				hideTimer = setTimeout(() => {
-					active = false;
-				}, 1000);
-			});
+			if (dimmed.length > 0) {
+				hideTimer = setTimeout(() => undim(true), 1000);
+			}
 		}, 80);
 
 		return () => {
 			clearTimeout(showTimer);
 			if (hideTimer) clearTimeout(hideTimer);
-			cancelAnimationFrame(frame);
-			active = false;
+			undim(false);
 		};
 	});
 </script>
-
-<div
-	aria-hidden="true"
-	class="pointer-events-none fixed z-40 rounded-[6px] shadow-[0_0_0_100vmax_rgba(16,16,16,0.72)] transition-opacity duration-300 ease-out motion-reduce:transition-none"
-	style:top="{top}px"
-	style:left="{left}px"
-	style:width="{width}px"
-	style:height="{height}px"
-	style:opacity={active ? 1 : 0}
-></div>
