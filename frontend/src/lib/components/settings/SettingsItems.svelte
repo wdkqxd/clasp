@@ -27,15 +27,13 @@
 			label: 'search',
 			sections: ['autocomplete', 'timeout', 'open-links-in-new-tab']
 		},
-		...(isOfficialInstance
-			? []
-			: [
-					{
-						id: 'privacy',
-						label: 'privacy',
-						sections: ['unofficial-instance-notice']
-					}
-				])
+		{
+			id: 'privacy',
+			label: 'privacy',
+			sections: isOfficialInstance
+				? ['analytics']
+				: ['analytics', 'unofficial-instance-notice']
+		}
 	]);
 
 	let active = $state('appearance');
@@ -166,14 +164,28 @@
 			</section>
 		</div>
 
-		{#if !isOfficialInstance}
-			<div
-				id="panel-privacy"
-				role="tabpanel"
-				aria-labelledby="tab-privacy"
-				class:hidden={active !== 'privacy'}
-			>
-				<section class="group">
+		<div
+			id="panel-privacy"
+			role="tabpanel"
+			aria-labelledby="tab-privacy"
+			class:hidden={active !== 'privacy'}
+		>
+			<section class="group">
+				<AnchorHeading id="analytics">analytics</AnchorHeading>
+				<p class="mt-1 text-[14px] leading-relaxed text-[#c0c0c0]">
+					participate in anonymous usage analytics
+				</p>
+				<div class="mt-2.5">
+					<SegmentedControl
+						options={BOOLEAN_OPTIONS}
+						bind:value={settings.analytics}
+						onchange={() => saveSearchSettings()}
+					/>
+				</div>
+			</section>
+
+			{#if !isOfficialInstance}
+				<section class="group mt-7">
 					<AnchorHeading id="unofficial-instance-notice">unofficial instance notice</AnchorHeading>
 					<p class="mt-1 text-[14px] leading-relaxed text-[#c0c0c0]">
 						show an unofficial instance warning on the homepage
@@ -186,7 +198,7 @@
 						/>
 					</div>
 				</section>
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
 </div>

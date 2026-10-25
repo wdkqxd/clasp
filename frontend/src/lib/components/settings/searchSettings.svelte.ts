@@ -40,6 +40,7 @@ export type SearchSettings = {
 	font: FontChoice;
 	autocomplete: AutocompleteProvider;
 	timeout: SearchTimeout;
+	analytics: boolean;
 	showInstanceNotice: boolean;
 	hideAIImages: boolean;
 	transparentOnly: boolean;
@@ -53,6 +54,7 @@ const defaults: SearchSettings = {
 	font: 'jetbrains',
 	autocomplete: 'kagi',
 	timeout: 5,
+	analytics: true,
 	showInstanceNotice: true,
 	hideAIImages: false,
 	transparentOnly: false,
@@ -93,6 +95,7 @@ function load(): SearchSettings {
 				typeof parsed.showInstanceNotice === 'boolean'
 					? parsed.showInstanceNotice
 					: defaults.showInstanceNotice,
+			analytics: typeof parsed.analytics === 'boolean' ? parsed.analytics : defaults.analytics,
 			hideAIImages:
 				typeof parsed.hideAIImages === 'boolean' ? parsed.hideAIImages : defaults.hideAIImages,
 			transparentOnly: defaults.transparentOnly,
@@ -107,6 +110,14 @@ function load(): SearchSettings {
 }
 
 export const searchSettings = $state<SearchSettings>(load());
+
+function syncAnalyticsOptOut(): void {
+	if (typeof localStorage === 'undefined') return;
+	if (searchSettings.analytics) localStorage.removeItem('analytics.disabled');
+	else localStorage.setItem('analytics.disabled', '1');
+}
+
+syncAnalyticsOptOut();
 
 export function getSearchSettings(): SearchSettings {
 	return searchSettings;
@@ -125,8 +136,10 @@ export function saveSearchSettings(): void {
 				autocomplete: searchSettings.autocomplete,
 				timeout: searchSettings.timeout,
 				showInstanceNotice: searchSettings.showInstanceNotice,
+				analytics: searchSettings.analytics,
 				hideAIImages: searchSettings.hideAIImages,
 			})
 		);
 	}
+	syncAnalyticsOptOut();
 }
