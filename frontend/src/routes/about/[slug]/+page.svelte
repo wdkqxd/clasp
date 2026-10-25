@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { ChevronLeft } from '@lucide/svelte';
+	import { page } from '$app/state';
+	import { isOfficialHost } from '$lib/instance';
 
 	let { data } = $props();
+
+	const isOfficialInstance = $derived(isOfficialHost(page.url.hostname));
 </script>
 
 <svelte:head>
@@ -19,7 +23,7 @@
 		back
 	</a>
 
-	<div class="prose mt-10">
+	<div class="prose mt-10" class:official-instance={isOfficialInstance}>
 		{@html data.doc.html}
 	</div>
 </div>
@@ -48,6 +52,9 @@
 	}
 	.prose :global(p + p) {
 		margin-top: 1.25rem;
+	}
+	.prose.official-instance :global([data-instance-only]) {
+		display: none;
 	}
 	.prose :global(a) {
 		color: inherit;

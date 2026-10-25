@@ -21,3 +21,5 @@ all queries are processed in RAM and sent to search engines in anonymized form, 
 ## self-hosted instances
 
 we do our best to keep this instance private. anyone can run their own copy of clasp though, and we can neither see nor control what they do with it, so we cannot answer for it. read the source before you trust one.
+
+<p data-instance-only>the notice about this on the home page can be turned off <a href="/settings#unofficial-instance-notice">in the settings</a>.</p>

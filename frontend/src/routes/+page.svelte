@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Info, Settings2, ShieldCheck } from '@lucide/svelte';
+	import { page } from '$app/state';
+	import { CircleQuestionMark, Info, Settings2, ShieldCheck } from '@lucide/svelte';
 	import { openBangOr } from '$lib/bangs';
 	import SearchForm from '$lib/components/search/SearchForm.svelte';
+	import { getSearchSettings } from '$lib/components/settings/searchSettings.svelte';
+	import { isOfficialHost } from '$lib/instance';
 	import logo from '$lib/assets/logo.svg';
 
 	const links = [
@@ -16,6 +19,9 @@
 	let panelHeight = $state(0);
 	let footerEl = $state<HTMLElement | null>(null);
 	let closeTimer: ReturnType<typeof setTimeout> | undefined;
+
+	const isOfficialInstance = $derived(isOfficialHost(page.url.hostname));
+	const settings = getSearchSettings();
 
 	function onSearch(q: string) {
 		openBangOr(q, `/search?q=${encodeURIComponent(q)}`, goto);
@@ -60,6 +66,18 @@
 />
 
 <div class="relative flex min-h-screen flex-col overflow-hidden px-4">
+	{#if !isOfficialInstance && settings.showInstanceNotice}
+		<div class="absolute inset-x-0 top-0 z-30 flex justify-center px-4 pt-4">
+			<a
+				href="/about/privacy#self-hosted-instances"
+				class="inline-flex items-center gap-1.5 rounded-[3px] text-[12px] text-[#707070] transition-colors hover:text-[#c0c0c0] focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#707070]"
+			>
+				<span>unofficial instance</span>
+				<CircleQuestionMark size={13} strokeWidth={1.75} />
+			</a>
+		</div>
+	{/if}
+
 	<div class="flex flex-1 items-center justify-center">
 		<div class="w-full max-w-xl">
 			<div class="mb-8 flex justify-center">

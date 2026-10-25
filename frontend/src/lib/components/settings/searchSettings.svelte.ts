@@ -40,6 +40,7 @@ export type SearchSettings = {
 	font: FontChoice;
 	autocomplete: AutocompleteProvider;
 	timeout: SearchTimeout;
+	showInstanceNotice: boolean;
 	hideAIImages: boolean;
 	transparentOnly: boolean;
 };
@@ -52,6 +53,7 @@ const defaults: SearchSettings = {
 	font: 'jetbrains',
 	autocomplete: 'kagi',
 	timeout: 5,
+	showInstanceNotice: true,
 	hideAIImages: false,
 	transparentOnly: false,
 };
@@ -87,6 +89,10 @@ function load(): SearchSettings {
 			timeout: TIMEOUT_OPTIONS.some((o) => o.value === parsed.timeout)
 				? parsed.timeout
 				: defaults.timeout,
+			showInstanceNotice:
+				typeof parsed.showInstanceNotice === 'boolean'
+					? parsed.showInstanceNotice
+					: defaults.showInstanceNotice,
 			hideAIImages:
 				typeof parsed.hideAIImages === 'boolean' ? parsed.hideAIImages : defaults.hideAIImages,
 			transparentOnly: defaults.transparentOnly,
@@ -118,6 +124,7 @@ export function saveSearchSettings(): void {
 				font: searchSettings.font,
 				autocomplete: searchSettings.autocomplete,
 				timeout: searchSettings.timeout,
+				showInstanceNotice: searchSettings.showInstanceNotice,
 				hideAIImages: searchSettings.hideAIImages,
 			})
 		);
