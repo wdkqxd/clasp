@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ArrowRight, Search, X } from '@lucide/svelte';
+	import { CornerDownLeft, Search, X } from '@lucide/svelte';
 	import { cubicIn, cubicOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';
 	import { suggest } from '../../api';
@@ -333,7 +333,7 @@
 				out:arrowOut
 				class="shrink-0 rounded-sm bg-[#242424] p-1.5 text-[#c8c8c8] transition-colors duration-150 hover:bg-[#2e2e2e] hover:text-[#e8e8e8] active:scale-90"
 			>
-				<ArrowRight size={13} />
+				<CornerDownLeft size={13} />
 			</button>
 		{/if}
 	</div>
