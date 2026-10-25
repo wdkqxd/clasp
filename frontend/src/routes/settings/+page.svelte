@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ChevronLeft } from '@lucide/svelte';
+	import HashHighlight from '$lib/components/navigation/HashHighlight.svelte';
 	import SettingsItems from '$lib/components/settings/SettingsItems.svelte';
 </script>
 
@@ -22,3 +23,5 @@
 		<SettingsItems />
 	</div>
 </div>
+
+<HashHighlight />

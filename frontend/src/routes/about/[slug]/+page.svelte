@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ChevronLeft } from '@lucide/svelte';
 	import { page } from '$app/state';
+	import HashHighlight from '$lib/components/navigation/HashHighlight.svelte';
 	import { isOfficialHost } from '$lib/instance';
 
 	let { data } = $props();
@@ -27,6 +28,8 @@
 		{@html data.doc.html}
 	</div>
 </div>
+
+<HashHighlight />
 
 <style>
 	.prose {
