@@ -22,8 +22,8 @@
 
 <div>
 	<section>
-		<h2 class="text-[15px] font-normal leading-[1.375] text-[#c0c0c0]">font</h2>
-		<p class="mt-1 text-[13px] leading-[1.625] text-[#707070]">
+		<h2 class="text-[15px] font-semibold leading-[1.375] text-[#c0c0c0]">font</h2>
+		<p class="mt-1 text-[13px] leading-[1.625] text-[#c0c0c0]">
 			typeface used across the interface
 		</p>
 		<div class="mt-2.5">
@@ -36,8 +36,8 @@
 	</section>
 
 	<section class="mt-7">
-		<h2 class="text-[15px] font-normal leading-[1.375] text-[#c0c0c0]">autocomplete</h2>
-		<p class="mt-1 text-[13px] leading-[1.625] text-[#707070]">
+		<h2 class="text-[15px] font-semibold leading-[1.375] text-[#c0c0c0]">autocomplete</h2>
+		<p class="mt-1 text-[13px] leading-[1.625] text-[#c0c0c0]">
 			which provider answers search suggestions
 		</p>
 		<div class="mt-2.5">
@@ -50,8 +50,8 @@
 	</section>
 
 	<section class="mt-7">
-		<h2 class="text-[15px] font-normal leading-[1.375] text-[#c0c0c0]">engine badges</h2>
-		<p class="mt-1 text-[13px] leading-[1.625] text-[#707070]">
+		<h2 class="text-[15px] font-semibold leading-[1.375] text-[#c0c0c0]">engine badges</h2>
+		<p class="mt-1 text-[13px] leading-[1.625] text-[#c0c0c0]">
 			show which engine returned each result
 		</p>
 		<div class="mt-2.5">
@@ -64,8 +64,8 @@
 	</section>
 
 	<section class="mt-7">
-		<h2 class="text-[15px] font-normal leading-[1.375] text-[#c0c0c0]">open links in new tab</h2>
-		<p class="mt-1 text-[13px] leading-[1.625] text-[#707070]">
+		<h2 class="text-[15px] font-semibold leading-[1.375] text-[#c0c0c0]">open links in new tab</h2>
+		<p class="mt-1 text-[13px] leading-[1.625] text-[#c0c0c0]">
 			open results and pages in a separate tab
 		</p>
 		<div class="mt-2.5">

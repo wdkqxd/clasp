@@ -18,9 +18,7 @@
 		back
 	</a>
 
-	<h1 class="mt-10 text-[20px] leading-tight font-normal text-[#d0d0d0]">settings</h1>
-
-	<div class="mt-6">
+	<div class="mt-10">
 		<SettingsItems />
 	</div>
 </div>

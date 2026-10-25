@@ -19,9 +19,7 @@
 		back
 	</a>
 
-	<h1 class="mt-10 text-[20px] leading-tight font-normal text-[#d0d0d0]">{data.doc.title}</h1>
-
-	<div class="prose mt-6">
+	<div class="prose mt-10">
 		{@html data.doc.html}
 	</div>
 </div>
@@ -30,14 +28,14 @@
 	.prose {
 		font-size: 13px;
 		line-height: 1.625;
-		color: #707070;
+		color: #c0c0c0;
 	}
 	.prose :global(h2) {
 		margin-top: 2rem;
 		margin-bottom: 0.375rem;
 		font-size: 15px;
 		line-height: 1.375;
-		font-weight: 400;
+		font-weight: 600;
 		color: #c0c0c0;
 	}
 	.prose :global(h2:first-child) {
@@ -50,12 +48,12 @@
 		margin-top: 1.25rem;
 	}
 	.prose :global(a) {
-		color: #8a8a8a;
+		color: inherit;
 		text-decoration: underline;
 		text-underline-offset: 4px;
 		transition: color 0.15s;
 	}
 	.prose :global(a:hover) {
-		color: #c0c0c0;
+		color: #fff;
 	}
 </style>
