@@ -3,6 +3,7 @@
 	import SegmentedControl from './SegmentedControl.svelte';
 	import {
 		AUTOCOMPLETE_PROVIDERS,
+		TIMEOUT_OPTIONS,
 		getSearchSettings,
 		saveSearchSettings,
 		type FontChoice
@@ -45,6 +46,20 @@
 			<SegmentedControl
 				options={AUTOCOMPLETE_PROVIDERS.map((p) => ({ value: p.value, label: p.label }))}
 				bind:value={settings.autocomplete}
+				onchange={() => saveSearchSettings()}
+			/>
+		</div>
+	</section>
+
+	<section class="group mt-7">
+		<AnchorHeading id="timeout">timeout</AnchorHeading>
+		<p class="mt-1 text-[14px] leading-[1.625] text-[#c0c0c0]">
+			how long to wait for search engines
+		</p>
+		<div class="mt-2.5">
+			<SegmentedControl
+				options={TIMEOUT_OPTIONS}
+				bind:value={settings.timeout}
 				onchange={() => saveSearchSettings()}
 			/>
 		</div>

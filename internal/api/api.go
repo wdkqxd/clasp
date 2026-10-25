@@ -16,8 +16,8 @@ import (
 )
 
 type Searcher interface {
-	Search(ctx context.Context, query string, limit, page int, engines []string) aggregator.Response
-	ImageSearch(ctx context.Context, query string, limit, page int, engines []string) aggregator.ImageResponse
+	Search(ctx context.Context, query string, limit, page int, engines []string, timeout time.Duration) aggregator.Response
+	ImageSearch(ctx context.Context, query string, limit, page int, engines []string, timeout time.Duration) aggregator.ImageResponse
 }
 
 type Server struct {
@@ -81,6 +81,7 @@ type searchParams struct {
 	limit   int
 	page    int
 	engines []string
+	timeout time.Duration
 }
 
 func (s *Server) parseSearchParams(w http.ResponseWriter, r *http.Request, defaultLimit, maxLimit int) (searchParams, bool) {
@@ -140,7 +141,23 @@ func (s *Server) parseSearchParams(w http.ResponseWriter, r *http.Request, defau
 		}
 	}
 
-	return searchParams{query: query, limit: limit, page: page, engines: engines}, true
+	var timeout time.Duration
+	if raw := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("timeout"))); raw != "" {
+		if raw == "off" {
+			timeout = -1
+		} else {
+			n, err := strconv.Atoi(raw)
+			if err != nil || n < 5 || n > 10 {
+				writeJSON(w, http.StatusBadRequest, map[string]any{
+					"error": "invalid 'timeout': must be an integer between 5 and 10, or 'off'",
+				})
+				return searchParams{}, false
+			}
+			timeout = time.Duration(n) * time.Second
+		}
+	}
+
+	return searchParams{query: query, limit: limit, page: page, engines: engines, timeout: timeout}, true
 }
 
 func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
@@ -148,7 +165,7 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	writeJSON(w, http.StatusOK, s.search.Search(r.Context(), params.query, params.limit, params.page, params.engines))
+	writeJSON(w, http.StatusOK, s.search.Search(r.Context(), params.query, params.limit, params.page, params.engines, params.timeout))
 }
 
 func (s *Server) handleImages(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +173,7 @@ func (s *Server) handleImages(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	writeJSON(w, http.StatusOK, s.search.ImageSearch(r.Context(), params.query, params.limit, params.page, params.engines))
+	writeJSON(w, http.StatusOK, s.search.ImageSearch(r.Context(), params.query, params.limit, params.page, params.engines, params.timeout))
 }
 
 func (s *Server) handleSuggest(w http.ResponseWriter, r *http.Request) {

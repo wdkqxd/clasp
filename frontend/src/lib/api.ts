@@ -1,4 +1,4 @@
-import type { SearchEngine } from './components/settings/searchSettings.svelte';
+import type { SearchEngine, SearchTimeout } from './components/settings/searchSettings.svelte';
 import type {
 	HealthResponse,
 	ImageSearchResponse,
@@ -21,11 +21,13 @@ export async function search(
 	query: string,
 	offset = 0,
 	limit = 10,
-	engines?: SearchEngine[]
+	engines?: SearchEngine[],
+	timeout?: SearchTimeout
 ): Promise<SearchResponse> {
 	const engineParam = engines?.length ? `&engines=${encodeURIComponent(engines.join(','))}` : '';
+	const timeoutParam = timeout ? `&timeout=${timeout}` : '';
 	const res = await fetch(
-		`/api/search?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}${engineParam}`
+		`/api/search?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}${engineParam}${timeoutParam}`
 	);
 	if (!res.ok) throw new Error(`HTTP ${res.status}`);
 	return res.json();
@@ -55,11 +57,13 @@ export async function imageSearch(
 	query: string,
 	offset = 0,
 	limit = 20,
-	engines?: SearchEngine[]
+	engines?: SearchEngine[],
+	timeout?: SearchTimeout
 ): Promise<ImageSearchResponse> {
 	const engineParam = engines?.length ? `&engines=${encodeURIComponent(engines.join(','))}` : '';
+	const timeoutParam = timeout ? `&timeout=${timeout}` : '';
 	const res = await fetch(
-		`/api/images?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}${engineParam}`
+		`/api/images?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}${engineParam}${timeoutParam}`
 	);
 	if (!res.ok) throw new Error(`HTTP ${res.status}`);
 	return res.json();

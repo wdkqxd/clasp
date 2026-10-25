@@ -21,6 +21,17 @@ export type AutocompleteProvider = (typeof AUTOCOMPLETE_PROVIDERS)[number]['valu
 
 export type FontChoice = 'jetbrains' | 'system';
 
+export const TIMEOUT_OPTIONS = [
+	{ value: 5, label: '5s' },
+	{ value: 7, label: '7s' },
+	{ value: 8, label: '8s' },
+	{ value: 9, label: '9s' },
+	{ value: 10, label: '10s' },
+	{ value: 'off', label: 'off' },
+];
+
+export type SearchTimeout = (typeof TIMEOUT_OPTIONS)[number]['value'];
+
 export type SearchSettings = {
 	engines: SearchEngine[];
 	imageEngines: SearchEngine[];
@@ -28,6 +39,7 @@ export type SearchSettings = {
 	openInNewTab: boolean;
 	font: FontChoice;
 	autocomplete: AutocompleteProvider;
+	timeout: SearchTimeout;
 	hideAIImages: boolean;
 	transparentOnly: boolean;
 };
@@ -39,6 +51,7 @@ const defaults: SearchSettings = {
 	openInNewTab: false,
 	font: 'jetbrains',
 	autocomplete: 'kagi',
+	timeout: 5,
 	hideAIImages: false,
 	transparentOnly: false,
 };
@@ -71,6 +84,9 @@ function load(): SearchSettings {
 			autocomplete: AUTOCOMPLETE_PROVIDERS.some((p) => p.value === parsed.autocomplete)
 				? parsed.autocomplete
 				: defaults.autocomplete,
+			timeout: TIMEOUT_OPTIONS.some((o) => o.value === parsed.timeout)
+				? parsed.timeout
+				: defaults.timeout,
 			hideAIImages:
 				typeof parsed.hideAIImages === 'boolean' ? parsed.hideAIImages : defaults.hideAIImages,
 			transparentOnly: defaults.transparentOnly,
@@ -101,6 +117,7 @@ export function saveSearchSettings(): void {
 				openInNewTab: searchSettings.openInNewTab,
 				font: searchSettings.font,
 				autocomplete: searchSettings.autocomplete,
+				timeout: searchSettings.timeout,
 				hideAIImages: searchSettings.hideAIImages,
 			})
 		);

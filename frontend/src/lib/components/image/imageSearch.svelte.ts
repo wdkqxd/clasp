@@ -23,7 +23,7 @@ export class ImageSearchState extends BaseSearchState<ImageResult, ImageSearchRe
 		limit: number,
 		engines?: SearchEngine[]
 	): Promise<ImageSearchResponse> {
-		return imageSearch(query, offset, limit, engines);
+		return imageSearch(query, offset, limit, engines, getSearchSettings().timeout);
 	}
 
 	protected getResults(response: ImageSearchResponse): ImageResult[] | null {

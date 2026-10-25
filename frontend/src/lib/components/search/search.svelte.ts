@@ -2,6 +2,7 @@ import { search as apiSearch } from '../../api';
 import { BaseSearchState } from '../../baseSearchState.svelte';
 import type { SearchResponse, SearchResult } from '../../types';
 import type { SearchEngine } from '../settings/searchSettings.svelte';
+import { getSearchSettings } from '../settings/searchSettings.svelte';
 
 export const PAGE_SIZE = 10;
 
@@ -16,7 +17,7 @@ export class SearchState extends BaseSearchState<SearchResult, SearchResponse> {
 		limit: number,
 		engines?: SearchEngine[]
 	): Promise<SearchResponse> {
-		return apiSearch(query, offset, limit, engines);
+		return apiSearch(query, offset, limit, engines, getSearchSettings().timeout);
 	}
 
 	protected getResults(response: SearchResponse): SearchResult[] | null {

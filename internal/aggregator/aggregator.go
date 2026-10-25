@@ -68,6 +68,17 @@ type engineOutcome[T any] struct {
 	val  T
 }
 
+func (a *Aggregator) timeouts(timeout time.Duration) (fast, perEngine, total time.Duration) {
+	switch {
+	case timeout < 0:
+		return a.totalTimeout, a.totalTimeout, a.totalTimeout
+	case timeout == 0:
+		return a.fastTimeout, a.perEngineTimeout, a.totalTimeout
+	default:
+		return timeout, timeout + time.Second, timeout + 2*time.Second
+	}
+}
+
 func collectOutcomes[T any](names []string, ch <-chan engineOutcome[T], timeout time.Duration, fallback func(string) T) map[string]T {
 	pending := make(map[string]struct{}, len(names))
 	for _, n := range names {
@@ -142,9 +153,10 @@ func selectImageEngines(all []engine.ImageSearcher, enabled []string) []engine.I
 	return out
 }
 
-func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, enabled []string) Response {
+func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, enabled []string, timeout time.Duration) Response {
 	start := time.Now()
-	ctx, cancel := context.WithTimeout(ctx, a.totalTimeout)
+	fastTimeout, perEngineTimeout, totalTimeout := a.timeouts(timeout)
+	ctx, cancel := context.WithTimeout(ctx, totalTimeout)
 	defer cancel()
 
 	if limit < 1 {
@@ -175,7 +187,7 @@ func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, 
 	for _, e := range activeEngines {
 		names = append(names, e.Name())
 		go func(e engine.Engine) {
-			ectx, cancel := context.WithTimeout(ctx, a.perEngineTimeout)
+			ectx, cancel := context.WithTimeout(ctx, perEngineTimeout)
 			defer cancel()
 			start := time.Now()
 			res, err := e.Search(ectx, query, maxCandidates, page)
@@ -186,9 +198,9 @@ func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, 
 		}(e)
 	}
 
-	timeoutErr := fmt.Errorf("timeout after %s", a.fastTimeout)
-	byName := collectOutcomes(names, ch, a.fastTimeout, func(string) outcome {
-		return outcome{err: timeoutErr, took: a.fastTimeout}
+	timeoutErr := fmt.Errorf("timeout after %s", fastTimeout)
+	byName := collectOutcomes(names, ch, fastTimeout, func(string) outcome {
+		return outcome{err: timeoutErr, took: fastTimeout}
 	})
 
 	seen := make(map[string]int)
@@ -433,9 +445,10 @@ func mergeTwoImageResults(existing *engine.ImageResult, incoming engine.ImageRes
 	}
 }
 
-func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page int, enabled []string) ImageResponse {
+func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page int, enabled []string, timeout time.Duration) ImageResponse {
 	start := time.Now()
-	ctx, cancel := context.WithTimeout(ctx, a.totalTimeout)
+	fastTimeout, perEngineTimeout, totalTimeout := a.timeouts(timeout)
+	ctx, cancel := context.WithTimeout(ctx, totalTimeout)
 	defer cancel()
 
 	if limit < 1 {
@@ -475,7 +488,7 @@ func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page 
 	for _, as := range activeSearchers {
 		names = append(names, as.name)
 		go func(name string, s engine.ImageSearcher) {
-			ectx, cancel := context.WithTimeout(ctx, a.perEngineTimeout)
+			ectx, cancel := context.WithTimeout(ctx, perEngineTimeout)
 			defer cancel()
 			start := time.Now()
 			res, err := s.ImageSearch(ectx, query, imageCandidates, page)
@@ -486,9 +499,9 @@ func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page 
 		}(as.name, as.s)
 	}
 
-	timeoutErr := fmt.Errorf("timeout after %s", a.fastTimeout)
-	byName := collectOutcomes(names, ch, a.fastTimeout, func(string) imgOutcome {
-		return imgOutcome{err: timeoutErr, took: a.fastTimeout}
+	timeoutErr := fmt.Errorf("timeout after %s", fastTimeout)
+	byName := collectOutcomes(names, ch, fastTimeout, func(string) imgOutcome {
+		return imgOutcome{err: timeoutErr, took: fastTimeout}
 	})
 
 	seen := make(map[string]int)
