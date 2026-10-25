@@ -132,7 +132,7 @@
 
 	<div class="ml-auto flex items-center gap-3">
 		{#if tookMs !== null}
-			<span transition:fade={{ duration: 300 }} class="text-[11px] text-[#4a4a4a]">{tookMs} ms</span>
+			<span transition:fade={{ duration: 300 }} class="text-[11px] text-[#4a4a4a]">took {tookMs} ms</span>
 		{/if}
 
 		<div class="relative">
