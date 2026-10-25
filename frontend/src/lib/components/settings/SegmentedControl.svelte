@@ -71,7 +71,7 @@
 			type="button"
 			data-active={isActive}
 			onclick={() => select(opt.value)}
-			class="relative z-10 min-w-[38px] cursor-pointer rounded-[3px] px-2.5 py-1 text-center text-[12px] leading-tight select-none transition-colors duration-150 {isActive
+			class="relative z-10 min-w-[40px] cursor-pointer rounded-[3px] px-2.5 py-1 text-center text-[13px] leading-tight select-none transition-colors duration-150 {isActive
 				? 'text-[#c0c0c0]'
 				: 'text-[#6a6a6a] hover:text-[#9a9a9a]'}"
 		>

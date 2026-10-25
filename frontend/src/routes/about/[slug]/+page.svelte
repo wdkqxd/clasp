@@ -26,14 +26,14 @@
 
 <style>
 	.prose {
-		font-size: 13px;
+		font-size: 14px;
 		line-height: 1.625;
 		color: #c0c0c0;
 	}
 	.prose :global(h2) {
 		margin-top: 2rem;
 		margin-bottom: 0.375rem;
-		font-size: 15px;
+		font-size: 16px;
 		line-height: 1.375;
 		font-weight: 600;
 		color: #c0c0c0;

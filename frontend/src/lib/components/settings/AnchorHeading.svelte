@@ -13,7 +13,7 @@
 
 <h2
 	{id}
-	class="flex w-fit scroll-mt-6 items-center gap-1.5 text-[15px] leading-[1.375] font-semibold text-[#c0c0c0]"
+	class="flex w-fit scroll-mt-6 items-center gap-1.5 text-[16px] leading-[1.375] font-semibold text-[#c0c0c0]"
 >
 	{@render children()}
 	<a

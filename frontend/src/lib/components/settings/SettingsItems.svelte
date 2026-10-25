@@ -24,7 +24,7 @@
 <div>
 	<section class="group">
 		<AnchorHeading id="font">font</AnchorHeading>
-		<p class="mt-1 text-[13px] leading-[1.625] text-[#c0c0c0]">
+		<p class="mt-1 text-[14px] leading-[1.625] text-[#c0c0c0]">
 			typeface used across the interface
 		</p>
 		<div class="mt-2.5">
@@ -38,7 +38,7 @@
 
 	<section class="group mt-7">
 		<AnchorHeading id="autocomplete">autocomplete</AnchorHeading>
-		<p class="mt-1 text-[13px] leading-[1.625] text-[#c0c0c0]">
+		<p class="mt-1 text-[14px] leading-[1.625] text-[#c0c0c0]">
 			which provider answers search suggestions
 		</p>
 		<div class="mt-2.5">
@@ -52,7 +52,7 @@
 
 	<section class="group mt-7">
 		<AnchorHeading id="engine-badges">engine badges</AnchorHeading>
-		<p class="mt-1 text-[13px] leading-[1.625] text-[#c0c0c0]">
+		<p class="mt-1 text-[14px] leading-[1.625] text-[#c0c0c0]">
 			show which engine returned each result
 		</p>
 		<div class="mt-2.5">
@@ -66,7 +66,7 @@
 
 	<section class="group mt-7">
 		<AnchorHeading id="open-links-in-new-tab">open links in new tab</AnchorHeading>
-		<p class="mt-1 text-[13px] leading-[1.625] text-[#c0c0c0]">
+		<p class="mt-1 text-[14px] leading-[1.625] text-[#c0c0c0]">
 			open results and pages in a separate tab
 		</p>
 		<div class="mt-2.5">
