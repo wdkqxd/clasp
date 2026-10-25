@@ -37,8 +37,10 @@
 		line-height: 1.375;
 		font-weight: 600;
 		color: #c0c0c0;
+		width: fit-content;
+		scroll-margin-top: 1.5rem;
 	}
-	.prose :global(h2:first-child) {
+	.prose :global(.doc-section:first-child h2:first-child) {
 		margin-top: 0;
 	}
 	.prose :global(p) {
@@ -55,5 +57,23 @@
 	}
 	.prose :global(a:hover) {
 		color: #fff;
+	}
+	.prose :global(a.heading-anchor) {
+		display: inline-flex;
+		margin-left: 0.375rem;
+		vertical-align: middle;
+		color: #707070;
+		opacity: 0;
+		text-decoration: none;
+		transition:
+			color 0.15s,
+			opacity 0.15s;
+	}
+	.prose :global(.doc-section:hover .heading-anchor),
+	.prose :global(.doc-section:focus-within .heading-anchor) {
+		opacity: 1;
+	}
+	.prose :global(a.heading-anchor:hover) {
+		color: #c0c0c0;
 	}
 </style>
