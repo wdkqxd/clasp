@@ -61,8 +61,11 @@
 	}
 	.prose :global(a) {
 		color: inherit;
-		text-decoration: underline;
-		text-underline-offset: 4px;
+		text-decoration: none;
+		border-bottom: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+		border-radius: 1px;
+		box-decoration-break: clone;
+		-webkit-box-decoration-break: clone;
 		transition: color 0.15s;
 	}
 	.prose :global(a:hover) {
@@ -75,6 +78,7 @@
 		color: #707070;
 		opacity: 0;
 		text-decoration: none;
+		border-bottom: none;
 		transition:
 			color 0.15s,
 			opacity 0.15s;
