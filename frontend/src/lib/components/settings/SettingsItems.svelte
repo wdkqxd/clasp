@@ -69,7 +69,7 @@
 				aria-selected={active === group.id}
 				aria-controls="panel-{group.id}"
 				onclick={() => (active = group.id)}
-				class="cursor-pointer rounded-[5px] px-2.5 py-1.5 text-left whitespace-nowrap text-[13px] transition-all duration-150 ease-out select-none active:scale-[0.94] active:duration-75 {active ===
+				class="cursor-pointer rounded-[5px] px-2.5 py-1.5 text-left whitespace-nowrap text-[13px] transition-colors duration-150 ease-out select-none {active ===
 				group.id
 					? 'bg-[#262626] text-[#e0e0e0]'
 					: 'text-[#707070] hover:bg-[#1a1a1a] hover:text-[#c0c0c0]'}"
