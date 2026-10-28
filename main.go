@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -10,6 +12,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/joho/godotenv"
 
 	"clasp/internal/aggregator"
 	"clasp/internal/api"
@@ -25,6 +29,8 @@ import (
 )
 
 func main() {
+	loadDotEnv()
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -114,6 +120,12 @@ func serveStatic(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.ServeFile(w, r, staticDir+"/200.html")
+}
+
+func loadDotEnv() {
+	if err := godotenv.Load(); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		log.Printf("env: failed to load .env: %v", err)
+	}
 }
 
 func staticDir() string {

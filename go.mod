@@ -7,6 +7,7 @@ toolchain go1.26.10
 require (
 	github.com/bogdanfinn/fhttp v0.6.9
 	github.com/bogdanfinn/tls-client v1.16.0
+	github.com/joho/godotenv v1.5.1
 	golang.org/x/image v0.46.0
 )
 
