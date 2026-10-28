@@ -4,10 +4,10 @@
   "packageManager": "pnpm@12.15.0",
   "scripts": {
     "dev": "pnpm run dev:go & pnpm run dev:frontend",
-    "dev:go": "go run .",
+    "dev:go": "go run ./backend/cmd/clasp",
     "dev:frontend": "pnpm --filter frontend dev",
     "build": "pnpm --filter frontend build",
-    "start": "go run .",
+    "start": "go run ./backend/cmd/clasp",
     "check": "pnpm --filter frontend check",
     "lint": "pnpm --filter frontend lint",
     "lint:fix": "pnpm --filter frontend lint:fix"

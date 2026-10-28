@@ -44,7 +44,8 @@ another site.
 
 ### environment file
 
-clasp reads `.env` from the working directory on startup. a malformed file is reported in the log,
+clasp reads `.env` from the working directory on startup. the pnpm scripts run the backend from
+the repository root, so put `.env` next to `package.json`. a malformed file is reported in the log,
 and a missing file is ignored. values from `.env` never override variables that are already set in
 the environment, so docker, systemd and shell configuration always win.
 

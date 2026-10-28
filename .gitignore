@@ -1,5 +1,8 @@
 node_modules
 
+# Go
+go.work.sum
+
 # Output
 .output
 .vercel

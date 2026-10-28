@@ -9,12 +9,12 @@ COPY frontend/ ./frontend/
 RUN pnpm --filter frontend build
 
 FROM golang:1.26.10-alpine AS builder
-WORKDIR /app
-COPY go.mod go.sum ./
+WORKDIR /app/backend
+COPY backend/go.mod backend/go.sum ./
 RUN go mod download
-COPY . .
-COPY --from=frontend /app/frontend/build ./frontend/build
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o clasp .
+COPY backend/ ./
+COPY --from=frontend /app/frontend/build /app/frontend/build
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /app/clasp ./cmd/clasp
 
 FROM alpine:3.24
 RUN apk add --no-cache ca-certificates

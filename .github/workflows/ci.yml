@@ -16,13 +16,16 @@ jobs:
   go:
     name: go
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
-          cache: true
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
 
       - name: check formatting
         run: |
