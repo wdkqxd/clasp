@@ -18,7 +18,7 @@ we believe quality-of-life features are one of the most important parts of a sea
 
 ### docs
 - [self-hosting](/docs/self-hosting.md)
-- [api environment variables](/docs/api-env-variables.md)
+- [environment variables](/docs/env-variables.md)
 - [api documentation](/docs/api.md)
 - [contributing guide](/docs/contributing.md)
 
