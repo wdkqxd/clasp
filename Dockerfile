@@ -1,4 +1,4 @@
-FROM node:24-alpine AS frontend
+FROM node:26-alpine AS frontend
 ENV NODE_OPTIONS=--use-openssl-ca
 WORKDIR /app
 RUN npm install -g pnpm@12.14.0
