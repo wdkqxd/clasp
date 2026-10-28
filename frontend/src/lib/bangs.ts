@@ -62,9 +62,7 @@ export function parseBang(q: string): ParsedBang | null {
 	const m = RE_BANG.exec(text);
 	if (!m) return null;
 	const end = m.index + m[0].length;
-	const rest = `${text.slice(0, m.index)} ${text.slice(end)}`
-		.replace(/\s+/g, ' ')
-		.trim();
+	const rest = `${text.slice(0, m.index)} ${text.slice(end)}`.replace(/\s+/g, ' ').trim();
 	return {
 		trigger: m[2].toLowerCase(),
 		rest,
