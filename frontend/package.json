@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@cospired/i18n-iso-languages": "^4.2.0",
-    "@lucide/svelte": "^1.49.0",
+    "@lucide/svelte": "^1.61.0",
     "devalue": "^5.9.4",
     "marked": "^16.4.2",
     "mathjs": "^15.2.0",
