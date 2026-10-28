@@ -20,7 +20,7 @@ we believe quality-of-life features are one of the most important parts of a sea
 - [self-hosting](/docs/self-hosting.md)
 - [environment variables](/docs/env-variables.md)
 - [api documentation](/docs/api.md)
-- [contributing guide](/docs/contributing.md)
+- [contributing guide](CONTRIBUTING.md)
 
 ### licensing
 the code is s open source and distributed under the [AGPL-3.0](LICENSE) license. you can always fork the repository, submit a pull request or change it for yourself.
