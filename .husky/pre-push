@@ -1,0 +1,4 @@
+hook="$(git rev-parse --absolute-git-dir)/hooks/pre-push"
+if [ -x "$hook" ]; then
+	"$hook" "$@"
+fi
