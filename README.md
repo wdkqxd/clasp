@@ -5,6 +5,9 @@
 
 сlasp is a small, open-source metasearch engine built with privacy in mind. it doesn't track users or log search queries, and it's ad-free.
 
+> [!IMPORTANT]
+> the project is not yet ready for everyday use. it is actively under development, and a public instance is planned for release closer to the first beta.
+
 ### how it works?
 сlasp anonymizes your queries before sending them to search engines, then filters and re-ranks the results for you so you get the highest-quality results possible.
 
