@@ -1,0 +1,3 @@
+# contributing guide
+
+to be writen...
