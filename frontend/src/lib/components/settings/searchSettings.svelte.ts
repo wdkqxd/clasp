@@ -1,20 +1,18 @@
 export const SEARCH_SETTINGS_KEY = 'clasp.search.settings';
 
 export const WEB_ENGINES = ['Brave', 'DuckDuckGo'] as const;
-export const IMAGE_ENGINES = ['Brave', 'DuckDuckGo', 'Startpage'] as const;
+export const IMAGE_ENGINES = ['Brave', 'DuckDuckGo'] as const;
 export type SearchEngine = (typeof IMAGE_ENGINES)[number];
 
 export const ENGINE_API_NAMES: Record<SearchEngine, string> = {
 	Brave: 'brave',
 	DuckDuckGo: 'ddg',
-	Startpage: 'startpage',
 };
 
 export const AUTOCOMPLETE_PROVIDERS = [
 	{ value: 'kagi', label: 'kagi' },
 	{ value: 'ddg', label: 'duckduckgo' },
 	{ value: 'brave', label: 'brave' },
-	{ value: 'startpage', label: 'startpage' },
 ] as const;
 
 export type AutocompleteProvider = (typeof AUTOCOMPLETE_PROVIDERS)[number]['value'];

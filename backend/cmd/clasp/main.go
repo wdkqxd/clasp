@@ -22,7 +22,6 @@ import (
 	"clasp/internal/engine/helpers"
 	"clasp/internal/engine/sources/brave"
 	"clasp/internal/engine/sources/ddg"
-	"clasp/internal/engine/sources/startpage"
 	"clasp/internal/limiter"
 	"clasp/internal/suggest"
 	"clasp/internal/wikipedia"
@@ -42,7 +41,6 @@ func main() {
 	}
 	braveEngine := brave.New(client)
 	ddgEngine := ddg.New(client)
-	startpageEngine := startpage.New(client)
 	engines := []engine.Engine{
 		braveEngine,
 		ddgEngine,
@@ -50,7 +48,6 @@ func main() {
 	imageEngines := []engine.ImageSearcher{
 		braveEngine,
 		ddgEngine,
-		startpageEngine,
 	}
 
 	agg := aggregator.New(engines, imageEngines...)

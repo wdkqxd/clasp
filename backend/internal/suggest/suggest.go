@@ -16,10 +16,9 @@ import (
 )
 
 const (
-	EngineBrave     = "brave"
-	EngineStartpage = "startpage"
-	EngineDDG       = "ddg"
-	EngineKagi      = "kagi"
+	EngineBrave = "brave"
+	EngineDDG   = "ddg"
+	EngineKagi  = "kagi"
 
 	DefaultEngine = EngineKagi
 
@@ -37,7 +36,7 @@ type Response struct {
 }
 
 func Engines() []string {
-	return []string{EngineKagi, EngineDDG, EngineBrave, EngineStartpage}
+	return []string{EngineKagi, EngineDDG, EngineBrave}
 }
 
 func Normalize(name string) string {
@@ -46,8 +45,6 @@ func Normalize(name string) string {
 		return DefaultEngine
 	case EngineBrave:
 		return EngineBrave
-	case EngineStartpage:
-		return EngineStartpage
 	case EngineDDG, "duckduckgo":
 		return EngineDDG
 	case EngineKagi:
@@ -100,8 +97,7 @@ func (c *Client) Suggest(ctx context.Context, query, engineName string) (Respons
 	switch name {
 	case EngineBrave:
 		suggestions, err = c.fetchArray(ctx, "https://search.brave.com/api/suggest", query, url.Values{"country": {"ALL"}})
-	case EngineStartpage:
-		suggestions, err = c.fetchArray(ctx, "https://www.startpage.com/osuggestions", query, nil)
+
 	case EngineDDG:
 		suggestions, err = c.fetchPhrases(ctx, "https://duckduckgo.com/ac/", query, url.Values{"kl": {"wt-wt"}})
 	case EngineKagi:
