@@ -34,6 +34,7 @@ export type SearchSettings = {
 	engines: SearchEngine[];
 	imageEngines: SearchEngine[];
 	showEngineBadges: boolean;
+	showResultMeta: boolean;
 	openInNewTab: boolean;
 	font: FontChoice;
 	autocomplete: AutocompleteProvider;
@@ -48,6 +49,7 @@ const defaults: SearchSettings = {
 	engines: [...WEB_ENGINES],
 	imageEngines: [...IMAGE_ENGINES],
 	showEngineBadges: false,
+	showResultMeta: false,
 	openInNewTab: false,
 	font: 'jetbrains',
 	autocomplete: 'kagi',
@@ -80,6 +82,10 @@ function load(): SearchSettings {
 				typeof parsed.showEngineBadges === 'boolean'
 					? parsed.showEngineBadges
 					: defaults.showEngineBadges,
+			showResultMeta:
+				typeof parsed.showResultMeta === 'boolean'
+					? parsed.showResultMeta
+					: defaults.showResultMeta,
 			openInNewTab:
 				typeof parsed.openInNewTab === 'boolean' ? parsed.openInNewTab : defaults.openInNewTab,
 			font: parsed.font === 'system' ? 'system' : 'jetbrains',
@@ -129,6 +135,7 @@ export function saveSearchSettings(): void {
 				engines: searchSettings.engines,
 				imageEngines: searchSettings.imageEngines,
 				showEngineBadges: searchSettings.showEngineBadges,
+				showResultMeta: searchSettings.showResultMeta,
 				openInNewTab: searchSettings.openInNewTab,
 				font: searchSettings.font,
 				autocomplete: searchSettings.autocomplete,

@@ -21,7 +21,7 @@
 	};
 
 	const groups: Group[] = $derived([
-		{ id: 'appearance', label: 'appearance', sections: ['font', 'engine-badges'] },
+		{ id: 'appearance', label: 'appearance', sections: ['font', 'engine-badges', 'result-stats'] },
 		{
 			id: 'search',
 			label: 'search',
@@ -109,6 +109,20 @@
 					<SegmentedControl
 						options={BOOLEAN_OPTIONS}
 						bind:value={settings.showEngineBadges}
+						onchange={() => saveSearchSettings()}
+					/>
+				</div>
+			</section>
+
+			<section class="group mt-7">
+				<AnchorHeading id="result-stats">result stats</AnchorHeading>
+				<p class="mt-1 text-[14px] leading-relaxed text-[#c0c0c0]">
+					show how many results were found and how long the search took
+				</p>
+				<div class="mt-2.5">
+					<SegmentedControl
+						options={BOOLEAN_OPTIONS}
+						bind:value={settings.showResultMeta}
 						onchange={() => saveSearchSettings()}
 					/>
 				</div>
