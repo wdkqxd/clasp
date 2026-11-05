@@ -91,6 +91,9 @@ func (b *Brave) fetchDoc(ctx context.Context, rawURL, query string, offset int) 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		if engine.IsBlockStatus(resp.StatusCode) {
+			return "", &engine.BlockedError{Engine: b.Name(), Status: resp.Status}
+		}
 		return "", errors.New(resp.Status)
 	}
 	body, err := io.ReadAll(io.LimitReader(resp.Body, engine.MaxBodyReadLimit))

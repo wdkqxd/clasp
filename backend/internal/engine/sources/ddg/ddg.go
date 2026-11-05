@@ -152,8 +152,8 @@ func (d *DDG) do(ctx context.Context, method, rawURL string, body io.Reader) (st
 func readDoc(resp *http.Response) (string, error) {
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return "", fmt.Errorf("blocked the request: %s", resp.Status)
+	if engine.IsBlockStatus(resp.StatusCode) {
+		return "", &engine.BlockedError{Engine: "ddg", Status: resp.Status}
 	}
 	if resp.StatusCode < 300 || resp.StatusCode > 399 {
 		if resp.StatusCode != http.StatusOK {

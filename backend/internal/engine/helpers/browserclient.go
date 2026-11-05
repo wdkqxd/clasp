@@ -3,8 +3,11 @@ package helpers
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"strings"
 
 	fhttp "github.com/bogdanfinn/fhttp"
+	fcookiejar "github.com/bogdanfinn/fhttp/cookiejar"
 	tls_client "github.com/bogdanfinn/tls-client"
 	"github.com/bogdanfinn/tls-client/profiles"
 
@@ -16,12 +19,22 @@ type BrowserClient struct {
 }
 
 func NewBrowserClient() (*BrowserClient, error) {
-	c, err := tls_client.NewHttpClient(
-		tls_client.NewNoopLogger(),
+	jar, err := fcookiejar.New(nil)
+	if err != nil {
+		return nil, fmt.Errorf("cookie jar: %w", err)
+	}
+
+	opts := []tls_client.HttpClientOption{
 		tls_client.WithClientProfile(profiles.Chrome_150),
 		tls_client.WithTimeoutSeconds(25),
 		tls_client.WithNotFollowRedirects(),
-	)
+		tls_client.WithCookieJar(jar),
+	}
+	if proxy := strings.TrimSpace(os.Getenv("PROXY_URL")); proxy != "" {
+		opts = append(opts, tls_client.WithProxyUrl(proxy))
+	}
+
+	c, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), opts...)
 	if err != nil {
 		return nil, fmt.Errorf("tls_client: %w", err)
 	}
