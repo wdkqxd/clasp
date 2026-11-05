@@ -157,7 +157,7 @@
 					<img
 						src={faviconURL(image.url)}
 						alt=""
-						class="w-3.5 h-3.5 rounded-sm opacity-75"
+						class="w-3.5 h-3.5 rounded-xs opacity-75"
 						onerror={(e) => (e.currentTarget as HTMLElement).style.display = 'none'}
 					/>
 				{/if}

@@ -291,7 +291,7 @@
 					width="14"
 					height="14"
 					loading="lazy"
-					class="h-3.5 w-3.5 rounded-sm object-contain opacity-75"
+					class="h-3.5 w-3.5 rounded-xs object-contain opacity-75"
 					onerror={() => (brokenIcons[chip.host] = true)}
 				/>
 				<span class="max-w-[120px] truncate">{chip.name}</span>
@@ -375,7 +375,7 @@
 									width="14"
 									height="14"
 									loading="lazy"
-									class="h-3.5 w-3.5 shrink-0 rounded-sm object-contain opacity-75"
+									class="h-3.5 w-3.5 shrink-0 rounded-xs object-contain opacity-75"
 									onerror={() => (brokenIcons[bang.host] = true)}
 								/>
 							{/if}
