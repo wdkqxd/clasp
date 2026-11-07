@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const sourceURL = "https://raw.githubusercontent.com/imputnet/helium-services/main/svc/bangs/bangs.json"
+const sourceURL = "https://services.helium.imput.net/bangs.json"
 
 type bangEntry struct {
 	URL string   `json:"u"`

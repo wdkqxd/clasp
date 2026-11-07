@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"errors"
 	"net/http"
 )
 
@@ -150,4 +151,24 @@ type ImageSearcher interface {
 // minimal *http.Client subset so engines can be tested with fake transports
 type HTTPClient interface {
 	Do(*http.Request) (*http.Response, error)
+}
+
+type BlockedError struct {
+	Engine string
+	Status string
+}
+
+func (e *BlockedError) Error() string {
+	return "blocked by " + e.Engine + ": " + e.Status
+}
+
+func IsBlocked(err error) bool {
+	var blocked *BlockedError
+	return errors.As(err, &blocked)
+}
+
+func IsBlockStatus(code int) bool {
+	return code == http.StatusForbidden ||
+		code == http.StatusTooManyRequests ||
+		code == http.StatusAccepted
 }

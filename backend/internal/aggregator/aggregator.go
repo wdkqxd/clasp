@@ -22,6 +22,7 @@ type Status struct {
 type Response struct {
 	Query       string              `json:"query"`
 	TookMS      int64               `json:"took_ms"`
+	Cached      bool                `json:"cached,omitempty"`
 	Results     []engine.Result     `json:"results"`
 	Engines     map[string]Status   `json:"engines"`
 	HasMore     bool                `json:"has_more"`
@@ -33,6 +34,7 @@ type Response struct {
 type ImageResponse struct {
 	Query   string               `json:"query"`
 	TookMS  int64                `json:"took_ms"`
+	Cached  bool                 `json:"cached,omitempty"`
 	Results []engine.ImageResult `json:"results"`
 	Engines map[string]Status    `json:"engines"`
 	HasMore bool                 `json:"has_more"`
@@ -44,6 +46,10 @@ type Aggregator struct {
 	totalTimeout     time.Duration
 	perEngineTimeout time.Duration
 	fastTimeout      time.Duration
+
+	throttles   map[string]*engineThrottle
+	searchCache *ttlCache[Response]
+	imageCache  *ttlCache[ImageResponse]
 }
 
 func New(engines []engine.Engine, imageEngines ...engine.ImageSearcher) *Aggregator {
@@ -60,7 +66,36 @@ func New(engines []engine.Engine, imageEngines ...engine.ImageSearcher) *Aggrega
 		totalTimeout:     10 * time.Second,
 		perEngineTimeout: 5 * time.Second,
 		fastTimeout:      3 * time.Second,
+		throttles:        newThrottles(engines, imageEngines),
+		searchCache:      newResponseCache[Response](),
+		imageCache:       newResponseCache[ImageResponse](),
 	}
+}
+
+func newThrottles(engines []engine.Engine, imageEngines []engine.ImageSearcher) map[string]*engineThrottle {
+	cfg := loadConfig()
+	throttles := make(map[string]*engineThrottle, len(engines)+len(imageEngines))
+	add := func(name string) {
+		if _, ok := throttles[name]; ok {
+			return
+		}
+		throttles[name] = newEngineThrottle(cfg.minInterval, cfg.cooldownBase, cfg.cooldownMax)
+	}
+	for _, e := range engines {
+		add(e.Name())
+	}
+	for _, e := range imageEngines {
+		add(e.Name())
+	}
+	return throttles
+}
+
+func newResponseCache[T any]() *ttlCache[T] {
+	cfg := loadConfig()
+	if cfg.cacheTTL <= 0 {
+		return nil
+	}
+	return newTTLCache[T](cfg.cacheTTL, cfg.cacheMax)
 }
 
 type engineOutcome[T any] struct {
@@ -153,7 +188,50 @@ func selectImageEngines(all []engine.ImageSearcher, enabled []string) []engine.I
 	return out
 }
 
+func (a *Aggregator) callEngine(ctx context.Context, e engine.Engine, query string, page int) (engine.SearchResult, error) {
+	throttle := a.throttles[e.Name()]
+	if throttle != nil {
+		if err := throttle.reserve(ctx, e.Name()); err != nil {
+			return engine.SearchResult{}, err
+		}
+	}
+	res, err := e.Search(ctx, query, maxCandidates, page)
+	if throttle != nil {
+		throttle.record(e.Name(), err)
+	}
+	return res, err
+}
+
+func (a *Aggregator) callImageEngine(ctx context.Context, s engine.ImageSearcher, query string, page int) ([]engine.ImageResult, error) {
+	throttle := a.throttles[s.Name()]
+	if throttle != nil {
+		if err := throttle.reserve(ctx, s.Name()); err != nil {
+			return nil, err
+		}
+	}
+	res, err := s.ImageSearch(ctx, query, imageCandidates, page)
+	if throttle != nil {
+		throttle.record(s.Name(), err)
+	}
+	return res, err
+}
+
 func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, enabled []string, timeout time.Duration) Response {
+	if a.searchCache == nil {
+		return a.searchUpstream(ctx, query, limit, page, enabled, timeout)
+	}
+	start := time.Now()
+	resp, cached := a.searchCache.do(
+		cacheKey("search", query, limit, page, enabled),
+		func(r Response) bool { return hasOKEngine(r.Engines) },
+		func() Response { return a.searchUpstream(ctx, query, limit, page, enabled, timeout) },
+	)
+	resp.Cached = cached
+	resp.TookMS = time.Since(start).Milliseconds()
+	return resp
+}
+
+func (a *Aggregator) searchUpstream(ctx context.Context, query string, limit, page int, enabled []string, timeout time.Duration) Response {
 	start := time.Now()
 	fastTimeout, perEngineTimeout, totalTimeout := a.timeouts(timeout)
 	ctx, cancel := context.WithTimeout(ctx, totalTimeout)
@@ -190,7 +268,7 @@ func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, 
 			ectx, cancel := context.WithTimeout(ctx, perEngineTimeout)
 			defer cancel()
 			start := time.Now()
-			res, err := e.Search(ectx, query, maxCandidates, page)
+			res, err := a.callEngine(ectx, e, query, page)
 			ch <- engineOutcome[outcome]{
 				name: e.Name(),
 				val:  outcome{res: res, err: err, took: time.Since(start)},
@@ -446,6 +524,21 @@ func mergeTwoImageResults(existing *engine.ImageResult, incoming engine.ImageRes
 }
 
 func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page int, enabled []string, timeout time.Duration) ImageResponse {
+	if a.imageCache == nil {
+		return a.imageSearchUpstream(ctx, query, limit, page, enabled, timeout)
+	}
+	start := time.Now()
+	resp, cached := a.imageCache.do(
+		cacheKey("images", query, limit, page, enabled),
+		func(r ImageResponse) bool { return hasOKEngine(r.Engines) },
+		func() ImageResponse { return a.imageSearchUpstream(ctx, query, limit, page, enabled, timeout) },
+	)
+	resp.Cached = cached
+	resp.TookMS = time.Since(start).Milliseconds()
+	return resp
+}
+
+func (a *Aggregator) imageSearchUpstream(ctx context.Context, query string, limit, page int, enabled []string, timeout time.Duration) ImageResponse {
 	start := time.Now()
 	fastTimeout, perEngineTimeout, totalTimeout := a.timeouts(timeout)
 	ctx, cancel := context.WithTimeout(ctx, totalTimeout)
@@ -491,7 +584,7 @@ func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page 
 			ectx, cancel := context.WithTimeout(ctx, perEngineTimeout)
 			defer cancel()
 			start := time.Now()
-			res, err := s.ImageSearch(ectx, query, imageCandidates, page)
+			res, err := a.callImageEngine(ectx, s, query, page)
 			ch <- engineOutcome[imgOutcome]{
 				name: name,
 				val:  imgOutcome{res: res, err: err, took: time.Since(start)},

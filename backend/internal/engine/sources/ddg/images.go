@@ -61,8 +61,8 @@ func (d *DDG) ImageSearch(ctx context.Context, query string, limit, offset int) 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
-		return nil, fmt.Errorf("blocked the request: %s", resp.Status)
+	if engine.IsBlockStatus(resp.StatusCode) {
+		return nil, &engine.BlockedError{Engine: d.Name(), Status: resp.Status}
 	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New(resp.Status)
@@ -132,6 +132,9 @@ func (d *DDG) fetchVQD(ctx context.Context, query string) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		if engine.IsBlockStatus(resp.StatusCode) {
+			return "", &engine.BlockedError{Engine: d.Name(), Status: resp.Status}
+		}
 		return "", fmt.Errorf("%s while fetching vqd", resp.Status)
 	}
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))

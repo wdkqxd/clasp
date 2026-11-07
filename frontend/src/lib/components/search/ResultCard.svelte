@@ -70,7 +70,7 @@ function cleanSnippet(s: string): string {
 					width="14"
 					height="14"
 					loading="lazy"
-					class="h-3.5 w-3.5 rounded-sm object-contain opacity-75"
+					class="h-3.5 w-3.5 rounded-xs object-contain opacity-75"
 				/>
 			{/if}
 			{displayURL(result.url)}

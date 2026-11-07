@@ -9,6 +9,20 @@ if you have your own clasp instance, you can change its config through environme
 | `PORT` | `8080` | `PORT=9000` |
 | `STATIC_DIR` | `frontend/build` | `STATIC_DIR=/srv/clasp/frontend/build` |
 | `CORS_ORIGIN` | `*` | `CORS_ORIGIN=https://search.example.com` |
+| `PROXY_URL` | *(empty)* | `PROXY_URL=http://user:pass@proxy:8080` |
+
+## upstream protection
+
+search engines rate limit by ip, so a single instance shares one budget between all its users.
+these settings reduce how often clasp has to ask an engine in the first place.
+
+| variable | default | example |
+| --- | --- | --- |
+| `SEARCH_CACHE_TTL` | `300` | `SEARCH_CACHE_TTL=600` |
+| `SEARCH_CACHE_MAX_ITEMS` | `1024` | `SEARCH_CACHE_MAX_ITEMS=4096` |
+| `ENGINE_MIN_INTERVAL` | `1200` | `ENGINE_MIN_INTERVAL=2500` |
+| `ENGINE_COOLDOWN` | `600` | `ENGINE_COOLDOWN=1800` |
+| `ENGINE_COOLDOWN_MAX` | `3600` | `ENGINE_COOLDOWN_MAX=7200` |
 
 ## rate limiter
 
@@ -48,6 +62,38 @@ clasp reads `.env` from the working directory on startup. the pnpm scripts run t
 the repository root, so put `.env` next to `package.json`. a malformed file is reported in the log,
 and a missing file is ignored. values from `.env` never override variables that are already set in
 the environment, so docker, systemd and shell configuration always win.
+
+### proxy_url
+
+an optional proxy for all upstream requests. useful when your host ip is already flagged by the
+search engines. only one proxy is supported for now; a rotating residential gateway is the
+practical option for a public instance.
+
+## upstream protection
+
+### search_cache_ttl
+
+how long an aggregated result is cached, in seconds. repeated and concurrent identical queries are
+served from memory instead of hitting the engines again. `0` disables the cache. this is the
+cheapest way to cut upstream traffic, because one user reloading or paginating a result page no
+longer counts as a new search.
+
+### search_cache_max_items
+
+maximum number of cached responses before the cache is pruned or reset. `0` means unlimited.
+
+### engine_min_interval
+
+minimum gap between two requests to the same engine, in milliseconds, with random jitter. this
+keeps a burst of clicks from looking like a script. raise it if you still get blocked; lower it if
+you want snappier searches on a quiet instance.
+
+### engine_cooldown / engine_cooldown_max
+
+when an engine answers with `403`, `429` or duckduckgo's `202` anomaly page, clasp stops calling it
+for `ENGINE_COOLDOWN` seconds and doubles that time on every further block, up to
+`ENGINE_COOLDOWN_MAX`. other engines keep serving results in the meantime. without this, retrying a
+blocked engine immediately is what turns a short throttle into a long ban.
 
 ## rate limiter
 

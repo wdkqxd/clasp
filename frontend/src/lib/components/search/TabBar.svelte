@@ -17,11 +17,13 @@
 		tabs,
 		active,
 		tookMs = null,
+		resultCount = null,
 		engineStatus = {}
 	}: {
 		tabs: string[];
 		active: string;
 		tookMs?: number | null;
+		resultCount?: number | null;
 		engineStatus?: Record<string, EngineStatus>;
 	} = $props();
 
@@ -33,6 +35,9 @@
 	const settings = getSearchSettings();
 	const engines = $derived(active === 'Images' ? settings.imageEngines : settings.engines);
 	const engineOptions = $derived(active === 'Images' ? IMAGE_ENGINES : WEB_ENGINES);
+	const resultNoun = $derived(
+		active === 'Images' ? 'images' : active === 'Video' ? 'videos' : 'results'
+	);
 
 	function tabHref(tab: string): string {
 		const q = page.url.searchParams.get('q') ?? '';
@@ -131,7 +136,12 @@
 	</div>
 
 	<div class="ml-auto flex items-center gap-3">
-		{#if tookMs !== null}
+		{#if settings.showResultMeta && resultCount !== null}
+			<span transition:fade={{ duration: 300 }} class="text-[11px] text-[#4a4a4a]">
+				{resultCount} {resultNoun}
+			</span>
+		{/if}
+		{#if settings.showResultMeta && tookMs !== null}
 			<span transition:fade={{ duration: 300 }} class="text-[11px] text-[#4a4a4a]">took {tookMs} ms</span>
 		{/if}
 

@@ -6,6 +6,8 @@
 	type HeaderFeed = {
 		query: string;
 		tookMs: number | null;
+		loading: boolean;
+		items: { length: number };
 		engineStatus: Record<string, EngineStatus>;
 	};
 
@@ -28,6 +30,7 @@
 		tabs={['All', 'Images', 'Video']}
 		{active}
 		tookMs={feed.tookMs}
+		resultCount={feed.loading ? null : feed.items.length}
 		engineStatus={feed.engineStatus}
 	/>
 </header>

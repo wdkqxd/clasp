@@ -73,7 +73,7 @@ GET /api/images?q=red+panda&limit=20&offset=0
 ```
 
 parameters are the same as for search, with `limit` defaulting to `20` (max `200`) and engines
-`brave`, `ddg` and `startpage`. results from different engines are interleaved.
+`brave` and `ddg`. results from different engines are interleaved.
 
 ```json
 {
@@ -88,7 +88,7 @@ parameters are the same as for search, with `limit` defaulting to `20` (max `200
       "width": 1920,
       "height": 1280,
       "engine": "brave",
-      "engines": ["brave", "startpage"]
+      "engines": ["brave", "ddg"]
     }
   ],
   "engines": {
@@ -110,7 +110,7 @@ GET /api/suggest?q=rust&engine=kagi
 | parameter | default | description |
 | --- | --- | --- |
 | `q` | required | partial query |
-| `engine` | `kagi` | `kagi`, `ddg` (alias `duckduckgo`), `brave` or `startpage` |
+| `engine` | `kagi` | `kagi`, `ddg` (alias `duckduckgo`) or `brave` |
 
 ```json
 {
