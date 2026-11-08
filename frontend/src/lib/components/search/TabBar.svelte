@@ -151,9 +151,11 @@
 			aria-label="Search settings"
 			aria-expanded={settingsOpen}
 			onclick={() => (settingsOpen = !settingsOpen)}
-			class="inline-flex items-center text-[#4a4a4a] hover:text-[#9a9a9a] transition-colors {settingsOpen ? 'text-[#9a9a9a]' : ''}"
+			class="inline-flex size-7 cursor-pointer items-center justify-center rounded-[5px] text-[#707070] transition-all duration-150 ease-out hover:bg-[#1a1a1a] hover:text-[#c0c0c0] active:scale-[0.92] active:duration-75 focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-[#707070] {settingsOpen
+				? 'text-[#c0c0c0]'
+				: ''}"
 		>
-			<Settings2 class="size-3.5 translate-y-[2px]" />
+			<Settings2 class="size-3.5" />
 		</button>
 
 			<div
