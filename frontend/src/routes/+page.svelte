@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { CircleQuestionMark, Info, Settings2, ShieldCheck } from '@lucide/svelte';
+	import { Info, Settings2, ShieldCheck, TriangleAlert } from '@lucide/svelte';
 	import { openBangOr } from '$lib/bangs';
 	import SearchForm from '$lib/components/search/SearchForm.svelte';
 	import { getSearchSettings } from '$lib/components/settings/searchSettings.svelte';
@@ -68,13 +68,13 @@
 
 <div class="relative flex min-h-screen flex-col overflow-hidden px-4">
 	{#if !isOfficialInstance && settings.showInstanceNotice}
-		<div class="absolute inset-x-0 top-0 z-30 flex justify-center px-4 pt-4">
+		<div class="absolute inset-x-0 top-0 z-30 flex justify-center px-4 pt-2">
 			<a
 				href="/about/privacy#self-hosted-instances"
-				class="inline-flex items-center gap-1.5 rounded-[3px] text-[12px] text-[#707070] transition-colors hover:text-[#c0c0c0] focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#707070]"
+				class="inline-flex items-center gap-1.5 rounded-[5px] px-2 py-1 text-[12px] text-[#707070] no-underline transition-all duration-150 ease-out hover:bg-[#1a1a1a] hover:text-[#c0c0c0] active:scale-[0.94] active:duration-75 focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#707070]"
 			>
+				<TriangleAlert size={13} strokeWidth={1.75} />
 				<span>unofficial instance</span>
-				<CircleQuestionMark size={13} strokeWidth={1.75} />
 			</a>
 		</div>
 	{/if}
