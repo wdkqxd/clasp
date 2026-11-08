@@ -168,7 +168,7 @@
 								{@const status = engineStatusFor(engine)}
 								<button
 									type="button"
-									class="flex w-full items-center justify-between text-left text-[12px] text-[#9b9b9b]"
+									class="flex w-full items-center justify-between text-left text-[12px] text-[#c0c0c0]"
 									onclick={() => toggleEngine(engine)}
 								>
 									<span class="flex min-w-0 items-center gap-1.5">
@@ -198,7 +198,7 @@
 						<div class="space-y-2 border-t border-[#292929] pt-3">
 							<button
 								type="button"
-								class="flex w-full items-center justify-between text-left text-[12px] text-[#9b9b9b]"
+								class="flex w-full items-center justify-between text-left text-[12px] text-[#c0c0c0]"
 								onclick={() => {
 									settings.hideAIImages = !settings.hideAIImages;
 									saveSearchSettings();
@@ -211,7 +211,7 @@
 							</button>
 							<button
 								type="button"
-								class="flex w-full items-center justify-between text-left text-[12px] text-[#9b9b9b]"
+								class="flex w-full items-center justify-between text-left text-[12px] text-[#c0c0c0]"
 								onclick={() => {
 									settings.transparentOnly = !settings.transparentOnly;
 									saveSearchSettings();
