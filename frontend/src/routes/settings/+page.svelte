@@ -12,7 +12,7 @@
 	<PageTopBar />
 
 	<div
-		class="hide-scrollbar min-h-0 flex-1 overflow-y-auto rounded-t-[14px] border-t border-[#242424] bg-[#101010]"
+		class="hide-scrollbar min-h-0 flex-1 scroll-smooth overflow-y-auto rounded-t-[14px] border-t border-[#242424] bg-[#101010]"
 	>
 		<div class="mx-auto w-full max-w-2xl px-4 py-10 sm:py-12" data-hash-root>
 			<SettingsItems />
