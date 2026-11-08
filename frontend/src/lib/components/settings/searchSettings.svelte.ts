@@ -25,7 +25,6 @@ export const TIMEOUT_OPTIONS = [
 	{ value: 8, label: '8s' },
 	{ value: 9, label: '9s' },
 	{ value: 10, label: '10s' },
-	{ value: 'off', label: 'off' },
 ];
 
 export type SearchTimeout = (typeof TIMEOUT_OPTIONS)[number]['value'];
