@@ -31,14 +31,14 @@
 			if (!heading) return;
 
 			const target = heading.closest('section') ?? heading;
-			const root = target.parentElement;
+			const root = heading.closest('[data-hash-root]') ?? target.parentElement;
 			if (!root) return;
 
-			for (const section of root.querySelectorAll('section')) {
-				if (section === target) continue;
-				section.style.transition = 'opacity 300ms ease';
-				section.style.opacity = '0.35';
-				dimmed.push(section);
+			for (const element of root.querySelectorAll<HTMLElement>('section, hr')) {
+				if (element === target) continue;
+				element.style.transition = 'opacity 300ms ease';
+				element.style.opacity = '0.35';
+				dimmed.push(element);
 			}
 
 			if (dimmed.length > 0) {
