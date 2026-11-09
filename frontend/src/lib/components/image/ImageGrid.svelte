@@ -154,6 +154,13 @@
 						detectTransparency={settings.transparentOnly && transState === undefined}
 						ontransparency={(value) => setTransparency(image, value)}
 					/>
+					{#if image.width && image.height}
+						<span
+							class="pointer-events-none absolute bottom-1.5 right-1.5 rounded-[3px] bg-black/60 px-[7px] py-[3px] text-[10.5px] leading-none text-[#e0e0e0]"
+						>
+							{image.width} x {image.height}
+						</span>
+					{/if}
 				</a>
 				<div class="flex flex-col gap-0.5 mt-2 px-0.5 image-info">
 					<a
