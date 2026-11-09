@@ -1,5 +1,6 @@
 <script lang="ts" generics="T extends string | number | boolean">
-	import { tick } from 'svelte';
+	import SlidingIndicator from '$lib/components/ui/SlidingIndicator.svelte';
+	import { pillGroupClass } from '$lib/components/ui/pill';
 
 	let {
 		options,
@@ -12,46 +13,6 @@
 	} = $props();
 
 	let containerEl = $state<HTMLDivElement | null>(null);
-	let activeLeft = $state(0);
-	let activeWidth = $state(0);
-	let ready = $state(false);
-	const pressScale = $derived(options.length > 2 ? 'active:scale-[0.985]' : 'active:scale-[0.97]');
-
-	function updateIndicator() {
-		if (!containerEl) return;
-		const activeBtn = containerEl.querySelector<HTMLButtonElement>('[data-active="true"]');
-		if (!activeBtn) return;
-
-		// don't reset positions while the container is hidden
-		if (activeBtn.offsetWidth <= 0) return;
-
-		activeLeft = activeBtn.offsetLeft;
-		activeWidth = activeBtn.offsetWidth;
-
-		// enable the transition after the first real measurement
-		if (!ready) {
-			requestAnimationFrame(() => {
-				ready = true;
-			});
-		}
-	}
-
-	$effect(() => {
-		const _ = value;
-		const __ = options;
-		tick().then(() => {
-			updateIndicator();
-		});
-	});
-
-	$effect(() => {
-		if (!containerEl) return;
-		const ro = new ResizeObserver(() => {
-			updateIndicator();
-		});
-		ro.observe(containerEl);
-		return () => ro.disconnect();
-	});
 
 	function select(val: T) {
 		if (value === val) return;
@@ -60,18 +21,12 @@
 	}
 </script>
 
-<div
-	bind:this={containerEl}
-	class="relative inline-flex max-w-full items-center rounded-[5px] bg-[#141414] p-[3px] transition-[scale] duration-150 ease-out {pressScale} active:duration-75"
->
-	<span
-		class="pointer-events-none absolute left-0 top-[3px] bottom-[3px] rounded-[3px] border border-[#2f2f2f] bg-[#222222] shadow-xs {ready
-			? 'transition-[transform,width] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]'
-			: ''}"
-		style:transform="translateX({activeLeft}px)"
-		style:width="{activeWidth}px"
-		style:opacity={ready && activeWidth > 0 ? 1 : 0}
-	></span>
+<div bind:this={containerEl} class={pillGroupClass(options.length)}>
+	<SlidingIndicator
+		container={containerEl}
+		sync={`${value}|${options.map((option) => option.label).join(',')}`}
+		extraClass="shadow-xs"
+	/>
 
 	{#each options as opt (opt.value)}
 		{@const isActive = opt.value === value}
