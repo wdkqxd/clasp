@@ -5,14 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
+	"unicode"
 
 	"clasp/internal/engine"
+	"clasp/internal/engine/helpers"
 )
 
 type Article struct {
@@ -30,7 +33,9 @@ const (
 	maxCacheEntries    = 512
 	upstreamInterval   = 150 * time.Millisecond
 	throttleCooldown   = 60 * time.Second
+	maxRedirects       = 2
 	userAgent          = "clasp/1.0 (https://github.com/wdkq/clasp)"
+	summaryURL         = "https://%s.wikipedia.org/api/rest_v1/page/summary/%s"
 )
 
 type cacheEntry struct {
@@ -88,25 +93,22 @@ func (c *Client) throttle() {
 	c.mu.Unlock()
 }
 
-type apiResponse struct {
-	Error *struct {
-		Code string `json:"code"`
-		Info string `json:"info"`
-	} `json:"error"`
-	Query struct {
-		Pages map[string]struct {
-			Title     string `json:"title"`
-			Extract   string `json:"extract"`
-			FullURL   string `json:"fullurl"`
-			Thumbnail *struct {
-				Source string `json:"source"`
-			} `json:"thumbnail"`
-			Terms struct {
-				Description []string `json:"description"`
-			} `json:"terms"`
-			PageProps map[string]string `json:"pageprops"`
-		} `json:"pages"`
-	} `json:"query"`
+type summaryResponse struct {
+	Type        string `json:"type"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Extract     string `json:"extract"`
+	Thumbnail   *struct {
+		Source string `json:"source"`
+	} `json:"thumbnail"`
+	ContentURLs struct {
+		Desktop struct {
+			Page string `json:"page"`
+		} `json:"desktop"`
+	} `json:"content_urls"`
+	Titles struct {
+		Display string `json:"display"`
+	} `json:"titles"`
 }
 
 func (c *Client) Search(ctx context.Context, query, language string) (*Article, error) {
@@ -115,23 +117,8 @@ func (c *Client) Search(ctx context.Context, query, language string) (*Article, 
 		return nil, nil
 	}
 
-	candidates := languageCandidates(query, language)
-
-	var lastErr error
-	for _, lang := range candidates {
-		article, err := c.lookup(ctx, query, lang)
-		if err != nil {
-			if errors.Is(err, errThrottled) {
-				break
-			}
-			lastErr = err
-			continue
-		}
-		if article != nil {
-			return article, nil
-		}
-	}
-	return nil, lastErr
+	lang := primaryLanguage(query, language)
+	return c.lookup(ctx, query, lang)
 }
 
 func (c *Client) lookup(ctx context.Context, query, language string) (*Article, error) {
@@ -146,7 +133,7 @@ func (c *Client) lookup(ctx context.Context, query, language string) (*Article, 
 	lctx, cancel := context.WithTimeout(ctx, perLanguageTimeout)
 	defer cancel()
 
-	art, err := c.searchLanguage(lctx, query, language)
+	art, err := c.fetchSummary(lctx, query, language)
 	if err == nil && lctx.Err() == nil {
 		c.toCache(key, art)
 	}
@@ -190,107 +177,159 @@ func (c *Client) toCache(key string, article *Article) {
 	c.cache[key] = cacheEntry{article: article, expires: expires}
 }
 
-func (c *Client) searchLanguage(ctx context.Context, query, language string) (*Article, error) {
+func (c *Client) fetchSummary(ctx context.Context, query, language string) (*Article, error) {
+	rawURL := fmt.Sprintf(summaryURL, language, url.PathEscape(wikiTitle(query)))
 
-	endpoint := fmt.Sprintf("https://%s.wikipedia.org/w/api.php", language)
-	params := url.Values{
-		"action":       {"query"},
-		"format":       {"json"},
-		"generator":    {"search"},
-		"gsrsearch":    {query},
-		"gsrnamespace": {"0"},
-		"gsrlimit":     {"1"},
-		"redirects":    {"1"},
-		"prop":         {"extracts|info|pageimages|pageterms"},
-		"exintro":      {"1"},
-		"explaintext":  {"1"},
-		"inprop":       {"url"},
-		"pithumbsize":  {"320"},
-		"wbptterms":    {"description"},
+	for redirect := 0; ; redirect++ {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Accept-Language", language)
+		req.Header.Set("User-Agent", userAgent)
+
+		res, err := c.http.Do(req)
+		if err != nil {
+			return nil, err
+		}
+
+		switch {
+		case res.StatusCode == http.StatusOK:
+			defer res.Body.Close()
+			var payload summaryResponse
+			if err := json.NewDecoder(res.Body).Decode(&payload); err != nil {
+				return nil, err
+			}
+			return articleFromSummary(payload, language), nil
+
+		case res.StatusCode == http.StatusTooManyRequests:
+			res.Body.Close()
+			c.throttle()
+			return nil, errThrottled
+
+		case res.StatusCode >= 300 && res.StatusCode < 400 && redirect < maxRedirects:
+			loc, locErr := res.Location()
+			_, _ = io.Copy(io.Discard, res.Body)
+			res.Body.Close()
+			if locErr != nil {
+				return nil, nil
+			}
+			rawURL = loc.String()
+			continue
+
+		case res.StatusCode == http.StatusNotFound, res.StatusCode == http.StatusBadRequest:
+			res.Body.Close()
+			return nil, nil
+
+		default:
+			status := res.Status
+			res.Body.Close()
+			return nil, fmt.Errorf("wikipedia: unexpected status %s", status)
+		}
+	}
+}
+
+func articleFromSummary(p summaryResponse, language string) *Article {
+	if p.Type != "standard" {
+		return nil
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+"?"+params.Encode(), nil)
-	if err != nil {
-		return nil, err
+	title := strings.TrimSpace(helpers.CleanText(p.Titles.Display))
+	if title == "" {
+		title = p.Title
 	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", userAgent)
-
-	res, err := c.http.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-	if res.StatusCode == http.StatusTooManyRequests {
-		c.throttle()
-		return nil, errThrottled
-	}
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("wikipedia: unexpected status %s", res.Status)
+	if title == "" {
+		return nil
 	}
 
-	var payload apiResponse
-	if err := json.NewDecoder(res.Body).Decode(&payload); err != nil {
-		return nil, err
+	pageURL := p.ContentURLs.Desktop.Page
+	if pageURL == "" {
+		pageURL = fmt.Sprintf("https://%s.wikipedia.org/wiki/%s", language,
+			url.PathEscape(strings.ReplaceAll(title, " ", "_")))
 	}
-	if payload.Error != nil {
-		return nil, fmt.Errorf("wikipedia: %s", payload.Error.Info)
+
+	article := &Article{
+		Title:       title,
+		Description: strings.TrimSpace(p.Description),
+		Extract:     strings.TrimSpace(p.Extract),
+		URL:         pageURL,
 	}
-	for _, page := range payload.Query.Pages {
-		if page.Title == "" {
+	if p.Thumbnail != nil {
+		article.Thumbnail = p.Thumbnail.Source
+	}
+	return article
+}
+
+func wikiTitle(query string) string {
+	if !isLower(query) {
+		return query
+	}
+	return titleCase(query)
+}
+
+func isLower(s string) bool {
+	hasCased := false
+	for _, r := range s {
+		if unicode.IsUpper(r) || unicode.IsTitle(r) {
+			return false
+		}
+		if unicode.IsLower(r) {
+			hasCased = true
+		}
+	}
+	return hasCased
+}
+
+func titleCase(s string) string {
+	var b strings.Builder
+	b.Grow(len(s))
+	inWord := false
+	for _, r := range s {
+		if unicode.IsLetter(r) {
+			if inWord {
+				b.WriteRune(unicode.ToLower(r))
+			} else {
+				b.WriteRune(unicode.ToUpper(r))
+			}
+			inWord = true
 			continue
 		}
-		if _, disambiguation := page.PageProps["disambiguation"]; disambiguation {
-			return nil, nil
-		}
-		article := &Article{
-			Title:   page.Title,
-			Extract: strings.TrimSpace(page.Extract),
-			URL:     page.FullURL,
-		}
-		if page.Thumbnail != nil {
-			article.Thumbnail = page.Thumbnail.Source
-		}
-		if len(page.Terms.Description) > 0 {
-			article.Description = strings.TrimSpace(page.Terms.Description[0])
-		}
-		if article.URL == "" {
-			article.URL = "https://" + language + ".wikipedia.org/wiki/" + url.PathEscape(strings.ReplaceAll(page.Title, " ", "_"))
-		}
-		return article, nil
+		b.WriteRune(r)
+		inWord = false
 	}
-	return nil, nil
+	return b.String()
 }
 
 var languagePattern = regexp.MustCompile(`^[a-z]{2,3}$`)
 
-func languageCandidates(query, requested string) []string {
+func primaryLanguage(query, requested string) string {
 	requested = strings.ToLower(strings.TrimSpace(requested))
 	if requested != "" && requested != "auto" && languagePattern.MatchString(requested) {
-		return []string{requested}
+		return requested
 	}
 
 	for _, r := range strings.ToLower(query) {
 		switch {
 		case r >= '\u0400' && r <= '\u04FF': // cyrillic
 			if strings.ContainsAny(query, "іїєґ") {
-				return []string{"uk", "ru", "en"}
+				return "uk"
 			}
-			return []string{"ru", "uk", "bg", "sr", "en"}
+			return "ru"
 		case r >= '\u4E00' && r <= '\u9FFF', r >= '\u3400' && r <= '\u4DBF': // CJK Unified Ideographs
-			return []string{"zh", "en"}
+			return "zh"
 		case r >= '\u3040' && r <= '\u309F', r >= '\u30A0' && r <= '\u30FF': // Hiragana + Katakana
-			return []string{"ja", "en"}
+			return "ja"
 		case r >= '\uAC00' && r <= '\uD7AF': // hangul syllables
-			return []string{"ko", "en"}
+			return "ko"
 		case r >= '\u0600' && r <= '\u06FF': // arabic
-			return []string{"ar", "en"}
+			return "ar"
 		case r >= '\u0900' && r <= '\u097F': // devanagari
-			return []string{"hi", "en"}
+			return "hi"
 		case r >= '\u0E00' && r <= '\u0E5F': // thai
-			return []string{"th", "en"}
+			return "th"
 		}
 	}
 
-	return []string{"en", "es", "fr", "de", "it", "pt", "nl", "pl", "tr"}
+	return "en"
 }

@@ -56,16 +56,12 @@
 					discussions = res?.discussions ?? [];
 					rich = res?.rich ?? [];
 				}
-				if (!res?.infobox) {
-					wikipediaAnswer = null;
-					return;
-				}
 				wikipedia(q)
 					.then((article) => {
-						wikipediaAnswer = article;
+						if (q === feed.query) wikipediaAnswer = article;
 					})
 					.catch(() => {
-						wikipediaAnswer = null;
+						if (q === feed.query) wikipediaAnswer = null;
 					});
 			});
 		}
