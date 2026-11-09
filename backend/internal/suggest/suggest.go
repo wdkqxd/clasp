@@ -211,7 +211,7 @@ func (c *Client) get(ctx context.Context, endpoint, query string, extra url.Valu
 func (c *Client) cached(name, query string) ([]string, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	entry, ok := c.cache[name+"\x00"+strings.ToLower(query)]
+	entry, ok := c.cache[suggestionKey(name, query)]
 	if !ok || time.Now().After(entry.expires) {
 		return nil, false
 	}
@@ -224,10 +224,14 @@ func (c *Client) store(name, query string, suggestions []string) {
 	if len(c.cache) >= maxCacheItems {
 		c.cache = make(map[string]cacheEntry)
 	}
-	c.cache[name+"\x00"+strings.ToLower(query)] = cacheEntry{
+	c.cache[suggestionKey(name, query)] = cacheEntry{
 		suggestions: suggestions,
 		expires:     time.Now().Add(cacheTTL),
 	}
+}
+
+func suggestionKey(name, query string) string {
+	return name + "\x00" + strings.ToLower(query)
 }
 
 func normalizeSuggestions(query string, suggestions []string) []string {

@@ -53,7 +53,10 @@ func (s *Store) ServeJSON(w http.ResponseWriter) {
 	_ = json.NewEncoder(w).Encode(s.byKey)
 }
 
-var trailingComma = regexp.MustCompile(`,\s*([\]}])`)
+var (
+	trailingComma = regexp.MustCompile(`,\s*([\]}])`)
+	lineComment   = regexp.MustCompile(`(?m)^\s*//.*$`)
+)
 
 func (s *Store) fetch(ctx context.Context) (map[string]string, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, sourceURL, nil)
@@ -73,7 +76,7 @@ func (s *Store) fetch(ctx context.Context) (map[string]string, error) {
 		return nil, err
 	}
 
-	cleaned := regexp.MustCompile(`(?m)^\s*//.*$`).ReplaceAll(raw, []byte{})
+	cleaned := lineComment.ReplaceAll(raw, nil)
 
 	var entries []bangEntry
 	if err := json.Unmarshal(trailingComma.ReplaceAll(cleaned, []byte("$1")), &entries); err != nil {

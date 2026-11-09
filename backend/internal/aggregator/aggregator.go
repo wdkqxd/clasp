@@ -176,29 +176,30 @@ func selectByName[T named](all []T, enabled []string) []T {
 }
 
 func (a *Aggregator) callEngine(ctx context.Context, e engine.Engine, query string, page int) (engine.SearchResult, error) {
-	throttle := a.throttles[e.Name()]
-	if throttle != nil {
-		if err := throttle.reserve(ctx, e.Name()); err != nil {
-			return engine.SearchResult{}, err
-		}
-	}
-	res, err := e.Search(ctx, query, maxCandidates, page)
-	if throttle != nil {
-		throttle.record(e.Name(), err)
-	}
-	return res, err
+	return withThrottle(a, e.Name(), ctx, func() (engine.SearchResult, error) {
+		return e.Search(ctx, query, maxCandidates, page)
+	})
 }
 
 func (a *Aggregator) callImageEngine(ctx context.Context, s engine.ImageSearcher, query string, page int) ([]engine.ImageResult, error) {
-	throttle := a.throttles[s.Name()]
+	return withThrottle(a, s.Name(), ctx, func() ([]engine.ImageResult, error) {
+		return s.ImageSearch(ctx, query, imageCandidates, page)
+	})
+}
+
+// withThrottle applies the engine's rate limit around a single upstream call
+// and records the outcome for cooldown tracking.
+func withThrottle[T any](a *Aggregator, name string, ctx context.Context, call func() (T, error)) (T, error) {
+	throttle := a.throttles[name]
 	if throttle != nil {
-		if err := throttle.reserve(ctx, s.Name()); err != nil {
-			return nil, err
+		if err := throttle.reserve(ctx, name); err != nil {
+			var zero T
+			return zero, err
 		}
 	}
-	res, err := s.ImageSearch(ctx, query, imageCandidates, page)
+	res, err := call()
 	if throttle != nil {
-		throttle.record(s.Name(), err)
+		throttle.record(name, err)
 	}
 	return res, err
 }

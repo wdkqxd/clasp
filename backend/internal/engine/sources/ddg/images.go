@@ -99,9 +99,9 @@ func (d *DDG) ImageSearch(ctx context.Context, query string, limit, offset int) 
 }
 
 func (d *DDG) vqd(ctx context.Context, query string) (string, error) {
-	d.mu.Lock()
+	d.mu.RLock()
 	got := d.vqds[query]
-	d.mu.Unlock()
+	d.mu.RUnlock()
 	if got != "" {
 		return got, nil
 	}
