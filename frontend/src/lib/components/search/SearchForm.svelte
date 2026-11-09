@@ -300,7 +300,7 @@
 					aria-label="Remove bang"
 					onmousedown={(event) => event.preventDefault()}
 					onclick={clearBang}
-					class="shrink-0 rounded-sm p-0.5 text-[#5c5c5c] transition-colors hover:bg-[#262626] hover:text-[#c0c0c0]"
+					class="shrink-0 rounded-sm p-0.5 text-[#5c5c5c] transition-colors duration-150 ease-out hover:bg-[#262626] hover:text-[#c0c0c0]"
 				>
 					<X size={11} />
 				</button>
@@ -331,7 +331,7 @@
 				onmousedown={(event) => event.preventDefault()}
 				in:arrowIn
 				out:arrowOut
-				class="shrink-0 rounded-sm bg-[#242424] p-1.5 text-[#c8c8c8] transition-colors duration-150 hover:bg-[#2e2e2e] hover:text-[#e8e8e8] active:scale-90"
+				class="shrink-0 rounded-sm bg-[#242424] p-1.5 text-[#c8c8c8] transition-colors duration-150 ease-out hover:bg-[#2e2e2e] hover:text-[#e8e8e8] active:scale-90"
 			>
 				<ArrowRight size={13} />
 			</button>
@@ -363,7 +363,7 @@
 							onclick={() => pickBang(bang)}
 							onmouseenter={() => (activeIndex = i)}
 							onmouseleave={() => (activeIndex = -1)}
-							class="flex w-full items-center gap-2.5 rounded-[5px] px-2.5 py-2 text-left text-[13px] transition-all duration-100 ease-out active:scale-[0.99] {i ===
+							class="flex w-full items-center gap-2.5 rounded-[5px] px-2.5 py-2 text-left text-[13px] transition-all duration-150 ease-out active:scale-[0.99] {i ===
 							activeIndex
 								? 'bg-[#1e1e1e] text-[#a0a0a0]'
 								: 'text-[#8a8a8a]'}"
@@ -401,7 +401,7 @@
 							onclick={() => pick(suggestion)}
 							onmouseenter={() => (activeIndex = i)}
 							onmouseleave={() => (activeIndex = -1)}
-							class="flex w-full items-center gap-2.5 rounded-[5px] px-2.5 py-2 text-left text-[13px] transition-all duration-100 ease-out active:scale-[0.99] {i ===
+							class="flex w-full items-center gap-2.5 rounded-[5px] px-2.5 py-2 text-left text-[13px] transition-all duration-150 ease-out active:scale-[0.99] {i ===
 							activeIndex
 								? 'bg-[#1e1e1e] text-[#a0a0a0]'
 								: 'text-[#8a8a8a]'}"
@@ -425,7 +425,7 @@
     					onmousedown={(event) => {
     						event.preventDefault();
     					}}
-						class="flex items-center justify-center px-1 pt-2 text-[11px] leading-none text-[#4a4a4a] transition-colors hover:text-[#8a8a8a]"
+						class="flex items-center justify-center px-1 pt-2 text-[11px] leading-none text-[#4a4a4a] transition-colors duration-150 ease-out hover:text-[#8a8a8a]"
 					>
 						<span class="mr-1.5">bangs by</span>
 						<svg viewBox="0 0 256 256" aria-hidden="true" class="size-3 shrink-0">

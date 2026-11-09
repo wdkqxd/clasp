@@ -45,7 +45,7 @@
 			</div>
 			<button
 				type="button"
-				class="flex size-10 shrink-0 cursor-pointer items-center justify-center text-[#5c5c5c] transition-colors duration-150 hover:text-[#c0c0c0] disabled:cursor-default disabled:opacity-40 disabled:hover:text-[#5c5c5c]"
+				class="flex size-10 shrink-0 cursor-pointer items-center justify-center text-[#5c5c5c] transition-colors duration-150 ease-out hover:text-[#c0c0c0] disabled:cursor-default disabled:opacity-40 disabled:hover:text-[#5c5c5c]"
 				title="swap languages"
 				aria-label="swap languages"
 				disabled={!sourceLang}
@@ -73,7 +73,7 @@
 				{#if text}
 					<button
 						type="button"
-						class="absolute top-1.5 right-1.5 cursor-pointer rounded p-1.5 text-[#3d3d3d] transition-colors hover:bg-[#1e1e1e] hover:text-[#8a8a8a]"
+						class="absolute top-1.5 right-1.5 cursor-pointer rounded p-1.5 text-[#3d3d3d] transition-colors duration-150 ease-out hover:bg-[#1e1e1e] hover:text-[#8a8a8a]"
 						title="clear"
 						aria-label="clear text"
 						onclick={onClear}
@@ -85,7 +85,7 @@
 					{#if text}
 						<button
 							type="button"
-							class="flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-1 text-[#5c5c5c] transition-colors hover:bg-[#1e1e1e] hover:text-[#c0c0c0]"
+							class="flex cursor-pointer items-center gap-1.5 rounded px-1.5 py-1 text-[#5c5c5c] transition-colors duration-150 ease-out hover:bg-[#1e1e1e] hover:text-[#c0c0c0]"
 							title="speak source text"
 							onclick={() => {
 								const u = new SpeechSynthesisUtterance(text.slice(0, 400));

@@ -54,7 +54,7 @@
 	<div class="space-y-2.5">
 		{#each items as d (d.url)}
 			<div
-				class="disc-item rounded-[5px] border border-[#262626] bg-[#121212] transition-colors duration-300 ease-out hover:bg-[#181818]"
+				class="disc-item rounded-[5px] border border-[#262626] bg-[#121212] transition-colors duration-150 ease-out hover:bg-[#181818]"
 				class:open={isOpen(d.url)}
 			>
 				<button
@@ -81,7 +81,7 @@
 									href={d.url}
 									target={settings.openInNewTab ? '_blank' : undefined}
 									rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
-								class="flex items-center gap-1.5 text-[12px] text-[#5c5c5c] transition-colors hover:text-[#888]"
+								class="flex items-center gap-1.5 text-[12px] text-[#5c5c5c] transition-colors duration-150 ease-out hover:text-[#888]"
 							>
 								{#if favicon(d.url)}
 									<img

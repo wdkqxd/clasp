@@ -3,7 +3,7 @@
 
 	let { active, size = 16 }: { active: boolean; size?: number } = $props();
 
-	const cls = 'shrink-0 text-[#5c5c5c] opacity-0 transition-opacity group-hover:opacity-70';
+	const cls = 'shrink-0 text-[#5c5c5c] opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-70';
 </script>
 
 {#if active}

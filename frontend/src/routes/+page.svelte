@@ -101,7 +101,7 @@
 			class="group/handle block w-full cursor-pointer px-6 pt-1 pb-2"
 		>
 			<span
-				class="mx-auto block h-[3px] w-10 rounded-full bg-[#3d3d3d] transition-colors duration-200 group-hover/handle:bg-[#707070]"
+				class="mx-auto block h-[3px] w-10 rounded-full bg-[#3d3d3d] transition-colors duration-150 ease-out group-hover/handle:bg-[#707070]"
 			></span>
 		</button>
 

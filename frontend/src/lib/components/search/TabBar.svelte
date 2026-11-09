@@ -122,7 +122,7 @@
 			<a
 				href={tab === 'Video' ? '#' : tabHref(tab)}
 				data-active={isActive}
-				class="relative z-10 inline-flex cursor-pointer items-center gap-1.5 rounded-[3px] px-2.5 py-1 text-[12px] leading-tight select-none transition-colors duration-150 {isActive
+				class="relative z-10 inline-flex cursor-pointer items-center gap-1.5 rounded-[3px] px-2.5 py-1 text-[12px] leading-tight select-none transition-colors duration-150 ease-out {isActive
 					? 'text-[#c0c0c0]'
 					: 'text-[#6a6a6a] hover:text-[#9a9a9a]'}"
 				onclick={tab === 'Video' ? (e) => e.preventDefault() : undefined}
@@ -179,7 +179,7 @@
 											<span class="group/err relative shrink-0 cursor-help text-[11px] text-[#d05a5a]">
 												error
 												<span
-													class="pointer-events-none absolute left-0 top-full z-30 mt-1.5 w-max max-w-[190px] rounded border border-[#292929] bg-[#121212] px-2 py-1.5 text-[11px] leading-snug font-normal text-[#8a8a8a] opacity-0 shadow-2xl shadow-black/40 transition-opacity duration-200 ease-out group-hover/err:opacity-100"
+													class="pointer-events-none absolute left-0 top-full z-30 mt-1.5 w-max max-w-[190px] rounded border border-[#292929] bg-[#121212] px-2 py-1.5 text-[11px] leading-snug font-normal text-[#8a8a8a] opacity-0 shadow-2xl shadow-black/40 transition-opacity duration-150 ease-out group-hover/err:opacity-100"
 												>
 													{status?.error || 'unknown error'}
 												</span>

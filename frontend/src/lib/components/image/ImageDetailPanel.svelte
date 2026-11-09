@@ -104,7 +104,7 @@
 		<span class="text-[13px] text-[#5c5c5c]">{index + 1} / {total}</span>
 		<div class="flex gap-3">
 			<button
-				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-100 cursor-pointer disabled:opacity-30"
+				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-150 ease-out cursor-pointer disabled:opacity-30"
 				disabled={index <= 0}
 				onclick={onprev}
 				aria-label="Previous image"
@@ -112,7 +112,7 @@
 				<ChevronLeft class="size-4" />
 			</button>
 			<button
-				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-100 cursor-pointer disabled:opacity-30"
+				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-150 ease-out cursor-pointer disabled:opacity-30"
 				disabled={index >= total - 1}
 				onclick={onnext}
 				aria-label="Next image"
@@ -120,7 +120,7 @@
 				<ChevronRight class="size-4" />
 			</button>
 			<button
-				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-100 cursor-pointer"
+				class="text-[#5c5c5c] hover:text-[#888] transition-colors duration-150 ease-out cursor-pointer"
 				onclick={onclose}
 				aria-label="Close detail panel"
 			>
@@ -144,14 +144,14 @@
 				href={image.url}
 				target={settings.openInNewTab ? '_blank' : undefined}
 				rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
-				class="text-[16px] text-[#c0c0c0] font-normal leading-snug no-underline hover:underline hover:text-[#fff] transition-colors"
+				class="text-[16px] text-[#c0c0c0] font-normal leading-snug no-underline hover:underline hover:text-[#fff] transition-colors duration-150 ease-out"
 			>{image.title}</a>
 
 			<a
 				href={image.url}
 				target={settings.openInNewTab ? '_blank' : undefined}
 				rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
-				class="flex items-center gap-1.5 text-[12px] text-[#5c5c5c] hover:text-[#888] no-underline transition-colors"
+				class="flex items-center gap-1.5 text-[12px] text-[#5c5c5c] hover:text-[#888] no-underline transition-colors duration-150 ease-out"
 			>
 				{#if image.url}
 					<img

@@ -18,7 +18,7 @@
 					href={article.url}
 					target="_blank"
 					rel="noreferrer"
-					class="text-inherit no-underline hover:underline hover:underline-offset-[3px]"
+					class="text-inherit no-underline transition-colors duration-150 ease-out hover:underline hover:underline-offset-[3px]"
 				>
 					{article.title}
 				</a>
@@ -36,7 +36,7 @@
 					rel="noreferrer"
 				>
 					<img
-						class="block h-full w-full object-cover transition-opacity duration-150 group-hover:opacity-[0.85]"
+						class="block h-full w-full object-cover transition-opacity duration-150 ease-out group-hover:opacity-[0.85]"
 						src={article.thumbnail}
 						alt=""
 					/>
@@ -49,7 +49,7 @@
 		<p class="m-0 mt-4 border-t border-[#262626] pt-4 text-[0.85rem] leading-[1.5] text-[#a0a0a0]">
 			{preview(article.extract)}
 			<a
-				class="ml-1 text-[#707070] no-underline transition-colors duration-150 hover:text-[#a0a0a0] hover:underline hover:underline-offset-[3px]"
+				class="ml-1 text-[#707070] no-underline transition-colors duration-150 ease-out hover:text-[#a0a0a0] hover:underline hover:underline-offset-[3px]"
 				href={article.url}
 				target="_blank"
 				rel="noreferrer"

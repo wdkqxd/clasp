@@ -76,7 +76,7 @@ function cleanSnippet(s: string): string {
 			{displayURL(result.url)}
 		</div>
 		<h2
-			class="truncate text-[16.5px] text-[#c0c0c0] font-normal leading-snug mb-1.5 underline-offset-[3px] transition-colors group-hover:underline"
+			class="truncate text-[16.5px] text-[#c0c0c0] font-normal leading-snug mb-1.5 underline-offset-[3px] transition-colors duration-150 ease-out group-hover:underline"
 			title={result.title}
 		>
 			{result.title}
@@ -97,7 +97,7 @@ function cleanSnippet(s: string): string {
 					href={link.url}
 					target={settings.openInNewTab ? '_blank' : undefined}
 					rel={settings.openInNewTab ? 'noopener noreferrer' : 'noreferrer'}
-					class="text-[12px] text-[#5c5c5c] underline-offset-[3px] transition-colors hover:underline visited:text-[#83709f]"
+					class="text-[12px] text-[#5c5c5c] underline-offset-[3px] transition-colors duration-150 ease-out hover:underline visited:text-[#83709f]"
 				>
 					{link.title}
 				</a>

@@ -37,14 +37,14 @@
 		<div class="mt-3 flex items-center gap-2 text-[12px]">
 			<button
 				type="button"
-				class="cursor-pointer rounded bg-[#1c1c1c] px-3 py-1 text-[#9b9b9b] transition-colors hover:bg-[#262626] hover:text-[#d0d0d0]"
+				class="cursor-pointer rounded bg-[#1c1c1c] px-3 py-1 text-[#9b9b9b] transition-colors duration-150 ease-out hover:bg-[#262626] hover:text-[#d0d0d0]"
 				onclick={onSw}
 			>
 				{swRunning ? 'pause' : swMs > 0 ? 'resume' : 'start'}
 			</button>
 			<button
 				type="button"
-				class="cursor-pointer rounded bg-[#1c1c1c] px-3 py-1 text-[#707070] transition-colors hover:bg-[#262626] hover:text-[#9b9b9b]"
+				class="cursor-pointer rounded bg-[#1c1c1c] px-3 py-1 text-[#707070] transition-colors duration-150 ease-out hover:bg-[#262626] hover:text-[#9b9b9b]"
 				onclick={onSwLap}
 			>
 				{swRunning ? 'lap' : 'reset'}

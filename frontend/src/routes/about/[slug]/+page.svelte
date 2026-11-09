@@ -66,7 +66,7 @@
 		border-radius: 1px;
 		box-decoration-break: clone;
 		-webkit-box-decoration-break: clone;
-		transition: color 0.15s;
+		transition: color 0.15s ease-out;
 	}
 	.prose :global(a:hover) {
 		color: #fff;
@@ -80,8 +80,8 @@
 		text-decoration: none;
 		border-bottom: none;
 		transition:
-			color 0.15s,
-			opacity 0.15s;
+			color 0.15s ease-out,
+			opacity 0.15s ease-out;
 	}
 	.prose :global(.doc-section:hover .heading-anchor),
 	.prose :global(.doc-section:focus-within .heading-anchor) {

@@ -180,6 +180,11 @@
 		text-decoration: underline;
 		text-underline-offset: 3px;
 	}
+	.image-card :global(img:not(.selected-img)) {
+		transition:
+			opacity 300ms ease-out,
+			transform 150ms ease-out;
+	}
 	.image-card:hover :global(img:not(.selected-img)) {
 		transform: scale(1.02);
 	}
