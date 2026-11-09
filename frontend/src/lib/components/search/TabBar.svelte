@@ -32,6 +32,7 @@
 	let indicatorLeft = $state(0);
 	let indicatorWidth = $state(0);
 	let indicatorReady = $state(false);
+	const pressScale = $derived(tabs.length > 2 ? 'active:scale-[0.985]' : 'active:scale-[0.97]');
 	const settings = getSearchSettings();
 	const engines = $derived(active === 'Images' ? settings.imageEngines : settings.engines);
 	const engineOptions = $derived(active === 'Images' ? IMAGE_ENGINES : WEB_ENGINES);
@@ -106,7 +107,7 @@
 <nav class="relative flex items-center gap-5 pt-3 text-[13px] font-medium" data-search-settings>
 	<div
 		bind:this={tabsEl}
-		class="relative inline-flex max-w-full items-center rounded-[5px] bg-[#141414] p-[3px]"
+		class="relative inline-flex max-w-full items-center rounded-[5px] bg-[#141414] p-[3px] transition-[scale] duration-150 ease-out {pressScale} active:duration-75"
 	>
 		<span
 			class="pointer-events-none absolute left-0 top-[3px] bottom-[3px] rounded-[3px] border border-[#2f2f2f] bg-[#222222] {indicatorReady
