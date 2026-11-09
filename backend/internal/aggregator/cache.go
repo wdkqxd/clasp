@@ -6,6 +6,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"clasp/internal/cachekey"
 )
 
 type cacheEntry[T any] struct {
@@ -35,19 +37,19 @@ func newTTLCache[T any](ttl time.Duration, max int) *ttlCache[T] {
 	}
 }
 
-func (c *ttlCache[T]) do(key string, keep func(T) bool, fn func() T) (T, bool) {
+func (c *ttlCache[T]) do(key string, keep func(T) bool, fn func() T) T {
 	c.mu.Lock()
 	if entry, ok := c.entries[key]; ok {
 		if time.Now().Before(entry.expires) {
 			c.mu.Unlock()
-			return entry.val, true
+			return entry.val
 		}
 		delete(c.entries, key)
 	}
 	if call, ok := c.calls[key]; ok {
 		c.mu.Unlock()
 		<-call.done
-		return call.val, true
+		return call.val
 	}
 
 	call := &inflightCall[T]{done: make(chan struct{})}
@@ -65,7 +67,7 @@ func (c *ttlCache[T]) do(key string, keep func(T) bool, fn func() T) (T, bool) {
 	close(call.done)
 	c.mu.Unlock()
 
-	return val, false
+	return val
 }
 
 func (c *ttlCache[T]) storeLocked(key string, val T) {
@@ -84,23 +86,20 @@ func (c *ttlCache[T]) storeLocked(key string, val T) {
 }
 
 func cacheKey(kind, query string, limit, page int, engines []string) string {
-	var b strings.Builder
-	b.WriteString(kind)
-	b.WriteByte(0)
-	b.WriteString(strings.ToLower(strings.Join(strings.Fields(query), " ")))
-	b.WriteByte(0)
-	b.WriteString(strconv.Itoa(limit))
-	b.WriteByte(0)
-	b.WriteString(strconv.Itoa(page))
-	b.WriteByte(0)
-
 	names := make([]string, len(engines))
 	for i, name := range engines {
 		names[i] = normalizeEngineName(name)
 	}
 	sort.Strings(names)
-	b.WriteString(strings.Join(names, ","))
-	return b.String()
+
+	normalizedQuery := strings.Join(strings.Fields(strings.ToLower(query)), " ")
+	return cachekey.Hash(
+		kind,
+		normalizedQuery,
+		strconv.Itoa(limit),
+		strconv.Itoa(page),
+		strings.Join(names, ","),
+	)
 }
 
 func hasOKEngine(statuses map[string]Status) bool {

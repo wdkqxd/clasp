@@ -22,7 +22,6 @@ type Status struct {
 type Response struct {
 	Query       string              `json:"query"`
 	TookMS      int64               `json:"took_ms"`
-	Cached      bool                `json:"cached,omitempty"`
 	Results     []engine.Result     `json:"results"`
 	Engines     map[string]Status   `json:"engines"`
 	HasMore     bool                `json:"has_more"`
@@ -34,7 +33,6 @@ type Response struct {
 type ImageResponse struct {
 	Query   string               `json:"query"`
 	TookMS  int64                `json:"took_ms"`
-	Cached  bool                 `json:"cached,omitempty"`
 	Results []engine.ImageResult `json:"results"`
 	Engines map[string]Status    `json:"engines"`
 	HasMore bool                 `json:"has_more"`
@@ -245,15 +243,17 @@ func withThrottle[T any](a *Aggregator, name string, ctx context.Context, call f
 
 func (a *Aggregator) Search(ctx context.Context, query string, limit, page int, enabled []string, timeout time.Duration) Response {
 	if a.searchCache == nil {
-		return a.searchUpstream(ctx, query, limit, page, enabled, timeout)
+		resp := a.searchUpstream(ctx, query, limit, page, enabled, timeout)
+		resp.Query = query
+		return resp
 	}
 	start := time.Now()
-	resp, cached := a.searchCache.do(
+	resp := a.searchCache.do(
 		cacheKey("search", query, limit, page, enabled),
 		func(r Response) bool { return hasOKEngine(r.Engines) },
 		func() Response { return a.searchUpstream(ctx, query, limit, page, enabled, timeout) },
 	)
-	resp.Cached = cached
+	resp.Query = query
 	resp.TookMS = time.Since(start).Milliseconds()
 	return resp
 }
@@ -277,7 +277,6 @@ func (a *Aggregator) searchUpstream(ctx context.Context, query string, limit, pa
 	activeEngines := selectByName(a.engines, enabled)
 
 	resp := Response{
-		Query:   query,
 		Engines: make(map[string]Status, len(activeEngines)),
 	}
 
@@ -531,15 +530,17 @@ func mergeTwoImageResults(existing *engine.ImageResult, incoming engine.ImageRes
 
 func (a *Aggregator) ImageSearch(ctx context.Context, query string, limit, page int, enabled []string, timeout time.Duration) ImageResponse {
 	if a.imageCache == nil {
-		return a.imageSearchUpstream(ctx, query, limit, page, enabled, timeout)
+		resp := a.imageSearchUpstream(ctx, query, limit, page, enabled, timeout)
+		resp.Query = query
+		return resp
 	}
 	start := time.Now()
-	resp, cached := a.imageCache.do(
+	resp := a.imageCache.do(
 		cacheKey("images", query, limit, page, enabled),
 		func(r ImageResponse) bool { return hasOKEngine(r.Engines) },
 		func() ImageResponse { return a.imageSearchUpstream(ctx, query, limit, page, enabled, timeout) },
 	)
-	resp.Cached = cached
+	resp.Query = query
 	resp.TookMS = time.Since(start).Milliseconds()
 	return resp
 }
@@ -569,7 +570,6 @@ func (a *Aggregator) imageSearchUpstream(ctx context.Context, query string, limi
 	}
 
 	resp := ImageResponse{
-		Query:   query,
 		Engines: make(map[string]Status, len(selected)),
 	}
 

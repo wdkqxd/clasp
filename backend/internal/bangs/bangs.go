@@ -50,6 +50,7 @@ func (s *Store) ServeJSON(w http.ResponseWriter) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
 	_ = json.NewEncoder(w).Encode(s.byKey)
 }
 

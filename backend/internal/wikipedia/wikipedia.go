@@ -14,6 +14,7 @@ import (
 	"time"
 	"unicode"
 
+	"clasp/internal/cachekey"
 	"clasp/internal/engine"
 	"clasp/internal/engine/helpers"
 )
@@ -122,7 +123,7 @@ func (c *Client) Search(ctx context.Context, query, language string) (*Article, 
 }
 
 func (c *Client) lookup(ctx context.Context, query, language string) (*Article, error) {
-	key := language + "\x00" + query
+	key := cachekey.Hash("wikipedia", language, query)
 	if art, ok := c.fromCache(key); ok {
 		return art, nil
 	}
