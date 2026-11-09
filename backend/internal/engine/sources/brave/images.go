@@ -9,32 +9,74 @@ import (
 	"clasp/internal/engine"
 )
 
-func imageResults(data map[string]any, limit int) ([]engine.ImageResult, error) {
-	body, _ := data["body"].(map[string]any)
-	response, _ := body["response"].(map[string]any)
-	raw, _ := response["results"].([]any)
+type imageThumbnail struct {
+	Src      string
+	Original string
+	Width    int
+	Height   int
+}
 
-	out := make([]engine.ImageResult, 0, len(raw))
+type imageProperties struct {
+	URL     string
+	Resized string
+	Width   int
+	Height  int
+}
+
+type imageEntry struct {
+	URL                 string
+	Title               string
+	Source              string
+	SimilarImagesAPIURL string
+	Thumbnail           imageThumbnail
+	Properties          imageProperties
+}
+
+func imagePayload(data map[string]any) []imageEntry {
+	raw := fields(data).obj("body").obj("response").list("results")
+	out := make([]imageEntry, 0, len(raw))
 	for _, item := range raw {
 		m, ok := item.(map[string]any)
 		if !ok {
 			continue
 		}
-		pageURL, _ := m["url"].(string)
-		title, _ := m["title"].(string)
+		f := fields(m)
+		thumb := f.obj("thumbnail")
+		props := f.obj("properties")
+		out = append(out, imageEntry{
+			URL:                 f.str("url"),
+			Title:               f.str("title"),
+			Source:              f.str("source"),
+			SimilarImagesAPIURL: f.str("similar_images_api_url"),
+			Thumbnail: imageThumbnail{
+				Src:      thumb.str("src"),
+				Original: thumb.str("original"),
+				Width:    intNum(thumb["width"]),
+				Height:   intNum(thumb["height"]),
+			},
+			Properties: imageProperties{
+				URL:     props.str("url"),
+				Resized: props.str("resized"),
+				Width:   intNum(props["width"]),
+				Height:  intNum(props["height"]),
+			},
+		})
+	}
+	return out
+}
+
+func imageResults(data map[string]any, limit int) ([]engine.ImageResult, error) {
+	raw := imagePayload(data)
+
+	out := make([]engine.ImageResult, 0, len(raw))
+	for _, e := range raw {
+		title := e.Title
 		if title == "" {
-			title, _ = m["source"].(string)
+			title = e.Source
 		}
 
-		thumb := ""
-		thumbW, thumbH := 0, 0
-		if thumbObj, ok := m["thumbnail"].(map[string]any); ok {
-			thumb, _ = thumbObj["src"].(string)
-			thumbW = intNum(thumbObj["width"])
-			thumbH = intNum(thumbObj["height"])
-		}
-
-		imgURL, hosted := originalImage(m)
+		thumb := e.Thumbnail.Src
+		imgURL, hosted := originalImage(e)
 		if imgURL == "" || thumb == "" {
 			continue
 		}
@@ -42,21 +84,17 @@ func imageResults(data map[string]any, limit int) ([]engine.ImageResult, error) 
 			imgURL = proxyImage(imgURL)
 		}
 
-		width, height := 0, 0
-		if props, ok := m["properties"].(map[string]any); ok {
-			width = intNum(props["width"])
-			height = intNum(props["height"])
-		}
+		width, height := e.Properties.Width, e.Properties.Height
 		if width == 0 {
-			width = thumbW
+			width = e.Thumbnail.Width
 		}
 		if height == 0 {
-			height = thumbH
+			height = e.Thumbnail.Height
 		}
 
 		out = append(out, engine.ImageResult{
 			Title:     title,
-			URL:       pageURL,
+			URL:       e.URL,
 			SourceURL: imgURL,
 			Thumbnail: thumb,
 			Width:     width,
@@ -73,22 +111,17 @@ func imageResults(data map[string]any, limit int) ([]engine.ImageResult, error) 
 	return out, nil
 }
 
-func originalImage(m map[string]any) (string, bool) {
-	props, _ := m["properties"].(map[string]any)
-
-	if u, _ := props["url"].(string); u != "" {
+func originalImage(e imageEntry) (string, bool) {
+	if e.Properties.URL != "" {
+		return e.Properties.URL, true
+	}
+	if u := similarOriginal(e.SimilarImagesAPIURL); u != "" {
 		return u, true
 	}
-	if u := similarOriginal(m["similar_images_api_url"]); u != "" {
-		return u, true
+	if e.Thumbnail.Original != "" {
+		return e.Thumbnail.Original, true
 	}
-	if thumb, ok := m["thumbnail"].(map[string]any); ok {
-		if u, _ := thumb["original"].(string); u != "" {
-			return u, true
-		}
-	}
-	u, _ := props["resized"].(string)
-	return u, false
+	return e.Properties.Resized, false
 }
 
 func proxyImage(imageURL string) string {

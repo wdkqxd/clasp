@@ -45,30 +45,46 @@ func parseSerpData(doc string) (map[string]any, error) {
 	return nil, errors.New("nothing was found. most likely, the page layout has changed")
 }
 
-func webResults(data map[string]any, limit int) ([]engine.Result, error) {
-	body, _ := data["body"].(map[string]any)
-	response, _ := body["response"].(map[string]any)
-	web, _ := response["web"].(map[string]any)
-	raw, _ := web["results"].([]any)
+type webResult struct {
+	Title       string
+	URL         string
+	Description string
+	Sitelinks   []engine.Sitelink
+}
 
-	out := make([]engine.Result, 0, len(raw))
+func webPayload(data map[string]any) []webResult {
+	raw := fields(data).obj("body").obj("response").obj("web").list("results")
+	out := make([]webResult, 0, len(raw))
 	for _, item := range raw {
 		m, ok := item.(map[string]any)
 		if !ok {
 			continue
 		}
-		title, _ := m["title"].(string)
-		resultURL, _ := m["url"].(string)
-		if title == "" && resultURL == "" {
+		f := fields(m)
+		out = append(out, webResult{
+			Title:       f.str("title"),
+			URL:         f.str("url"),
+			Description: f.str("description"),
+			Sitelinks:   parseSitelinks(f["cluster"]),
+		})
+	}
+	return out
+}
+
+func webResults(data map[string]any, limit int) ([]engine.Result, error) {
+	raw := webPayload(data)
+
+	out := make([]engine.Result, 0, len(raw))
+	for _, r := range raw {
+		if r.Title == "" && r.URL == "" {
 			continue
 		}
-		snippet, _ := m["description"].(string)
 		out = append(out, engine.Result{
-			Title:     title,
-			URL:       resultURL,
-			Snippet:   snippet,
+			Title:     r.Title,
+			URL:       r.URL,
+			Snippet:   r.Description,
 			Engine:    "brave",
-			Sitelinks: parseSitelinks(m["cluster"]),
+			Sitelinks: r.Sitelinks,
 		})
 		if len(out) >= limit {
 			break
