@@ -183,7 +183,11 @@
 	.image-card :global(img) {
 		transition:
 			opacity 300ms ease-out,
-			transform 150ms ease-out;
+			transform 150ms ease-out,
+			filter 150ms ease-out;
+	}
+	.image-card :global(img.selected-img) {
+		filter: brightness(0.5);
 	}
 	.image-card:hover :global(img) {
 		transform: scale(1.02);

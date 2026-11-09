@@ -114,7 +114,7 @@
 	}
 
 	function selectImage(index: number) {
-		selectedImageIndex = index;
+		selectedImageIndex = selectedImageIndex === index ? -1 : index;
 	}
 
 	function closeDetail() {
