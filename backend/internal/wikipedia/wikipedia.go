@@ -28,7 +28,7 @@ type Article struct {
 
 const (
 	perLanguageTimeout = 3 * time.Second
-	cacheTTL           = 10 * time.Minute
+	cacheTTL           = 5 * time.Minute
 	negativeCacheTTL   = 90 * time.Second
 	maxCacheEntries    = 512
 	upstreamInterval   = 150 * time.Millisecond

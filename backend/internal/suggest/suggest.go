@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 
 	"clasp/internal/engine"
@@ -23,8 +22,6 @@ const (
 	DefaultEngine = EngineKagi
 
 	requestTimeout = 4 * time.Second
-	cacheTTL       = 5 * time.Minute
-	maxCacheItems  = 512
 )
 
 const MaxSuggestions = 7
@@ -54,23 +51,15 @@ func Normalize(name string) string {
 	}
 }
 
-type cacheEntry struct {
-	suggestions []string
-	expires     time.Time
-}
-
 type Client struct {
 	http engine.HTTPClient
-
-	mu    sync.Mutex
-	cache map[string]cacheEntry
 }
 
 func NewClient(httpClient engine.HTTPClient) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: requestTimeout}
 	}
-	return &Client{http: httpClient, cache: make(map[string]cacheEntry)}
+	return &Client{http: httpClient}
 }
 
 func (c *Client) Suggest(ctx context.Context, query, engineName string) (Response, error) {
@@ -81,10 +70,6 @@ func (c *Client) Suggest(ctx context.Context, query, engineName string) (Respons
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return Response{Engine: name, Suggestions: []string{}}, nil
-	}
-
-	if cached, ok := c.cached(name, query); ok {
-		return Response{Query: query, Engine: name, Suggestions: cached}, nil
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, requestTimeout)
@@ -108,7 +93,6 @@ func (c *Client) Suggest(ctx context.Context, query, engineName string) (Respons
 	}
 
 	suggestions = normalizeSuggestions(query, suggestions)
-	c.store(name, query, suggestions)
 	return Response{Query: query, Engine: name, Suggestions: suggestions}, nil
 }
 
@@ -206,32 +190,6 @@ func (c *Client) get(ctx context.Context, endpoint, query string, extra url.Valu
 		return nil, errors.New(resp.Status)
 	}
 	return io.ReadAll(io.LimitReader(resp.Body, engine.MaxBodyReadLimit))
-}
-
-func (c *Client) cached(name, query string) ([]string, bool) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	entry, ok := c.cache[suggestionKey(name, query)]
-	if !ok || time.Now().After(entry.expires) {
-		return nil, false
-	}
-	return entry.suggestions, true
-}
-
-func (c *Client) store(name, query string, suggestions []string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	if len(c.cache) >= maxCacheItems {
-		c.cache = make(map[string]cacheEntry)
-	}
-	c.cache[suggestionKey(name, query)] = cacheEntry{
-		suggestions: suggestions,
-		expires:     time.Now().Add(cacheTTL),
-	}
-}
-
-func suggestionKey(name, query string) string {
-	return name + "\x00" + strings.ToLower(query)
 }
 
 func normalizeSuggestions(query string, suggestions []string) []string {

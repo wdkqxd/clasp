@@ -18,7 +18,7 @@ type config struct {
 
 func loadConfig() config {
 	cfg := config{
-		cacheTTL:     5 * time.Minute,
+		cacheTTL:     60 * time.Second,
 		cacheMax:     1024,
 		minInterval:  1200 * time.Millisecond,
 		cooldownBase: 10 * time.Minute,
