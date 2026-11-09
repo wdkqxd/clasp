@@ -1,12 +1,8 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import HashHighlight from '$lib/components/navigation/HashHighlight.svelte';
 	import PageTopBar from '$lib/components/navigation/PageTopBar.svelte';
-	import { isOfficialHost } from '$lib/instance';
 
 	let { data } = $props();
-
-	const isOfficialInstance = $derived(isOfficialHost(page.url.hostname));
 </script>
 
 <svelte:head>
@@ -21,7 +17,6 @@
 	>
 		<div
 			class="prose mx-auto w-full max-w-2xl px-4 py-10 sm:py-12"
-			class:official-instance={isOfficialInstance}
 			data-hash-root
 		>
 			{@html data.doc.html}
@@ -55,9 +50,6 @@
 	}
 	.prose :global(p + p) {
 		margin-top: 1.25rem;
-	}
-	.prose.official-instance :global([data-instance-only]) {
-		display: none;
 	}
 	.prose :global(a) {
 		color: inherit;

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { isOfficialHost } from '$lib/instance';
 	import AnchorHeading from './AnchorHeading.svelte';
 	import SegmentedControl from './SegmentedControl.svelte';
 	import {
@@ -12,7 +10,6 @@
 	} from './searchSettings.svelte';
 
 	const settings = getSearchSettings();
-	const isOfficialInstance = $derived(isOfficialHost(page.url.hostname));
 
 	const FONTS: { value: FontChoice; label: string }[] = [
 		{ value: 'jetbrains', label: 'jetbrains mono' },
@@ -132,21 +129,5 @@
 				/>
 			</div>
 		</section>
-
-		{#if !isOfficialInstance}
-			<section class="group">
-				<AnchorHeading id="unofficial-instance-notice">unofficial instance notice</AnchorHeading>
-				<p class="mt-1 text-[14px] leading-relaxed text-[#c0c0c0]">
-					show an unofficial instance warning on the homepage
-				</p>
-				<div class="mt-2.5">
-					<SegmentedControl
-						options={BOOLEAN_OPTIONS}
-						bind:value={settings.showInstanceNotice}
-						onchange={() => saveSearchSettings()}
-					/>
-				</div>
-			</section>
-		{/if}
 	</div>
 </div>

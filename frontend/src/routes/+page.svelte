@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { Info, Settings2, ShieldCheck, TriangleAlert } from '@lucide/svelte';
+	import { Info, Settings2, ShieldCheck, TriangleAlert, X } from '@lucide/svelte';
 	import { openBangOr } from '$lib/bangs';
 	import SearchForm from '$lib/components/search/SearchForm.svelte';
-	import { getSearchSettings } from '$lib/components/settings/searchSettings.svelte';
+	import {
+		getSearchSettings,
+		saveSearchSettings
+	} from '$lib/components/settings/searchSettings.svelte';
 	import { isOfficialHost } from '$lib/instance';
 	import logo from '$lib/assets/logo.svg';
 
@@ -26,6 +29,11 @@
 	function onSearch(q: string) {
 		if (!q) return;
 		openBangOr(q, `/search?q=${encodeURIComponent(q)}`, goto);
+	}
+
+	function dismissNotice() {
+		settings.showInstanceNotice = false;
+		saveSearchSettings();
 	}
 
 	function toggleMenu() {
@@ -68,14 +76,27 @@
 
 <div class="relative flex min-h-screen flex-col overflow-hidden px-4">
 	{#if !isOfficialInstance && settings.showInstanceNotice}
-		<div class="absolute inset-x-0 top-0 z-30 flex justify-center px-4 pt-2">
-			<a
-				href="/about/privacy#self-hosted-instances"
-				class="inline-flex items-center gap-1.5 rounded-[5px] px-2 py-1 text-[12px] text-[#707070] no-underline transition-all duration-150 ease-out hover:bg-[#1a1a1a] hover:text-[#c0c0c0] active:scale-[0.94] active:duration-75 focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#707070]"
+		<div class="absolute inset-x-0 top-0 z-30 flex justify-center">
+			<div
+				class="flex items-center gap-1.5 rounded-b-[13px] border-x border-b border-[#242424] bg-[#0c0c0c] py-1 pr-1 pl-3"
 			>
-				<TriangleAlert size={13} strokeWidth={1.75} />
-				<span>unofficial instance</span>
-			</a>
+				<a
+					href="/about/privacy#self-hosted-instances"
+					class="inline-flex items-center gap-1.5 text-[11.5px] leading-none text-[#707070] no-underline transition-colors duration-150 ease-out hover:text-[#c0c0c0] focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[#707070]"
+				>
+					<TriangleAlert size={11} strokeWidth={1.75} />
+					<span>unofficial instance</span>
+				</a>
+				<button
+					type="button"
+					onclick={dismissNotice}
+					aria-label="dismiss unofficial instance notice"
+					title="dismiss"
+					class="inline-flex size-5 cursor-pointer items-center justify-center rounded-sm text-[#5c5c5c] transition-all duration-150 ease-out hover:bg-[#1a1a1a] hover:text-[#c0c0c0] active:scale-[0.9] active:duration-75 focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-[#707070]"
+				>
+					<X size={12} strokeWidth={2} />
+				</button>
+			</div>
 		</div>
 	{/if}
 
