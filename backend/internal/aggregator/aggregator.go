@@ -146,42 +146,29 @@ const (
 	navigationalBoost = 4.0
 )
 
-func selectEngines(all []engine.Engine, enabled []string) []engine.Engine {
-	if len(enabled) == 0 {
-		return all
-	}
-	selected := make(map[string]bool, len(enabled))
-	for _, name := range enabled {
-		name = strings.ToLower(strings.TrimSpace(name))
-		if name == "duckduckgo" {
-			name = "ddg"
-		}
-		selected[name] = true
-	}
-	out := make([]engine.Engine, 0, len(all))
-	for _, e := range all {
-		if selected[strings.ToLower(e.Name())] {
-			out = append(out, e)
-		}
-	}
-	return out
+type named interface {
+	Name() string
 }
 
-func selectImageEngines(all []engine.ImageSearcher, enabled []string) []engine.ImageSearcher {
+func normalizeEngineName(name string) string {
+	name = strings.ToLower(strings.TrimSpace(name))
+	if name == "duckduckgo" {
+		return "ddg"
+	}
+	return name
+}
+
+func selectByName[T named](all []T, enabled []string) []T {
 	if len(enabled) == 0 {
 		return all
 	}
 	selected := make(map[string]bool, len(enabled))
 	for _, name := range enabled {
-		name = strings.ToLower(strings.TrimSpace(name))
-		if name == "duckduckgo" {
-			name = "ddg"
-		}
-		selected[name] = true
+		selected[normalizeEngineName(name)] = true
 	}
-	out := make([]engine.ImageSearcher, 0, len(all))
+	out := make([]T, 0, len(all))
 	for _, e := range all {
-		if selected[strings.ToLower(e.Name())] {
+		if selected[normalizeEngineName(e.Name())] {
 			out = append(out, e)
 		}
 	}
@@ -247,7 +234,7 @@ func (a *Aggregator) searchUpstream(ctx context.Context, query string, limit, pa
 		page = 0
 	}
 
-	activeEngines := selectEngines(a.engines, enabled)
+	activeEngines := selectByName(a.engines, enabled)
 
 	resp := Response{
 		Query:   query,
@@ -564,7 +551,7 @@ func (a *Aggregator) imageSearchUpstream(ctx context.Context, query string, limi
 		name string
 		s    engine.ImageSearcher
 	}
-	for _, s := range selectImageEngines(a.imageEngines, enabled) {
+	for _, s := range selectByName(a.imageEngines, enabled) {
 		activeSearchers = append(activeSearchers, struct {
 			name string
 			s    engine.ImageSearcher

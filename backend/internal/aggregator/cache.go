@@ -96,11 +96,7 @@ func cacheKey(kind, query string, limit, page int, engines []string) string {
 
 	names := make([]string, len(engines))
 	for i, name := range engines {
-		name = strings.ToLower(strings.TrimSpace(name))
-		if name == "duckduckgo" {
-			name = "ddg"
-		}
-		names[i] = name
+		names[i] = normalizeEngineName(name)
 	}
 	sort.Strings(names)
 	b.WriteString(strings.Join(names, ","))
