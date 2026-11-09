@@ -20,6 +20,11 @@
 	} = $props();
 
 	const MAX_URL_LEN = 32;
+	const MIN_ASPECT = 0.4;
+	const MAX_ASPECT = 4;
+	const ROW_HEIGHT = 220;
+	const CAPTION_HEIGHT = 40;
+	const IMAGE_HEIGHT = ROW_HEIGHT - CAPTION_HEIGHT;
 	let transparency = $state<Record<string, boolean | null>>({});
 
 	function imageKey(image: ImageResult): string {
@@ -68,12 +73,16 @@
 		return transparency[imageKey(image)];
 	}
 
-	function span(image: ImageResult): string {
+	function imageAspect(image: ImageResult): number {
 		const w = image.width || 400;
 		const h = image.height || 300;
 		const aspect = w / h;
-		if (aspect > 1.5) return 'col-span-2';
-		return 'col-span-1';
+		return Math.min(MAX_ASPECT, Math.max(MIN_ASPECT, aspect));
+	}
+
+	function cardStyle(image: ImageResult): string {
+		const aspect = imageAspect(image);
+		return `flex: ${aspect} 1 ${Math.round(aspect * IMAGE_HEIGHT)}px; height: ${ROW_HEIGHT}px`;
 	}
 
 	function displayURL(u: string): string {
@@ -123,18 +132,18 @@
 {:else if settings.transparentOnly && !transparencyPending && !hasTransparentItems}
 	<p class="text-[#555] text-sm text-center py-12">no images found</p>
 {:else}
-	<div in:fade={{ duration: 300 }} class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-3 pb-5" style="grid-auto-flow: dense; grid-auto-rows: 220px;">
+	<div in:fade={{ duration: 300 }} class="image-grid flex flex-wrap gap-3 pb-5">
 		{#each visibleItems as { image, index } (imageKey(image) || index)}
 			{@const transState = transparencyState(image)}
 			<div
-				class="flex flex-col text-left rounded-md overflow-hidden image-card transition-[scale] duration-150 ease-out active:scale-[0.97] active:duration-75"
-				class:col-span-2={span(image) === 'col-span-2'}
+				class="flex min-w-0 flex-col text-left rounded-md overflow-hidden max-w-full image-card transition-[scale] duration-150 ease-out active:scale-[0.97] active:duration-75"
+				style={cardStyle(image)}
 				class:invisible={settings.transparentOnly && transState === undefined}
 				class:hidden={settings.transparentOnly && (transState === false || transState === null)}
 			>
 				<a
 					href={image.url}
-					class="overflow-hidden rounded-md bg-[#1a1a1a] w-full h-full relative block cursor-pointer"
+					class="overflow-hidden rounded-md bg-[#1a1a1a] w-full flex-1 min-h-0 relative block cursor-pointer"
 					class:selected={selectedIndex === index}
 					onclick={(e) => openSidebar(e, index)}
 				>
@@ -176,6 +185,10 @@
 {/if}
 
 <style>
+	.image-grid::after {
+		content: '';
+		flex: 9999 1 0;
+	}
 	.image-info:hover a {
 		text-decoration: underline;
 		text-underline-offset: 3px;
