@@ -64,14 +64,14 @@ func (s richSubtype) matches(subtype string) bool {
 }
 
 func richAnswerFromMap(m map[string]any) *engine.RichAnswer {
-	subtype, _ := m["subtype"].(string)
-	subtype = strings.ToLower(subtype)
+	f := fields(m)
+	subtype := strings.ToLower(f.str("subtype"))
 	for _, st := range richSubtypes {
 		if !st.matches(subtype) {
 			continue
 		}
-		payload, ok := m[st.name].(map[string]any)
-		if !ok || len(payload) == 0 {
+		payload := f.obj(st.name)
+		if len(payload) == 0 {
 			continue
 		}
 		if a := richAnswerFor(st.name, payload); a != nil {
@@ -84,7 +84,7 @@ func richAnswerFromMap(m map[string]any) *engine.RichAnswer {
 	return nil
 }
 
-func richAnswerFor(name string, payload map[string]any) *engine.RichAnswer {
+func richAnswerFor(name string, payload fields) *engine.RichAnswer {
 	switch name {
 	case "cryptocurrency":
 		return richCryptocurrency(payload)
@@ -94,33 +94,33 @@ func richAnswerFor(name string, payload map[string]any) *engine.RichAnswer {
 	return nil
 }
 
-func richCryptocurrency(p map[string]any) *engine.RichAnswer {
-	q, ok := p["quote"].(map[string]any)
-	if !ok {
+func richCryptocurrency(p fields) *engine.RichAnswer {
+	q := p.obj("quote")
+	if q == nil {
 		return nil
 	}
-	out := &engine.RichCryptocurrency{IntentType: richStr(p["intent_type"])}
+	out := &engine.RichCryptocurrency{IntentType: p.str("intent_type")}
 	out.Quote = &engine.RichCryptoQuote{
-		ID:                       richStr(q["id"]),
-		Symbol:                   richStr(q["symbol"]),
-		Name:                     richStr(q["name"]),
-		Image:                    richStr(q["image"]),
-		CurrentPrice:             richFloatOrDefault(q["current_price"]),
-		MarketCap:                richFloatOrDefault(q["market_cap"]),
-		High24h:                  richFloatOrDefault(q["high_24h"]),
-		Low24h:                   richFloatOrDefault(q["low_24h"]),
-		PriceChange24h:           richFloatOrDefault(q["price_change_24h"]),
-		PriceChangePercentage24h: richFloatOrDefault(q["price_change_percentage_24h"]),
+		ID:                       q.str("id"),
+		Symbol:                   q.str("symbol"),
+		Name:                     q.str("name"),
+		Image:                    q.str("image"),
+		CurrentPrice:             q.num("current_price"),
+		MarketCap:                q.num("market_cap"),
+		High24h:                  q.num("high_24h"),
+		Low24h:                   q.num("low_24h"),
+		PriceChange24h:           q.num("price_change_24h"),
+		PriceChangePercentage24h: q.num("price_change_percentage_24h"),
 	}
-	if ts, ok := p["timeseries"].(map[string]any); ok {
-		vs := richStr(ts["vs_currency"])
+	if ts := p.obj("timeseries"); ts != nil {
+		vs := ts.str("vs_currency")
 		if vs == "" {
-			vs = richStr(p["vs_currency"])
+			vs = p.str("vs_currency")
 		}
 		out.VsCurrency = vs
 		if series := richPriceSeries(ts); len(series) > 1 {
 			out.Timeseries = &engine.RichCryptoSeries{
-				TimeRange: richStr(ts["time_range"]),
+				TimeRange: ts.str("time_range"),
 				TsPrice:   series,
 			}
 		}
@@ -128,53 +128,53 @@ func richCryptocurrency(p map[string]any) *engine.RichAnswer {
 	return &engine.RichAnswer{Type: "cryptocurrency", Cryptocurrency: out}
 }
 
-func richStock(p map[string]any) *engine.RichAnswer {
-	q, ok := p["quote"].(map[string]any)
-	if !ok {
+func richStock(p fields) *engine.RichAnswer {
+	q := p.obj("quote")
+	if q == nil {
 		return nil
 	}
-	out := &engine.RichStock{TimeRange: richStr(p["time_range"])}
-	if ai, ok := p["asset_info"].(map[string]any); ok {
+	out := &engine.RichStock{TimeRange: p.str("time_range")}
+	if ai := p.obj("asset_info"); ai != nil {
 		out.AssetInfo = &engine.RichStockAsset{
-			Symbol:   richStr(ai["symbol"]),
-			Name:     richStr(ai["name"]),
-			Category: richStr(ai["category"]),
-			Currency: richStr(ai["currency"]),
-			Country:  richStr(ai["country"]),
-			Exchange: richStr(ai["exchange"]),
-			MicCode:  richStr(ai["mic_code"]),
+			Symbol:   ai.str("symbol"),
+			Name:     ai.str("name"),
+			Category: ai.str("category"),
+			Currency: ai.str("currency"),
+			Country:  ai.str("country"),
+			Exchange: ai.str("exchange"),
+			MicCode:  ai.str("mic_code"),
 		}
 	}
-	if xi, ok := p["exchange_info"].(map[string]any); ok {
+	if xi := p.obj("exchange_info"); xi != nil {
 		out.ExchangeInfo = &engine.RichStockExchange{
-			Timezone:  richStr(xi["timezone"]),
-			OpenTime:  richStr(xi["open_time"]),
-			CloseTime: richStr(xi["close_time"]),
+			Timezone:  xi.str("timezone"),
+			OpenTime:  xi.str("open_time"),
+			CloseTime: xi.str("close_time"),
 		}
 	}
 	out.Quote = &engine.RichStockQuote{
-		Symbol:          richStr(q["symbol"]),
-		CompanyName:     richStr(q["company_name"]),
-		PrimaryExchange: richStr(q["primary_exchange"]),
-		Currency:        richStr(q["currency"]),
-		LatestPrice:     richFloatOrDefault(q["latest_price"]),
-		Open:            richFloatOrDefault(q["open"]),
-		High:            richFloatOrDefault(q["high"]),
-		Low:             richFloatOrDefault(q["low"]),
-		Close:           richFloatOrDefault(q["close"]),
-		Change:          richFloatOrDefault(q["change"]),
-		ChangePercent:   richFloatOrDefault(q["change_percent"]),
-		Volume:          richFloatOrDefault(q["volume"]),
-		MarketCap:       richFloatOrDefault(q["market_cap"]),
-		PeRatio:         richFloatOrDefault(q["pe_ratio"]),
-		Week52High:      richFloatOrDefault(q["week_52_high"]),
-		Week52Low:       richFloatOrDefault(q["week_52_low"]),
-		LatestUpdate:    richInt64OrZero(q["latest_update"]),
+		Symbol:          q.str("symbol"),
+		CompanyName:     q.str("company_name"),
+		PrimaryExchange: q.str("primary_exchange"),
+		Currency:        q.str("currency"),
+		LatestPrice:     q.num("latest_price"),
+		Open:            q.num("open"),
+		High:            q.num("high"),
+		Low:             q.num("low"),
+		Close:           q.num("close"),
+		Change:          q.num("change"),
+		ChangePercent:   q.num("change_percent"),
+		Volume:          q.num("volume"),
+		MarketCap:       q.num("market_cap"),
+		PeRatio:         q.num("pe_ratio"),
+		Week52High:      q.num("week_52_high"),
+		Week52Low:       q.num("week_52_low"),
+		LatestUpdate:    q.i64("latest_update"),
 	}
-	if ts, ok := p["timeseries"].(map[string]any); ok {
+	if ts := p.obj("timeseries"); ts != nil {
 		if series := richStockSeries(ts); len(series) > 1 {
 			out.Timeseries = &engine.RichStockSeries{
-				TimeRange: richStr(ts["time_range"]),
+				TimeRange: ts.str("time_range"),
 				Close:     series,
 			}
 		}
@@ -182,19 +182,17 @@ func richStock(p map[string]any) *engine.RichAnswer {
 	return &engine.RichAnswer{Type: "stock", Stock: out}
 }
 
-func richStockSeries(ts map[string]any) [][2]float64 {
-	raw, ok := ts["timeseries"].([]any)
-	if !ok {
-		return nil
-	}
+func richStockSeries(ts fields) [][2]float64 {
+	raw := ts.list("timeseries")
 	out := make([][2]float64, 0, len(raw))
 	for _, r := range raw {
 		m, ok := r.(map[string]any)
 		if !ok {
 			continue
 		}
-		t, tok := richFloat(m["timestamp"])
-		v, vok := richFloat(m["close"])
+		f := fields(m)
+		t, tok := richFloat(f["timestamp"])
+		v, vok := richFloat(f["close"])
 		if !tok || !vok {
 			continue
 		}
@@ -217,11 +215,8 @@ func downsampleSeries(out [][2]float64, maxPoints int) [][2]float64 {
 
 const maxSeriesPoints = 96
 
-func richPriceSeries(ts map[string]any) [][2]float64 {
-	raw, ok := ts["ts_price"].([]any)
-	if !ok {
-		return nil
-	}
+func richPriceSeries(ts fields) [][2]float64 {
+	raw := ts.list("ts_price")
 	out := make([][2]float64, 0, len(raw))
 	for _, r := range raw {
 		pair, ok := r.([]any)
@@ -236,11 +231,6 @@ func richPriceSeries(ts map[string]any) [][2]float64 {
 		out = append(out, [2]float64{t, v})
 	}
 	return downsampleSeries(out, maxSeriesPoints)
-}
-
-func richStr(v any) string {
-	s, _ := v.(string)
-	return s
 }
 
 func richFloat(v any) (float64, bool) {
@@ -268,14 +258,4 @@ func intVal(v any) (int64, bool) {
 		return int64(n), true
 	}
 	return 0, false
-}
-
-func richFloatOrDefault(v any) float64 {
-	f, _ := richFloat(v)
-	return f
-}
-
-func richInt64OrZero(v any) int64 {
-	i, _ := intVal(v)
-	return i
 }

@@ -87,9 +87,7 @@ type searchParams struct {
 func (s *Server) parseSearchParams(w http.ResponseWriter, r *http.Request, defaultLimit, maxLimit int) (searchParams, bool) {
 	query := strings.TrimSpace(r.URL.Query().Get("q"))
 	if query == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]any{
-			"error": "missing required query parameter 'q'",
-		})
+		badRequest(w, "missing required query parameter 'q'")
 		return searchParams{}, false
 	}
 
@@ -97,9 +95,7 @@ func (s *Server) parseSearchParams(w http.ResponseWriter, r *http.Request, defau
 	if raw := r.URL.Query().Get("limit"); raw != "" {
 		n, err := strconv.Atoi(raw)
 		if err != nil {
-			writeJSON(w, http.StatusBadRequest, map[string]any{
-				"error": "invalid 'limit': must be an integer",
-			})
+			badRequest(w, "invalid 'limit': must be an integer")
 			return searchParams{}, false
 		}
 		limit = n
@@ -115,18 +111,14 @@ func (s *Server) parseSearchParams(w http.ResponseWriter, r *http.Request, defau
 	if raw := r.URL.Query().Get("offset"); raw != "" {
 		n, err := strconv.Atoi(raw)
 		if err != nil || n < 0 {
-			writeJSON(w, http.StatusBadRequest, map[string]any{
-				"error": "invalid 'offset': must be a non-negative integer",
-			})
+			badRequest(w, "invalid 'offset': must be a non-negative integer")
 			return searchParams{}, false
 		}
 		page = n
 	} else if raw := r.URL.Query().Get("page"); raw != "" {
 		n, err := strconv.Atoi(raw)
 		if err != nil || n < 0 {
-			writeJSON(w, http.StatusBadRequest, map[string]any{
-				"error": "invalid 'page': must be a non-negative integer",
-			})
+			badRequest(w, "invalid 'page': must be a non-negative integer")
 			return searchParams{}, false
 		}
 		page = n
@@ -148,9 +140,7 @@ func (s *Server) parseSearchParams(w http.ResponseWriter, r *http.Request, defau
 		} else {
 			n, err := strconv.Atoi(raw)
 			if err != nil || n < 5 || n > 10 {
-				writeJSON(w, http.StatusBadRequest, map[string]any{
-					"error": "invalid 'timeout': must be an integer between 5 and 10, or 'off'",
-				})
+				badRequest(w, "invalid 'timeout': must be an integer between 5 and 10, or 'off'")
 				return searchParams{}, false
 			}
 			timeout = time.Duration(n) * time.Second
@@ -179,17 +169,13 @@ func (s *Server) handleImages(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleSuggest(w http.ResponseWriter, r *http.Request) {
 	query := strings.TrimSpace(r.URL.Query().Get("q"))
 	if query == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]any{
-			"error": "missing required query parameter 'q'",
-		})
+		badRequest(w, "missing required query parameter 'q'")
 		return
 	}
 
 	engine := suggest.Normalize(r.URL.Query().Get("engine"))
 	if engine == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]any{
-			"error": "invalid 'engine': must be one of " + strings.Join(suggest.Engines(), ", "),
-		})
+		badRequest(w, "invalid 'engine': must be one of "+strings.Join(suggest.Engines(), ", "))
 		return
 	}
 
@@ -202,6 +188,10 @@ func (s *Server) handleSuggest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, resp)
+}
+
+func badRequest(w http.ResponseWriter, msg string) {
+	writeJSON(w, http.StatusBadRequest, map[string]any{"error": msg})
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

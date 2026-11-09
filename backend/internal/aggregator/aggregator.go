@@ -103,6 +103,45 @@ type engineOutcome[T any] struct {
 	val  T
 }
 
+type callOutcome[T any] struct {
+	res  T
+	err  error
+	took time.Duration
+}
+
+func runEngineCalls[T any](ctx context.Context, names []string, perEngine, fast time.Duration, call func(context.Context, string) (T, error)) map[string]callOutcome[T] {
+	ch := make(chan engineOutcome[callOutcome[T]], len(names))
+	for _, name := range names {
+		go func(name string) {
+			ectx, cancel := context.WithTimeout(ctx, perEngine)
+			defer cancel()
+			start := time.Now()
+			res, err := call(ectx, name)
+			ch <- engineOutcome[callOutcome[T]]{
+				name: name,
+				val:  callOutcome[T]{res: res, err: err, took: time.Since(start)},
+			}
+		}(name)
+	}
+
+	timeoutErr := fmt.Errorf("timeout after %s", fast)
+	return collectOutcomes(names, ch, fast, func(string) callOutcome[T] {
+		return callOutcome[T]{err: timeoutErr, took: fast}
+	})
+}
+
+func statusFor[T any](o callOutcome[T], count int) Status {
+	st := Status{TookMS: o.took.Milliseconds()}
+	if o.err != nil {
+		st.Status = "error"
+		st.Error = o.err.Error()
+	} else {
+		st.Status = "ok"
+		st.Count = count
+	}
+	return st
+}
+
 func (a *Aggregator) timeouts(timeout time.Duration) (fast, perEngine, total time.Duration) {
 	switch {
 	case timeout < 0:
@@ -146,42 +185,29 @@ const (
 	navigationalBoost = 4.0
 )
 
-func selectEngines(all []engine.Engine, enabled []string) []engine.Engine {
-	if len(enabled) == 0 {
-		return all
-	}
-	selected := make(map[string]bool, len(enabled))
-	for _, name := range enabled {
-		name = strings.ToLower(strings.TrimSpace(name))
-		if name == "duckduckgo" {
-			name = "ddg"
-		}
-		selected[name] = true
-	}
-	out := make([]engine.Engine, 0, len(all))
-	for _, e := range all {
-		if selected[strings.ToLower(e.Name())] {
-			out = append(out, e)
-		}
-	}
-	return out
+type named interface {
+	Name() string
 }
 
-func selectImageEngines(all []engine.ImageSearcher, enabled []string) []engine.ImageSearcher {
+func normalizeEngineName(name string) string {
+	name = strings.ToLower(strings.TrimSpace(name))
+	if name == "duckduckgo" {
+		return "ddg"
+	}
+	return name
+}
+
+func selectByName[T named](all []T, enabled []string) []T {
 	if len(enabled) == 0 {
 		return all
 	}
 	selected := make(map[string]bool, len(enabled))
 	for _, name := range enabled {
-		name = strings.ToLower(strings.TrimSpace(name))
-		if name == "duckduckgo" {
-			name = "ddg"
-		}
-		selected[name] = true
+		selected[normalizeEngineName(name)] = true
 	}
-	out := make([]engine.ImageSearcher, 0, len(all))
+	out := make([]T, 0, len(all))
 	for _, e := range all {
-		if selected[strings.ToLower(e.Name())] {
+		if selected[normalizeEngineName(e.Name())] {
 			out = append(out, e)
 		}
 	}
@@ -189,29 +215,30 @@ func selectImageEngines(all []engine.ImageSearcher, enabled []string) []engine.I
 }
 
 func (a *Aggregator) callEngine(ctx context.Context, e engine.Engine, query string, page int) (engine.SearchResult, error) {
-	throttle := a.throttles[e.Name()]
-	if throttle != nil {
-		if err := throttle.reserve(ctx, e.Name()); err != nil {
-			return engine.SearchResult{}, err
-		}
-	}
-	res, err := e.Search(ctx, query, maxCandidates, page)
-	if throttle != nil {
-		throttle.record(e.Name(), err)
-	}
-	return res, err
+	return withThrottle(a, e.Name(), ctx, func() (engine.SearchResult, error) {
+		return e.Search(ctx, query, maxCandidates, page)
+	})
 }
 
 func (a *Aggregator) callImageEngine(ctx context.Context, s engine.ImageSearcher, query string, page int) ([]engine.ImageResult, error) {
-	throttle := a.throttles[s.Name()]
+	return withThrottle(a, s.Name(), ctx, func() ([]engine.ImageResult, error) {
+		return s.ImageSearch(ctx, query, imageCandidates, page)
+	})
+}
+
+// withThrottle applies the engine's rate limit around a single upstream call
+// and records the outcome for cooldown tracking.
+func withThrottle[T any](a *Aggregator, name string, ctx context.Context, call func() (T, error)) (T, error) {
+	throttle := a.throttles[name]
 	if throttle != nil {
-		if err := throttle.reserve(ctx, s.Name()); err != nil {
-			return nil, err
+		if err := throttle.reserve(ctx, name); err != nil {
+			var zero T
+			return zero, err
 		}
 	}
-	res, err := s.ImageSearch(ctx, query, imageCandidates, page)
+	res, err := call()
 	if throttle != nil {
-		throttle.record(s.Name(), err)
+		throttle.record(name, err)
 	}
 	return res, err
 }
@@ -247,39 +274,24 @@ func (a *Aggregator) searchUpstream(ctx context.Context, query string, limit, pa
 		page = 0
 	}
 
-	activeEngines := selectEngines(a.engines, enabled)
+	activeEngines := selectByName(a.engines, enabled)
 
 	resp := Response{
 		Query:   query,
 		Engines: make(map[string]Status, len(activeEngines)),
 	}
 
-	type outcome struct {
-		res  engine.SearchResult
-		err  error
-		took time.Duration
-	}
-
+	enginesByName := make(map[string]engine.Engine, len(activeEngines))
 	names := make([]string, 0, len(activeEngines))
-	ch := make(chan engineOutcome[outcome], len(activeEngines))
 	for _, e := range activeEngines {
 		names = append(names, e.Name())
-		go func(e engine.Engine) {
-			ectx, cancel := context.WithTimeout(ctx, perEngineTimeout)
-			defer cancel()
-			start := time.Now()
-			res, err := a.callEngine(ectx, e, query, page)
-			ch <- engineOutcome[outcome]{
-				name: e.Name(),
-				val:  outcome{res: res, err: err, took: time.Since(start)},
-			}
-		}(e)
+		enginesByName[e.Name()] = e
 	}
 
-	timeoutErr := fmt.Errorf("timeout after %s", fastTimeout)
-	byName := collectOutcomes(names, ch, fastTimeout, func(string) outcome {
-		return outcome{err: timeoutErr, took: fastTimeout}
-	})
+	byName := runEngineCalls(ctx, names, perEngineTimeout, fastTimeout,
+		func(ectx context.Context, name string) (engine.SearchResult, error) {
+			return a.callEngine(ectx, enginesByName[name], query, page)
+		})
 
 	seen := make(map[string]int)
 
@@ -295,13 +307,7 @@ func (a *Aggregator) searchUpstream(ctx context.Context, query string, limit, pa
 
 	for _, e := range activeEngines {
 		o := byName[e.Name()]
-		st := Status{TookMS: o.took.Milliseconds()}
-		if o.err != nil {
-			st.Status = "error"
-			st.Error = o.err.Error()
-		} else {
-			st.Status = "ok"
-			st.Count = len(o.res.Results)
+		if o.err == nil {
 			for j, r := range o.res.Results {
 				key := normalizeURL(r.URL)
 				if key == "" {
@@ -337,7 +343,7 @@ func (a *Aggregator) searchUpstream(ctx context.Context, query string, limit, pa
 				scoredResults = append(scoredResults, scored{res: r, score: contrib, nav: navRoot})
 			}
 		}
-		resp.Engines[e.Name()] = st
+		resp.Engines[e.Name()] = statusFor(o, len(o.res.Results))
 	}
 
 	sort.SliceStable(scoredResults, func(x, y int) bool {
@@ -554,63 +560,30 @@ func (a *Aggregator) imageSearchUpstream(ctx context.Context, query string, limi
 		page = 0
 	}
 
-	type imgOutcome struct {
-		res  []engine.ImageResult
-		err  error
-		took time.Duration
-	}
-
-	var activeSearchers []struct {
-		name string
-		s    engine.ImageSearcher
-	}
-	for _, s := range selectImageEngines(a.imageEngines, enabled) {
-		activeSearchers = append(activeSearchers, struct {
-			name string
-			s    engine.ImageSearcher
-		}{name: s.Name(), s: s})
+	selected := selectByName(a.imageEngines, enabled)
+	names := make([]string, 0, len(selected))
+	searchersByName := make(map[string]engine.ImageSearcher, len(selected))
+	for _, s := range selected {
+		names = append(names, s.Name())
+		searchersByName[s.Name()] = s
 	}
 
 	resp := ImageResponse{
 		Query:   query,
-		Engines: make(map[string]Status, len(activeSearchers)),
+		Engines: make(map[string]Status, len(selected)),
 	}
 
-	names := make([]string, 0, len(activeSearchers))
-	ch := make(chan engineOutcome[imgOutcome], len(activeSearchers))
-	for _, as := range activeSearchers {
-		names = append(names, as.name)
-		go func(name string, s engine.ImageSearcher) {
-			ectx, cancel := context.WithTimeout(ctx, perEngineTimeout)
-			defer cancel()
-			start := time.Now()
-			res, err := a.callImageEngine(ectx, s, query, page)
-			ch <- engineOutcome[imgOutcome]{
-				name: name,
-				val:  imgOutcome{res: res, err: err, took: time.Since(start)},
-			}
-		}(as.name, as.s)
-	}
-
-	timeoutErr := fmt.Errorf("timeout after %s", fastTimeout)
-	byName := collectOutcomes(names, ch, fastTimeout, func(string) imgOutcome {
-		return imgOutcome{err: timeoutErr, took: fastTimeout}
-	})
+	byName := runEngineCalls(ctx, names, perEngineTimeout, fastTimeout,
+		func(ectx context.Context, name string) ([]engine.ImageResult, error) {
+			return a.callImageEngine(ectx, searchersByName[name], query, page)
+		})
 
 	seen := make(map[string]int)
 
 	// collect engine statuses
-	for _, as := range activeSearchers {
-		o := byName[as.name]
-		st := Status{TookMS: o.took.Milliseconds()}
-		if o.err != nil {
-			st.Status = "error"
-			st.Error = o.err.Error()
-		} else {
-			st.Status = "ok"
-			st.Count = len(o.res)
-		}
-		resp.Engines[as.name] = st
+	for _, name := range names {
+		o := byName[name]
+		resp.Engines[name] = statusFor(o, len(o.res))
 	}
 
 	// interleave results round-robin
@@ -619,10 +592,10 @@ func (a *Aggregator) imageSearchUpstream(ctx context.Context, query string, limi
 		pos  int
 	}
 	var positions []enginePos
-	for _, as := range activeSearchers {
-		o := byName[as.name]
+	for _, name := range names {
+		o := byName[name]
 		if o.err == nil && len(o.res) > 0 {
-			positions = append(positions, enginePos{name: as.name, pos: 0})
+			positions = append(positions, enginePos{name: name, pos: 0})
 		}
 	}
 	for len(positions) > 0 && len(resp.Results) < limit {
@@ -658,8 +631,8 @@ func (a *Aggregator) imageSearchUpstream(ctx context.Context, query string, limi
 	}
 
 	hasMore := false
-	for _, as := range activeSearchers {
-		o := byName[as.name]
+	for _, name := range names {
+		o := byName[name]
 		if o.err == nil && len(o.res) >= limit {
 			hasMore = true
 			break

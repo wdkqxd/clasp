@@ -38,7 +38,7 @@ var (
 type DDG struct {
 	client engine.HTTPClient
 
-	mu      sync.Mutex
+	mu      sync.RWMutex
 	cursors map[string]url.Values // "Next" form per query, ddg's only way to paginate
 	vqds    map[string]string     // vqd tokens, keyed by query
 }
@@ -191,14 +191,14 @@ func (d *DDG) remember(query, doc string) {
 }
 
 func (d *DDG) getCursor(query string) url.Values {
-	d.mu.Lock()
-	defer d.mu.Unlock()
+	d.mu.RLock()
+	defer d.mu.RUnlock()
 	return d.cursors[query]
 }
 
 func (d *DDG) getVQD(query string) string {
-	d.mu.Lock()
-	defer d.mu.Unlock()
+	d.mu.RLock()
+	defer d.mu.RUnlock()
 	return d.vqds[query]
 }
 
