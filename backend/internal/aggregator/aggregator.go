@@ -103,6 +103,45 @@ type engineOutcome[T any] struct {
 	val  T
 }
 
+type callOutcome[T any] struct {
+	res  T
+	err  error
+	took time.Duration
+}
+
+func runEngineCalls[T any](ctx context.Context, names []string, perEngine, fast time.Duration, call func(context.Context, string) (T, error)) map[string]callOutcome[T] {
+	ch := make(chan engineOutcome[callOutcome[T]], len(names))
+	for _, name := range names {
+		go func(name string) {
+			ectx, cancel := context.WithTimeout(ctx, perEngine)
+			defer cancel()
+			start := time.Now()
+			res, err := call(ectx, name)
+			ch <- engineOutcome[callOutcome[T]]{
+				name: name,
+				val:  callOutcome[T]{res: res, err: err, took: time.Since(start)},
+			}
+		}(name)
+	}
+
+	timeoutErr := fmt.Errorf("timeout after %s", fast)
+	return collectOutcomes(names, ch, fast, func(string) callOutcome[T] {
+		return callOutcome[T]{err: timeoutErr, took: fast}
+	})
+}
+
+func statusFor[T any](o callOutcome[T], count int) Status {
+	st := Status{TookMS: o.took.Milliseconds()}
+	if o.err != nil {
+		st.Status = "error"
+		st.Error = o.err.Error()
+	} else {
+		st.Status = "ok"
+		st.Count = count
+	}
+	return st
+}
+
 func (a *Aggregator) timeouts(timeout time.Duration) (fast, perEngine, total time.Duration) {
 	switch {
 	case timeout < 0:
@@ -242,32 +281,17 @@ func (a *Aggregator) searchUpstream(ctx context.Context, query string, limit, pa
 		Engines: make(map[string]Status, len(activeEngines)),
 	}
 
-	type outcome struct {
-		res  engine.SearchResult
-		err  error
-		took time.Duration
-	}
-
+	enginesByName := make(map[string]engine.Engine, len(activeEngines))
 	names := make([]string, 0, len(activeEngines))
-	ch := make(chan engineOutcome[outcome], len(activeEngines))
 	for _, e := range activeEngines {
 		names = append(names, e.Name())
-		go func(e engine.Engine) {
-			ectx, cancel := context.WithTimeout(ctx, perEngineTimeout)
-			defer cancel()
-			start := time.Now()
-			res, err := a.callEngine(ectx, e, query, page)
-			ch <- engineOutcome[outcome]{
-				name: e.Name(),
-				val:  outcome{res: res, err: err, took: time.Since(start)},
-			}
-		}(e)
+		enginesByName[e.Name()] = e
 	}
 
-	timeoutErr := fmt.Errorf("timeout after %s", fastTimeout)
-	byName := collectOutcomes(names, ch, fastTimeout, func(string) outcome {
-		return outcome{err: timeoutErr, took: fastTimeout}
-	})
+	byName := runEngineCalls(ctx, names, perEngineTimeout, fastTimeout,
+		func(ectx context.Context, name string) (engine.SearchResult, error) {
+			return a.callEngine(ectx, enginesByName[name], query, page)
+		})
 
 	seen := make(map[string]int)
 
@@ -283,13 +307,7 @@ func (a *Aggregator) searchUpstream(ctx context.Context, query string, limit, pa
 
 	for _, e := range activeEngines {
 		o := byName[e.Name()]
-		st := Status{TookMS: o.took.Milliseconds()}
-		if o.err != nil {
-			st.Status = "error"
-			st.Error = o.err.Error()
-		} else {
-			st.Status = "ok"
-			st.Count = len(o.res.Results)
+		if o.err == nil {
 			for j, r := range o.res.Results {
 				key := normalizeURL(r.URL)
 				if key == "" {
@@ -325,7 +343,7 @@ func (a *Aggregator) searchUpstream(ctx context.Context, query string, limit, pa
 				scoredResults = append(scoredResults, scored{res: r, score: contrib, nav: navRoot})
 			}
 		}
-		resp.Engines[e.Name()] = st
+		resp.Engines[e.Name()] = statusFor(o, len(o.res.Results))
 	}
 
 	sort.SliceStable(scoredResults, func(x, y int) bool {
@@ -542,63 +560,30 @@ func (a *Aggregator) imageSearchUpstream(ctx context.Context, query string, limi
 		page = 0
 	}
 
-	type imgOutcome struct {
-		res  []engine.ImageResult
-		err  error
-		took time.Duration
-	}
-
-	var activeSearchers []struct {
-		name string
-		s    engine.ImageSearcher
-	}
-	for _, s := range selectByName(a.imageEngines, enabled) {
-		activeSearchers = append(activeSearchers, struct {
-			name string
-			s    engine.ImageSearcher
-		}{name: s.Name(), s: s})
+	selected := selectByName(a.imageEngines, enabled)
+	names := make([]string, 0, len(selected))
+	searchersByName := make(map[string]engine.ImageSearcher, len(selected))
+	for _, s := range selected {
+		names = append(names, s.Name())
+		searchersByName[s.Name()] = s
 	}
 
 	resp := ImageResponse{
 		Query:   query,
-		Engines: make(map[string]Status, len(activeSearchers)),
+		Engines: make(map[string]Status, len(selected)),
 	}
 
-	names := make([]string, 0, len(activeSearchers))
-	ch := make(chan engineOutcome[imgOutcome], len(activeSearchers))
-	for _, as := range activeSearchers {
-		names = append(names, as.name)
-		go func(name string, s engine.ImageSearcher) {
-			ectx, cancel := context.WithTimeout(ctx, perEngineTimeout)
-			defer cancel()
-			start := time.Now()
-			res, err := a.callImageEngine(ectx, s, query, page)
-			ch <- engineOutcome[imgOutcome]{
-				name: name,
-				val:  imgOutcome{res: res, err: err, took: time.Since(start)},
-			}
-		}(as.name, as.s)
-	}
-
-	timeoutErr := fmt.Errorf("timeout after %s", fastTimeout)
-	byName := collectOutcomes(names, ch, fastTimeout, func(string) imgOutcome {
-		return imgOutcome{err: timeoutErr, took: fastTimeout}
-	})
+	byName := runEngineCalls(ctx, names, perEngineTimeout, fastTimeout,
+		func(ectx context.Context, name string) ([]engine.ImageResult, error) {
+			return a.callImageEngine(ectx, searchersByName[name], query, page)
+		})
 
 	seen := make(map[string]int)
 
 	// collect engine statuses
-	for _, as := range activeSearchers {
-		o := byName[as.name]
-		st := Status{TookMS: o.took.Milliseconds()}
-		if o.err != nil {
-			st.Status = "error"
-			st.Error = o.err.Error()
-		} else {
-			st.Status = "ok"
-			st.Count = len(o.res)
-		}
-		resp.Engines[as.name] = st
+	for _, name := range names {
+		o := byName[name]
+		resp.Engines[name] = statusFor(o, len(o.res))
 	}
 
 	// interleave results round-robin
@@ -607,10 +592,10 @@ func (a *Aggregator) imageSearchUpstream(ctx context.Context, query string, limi
 		pos  int
 	}
 	var positions []enginePos
-	for _, as := range activeSearchers {
-		o := byName[as.name]
+	for _, name := range names {
+		o := byName[name]
 		if o.err == nil && len(o.res) > 0 {
-			positions = append(positions, enginePos{name: as.name, pos: 0})
+			positions = append(positions, enginePos{name: name, pos: 0})
 		}
 	}
 	for len(positions) > 0 && len(resp.Results) < limit {
@@ -646,8 +631,8 @@ func (a *Aggregator) imageSearchUpstream(ctx context.Context, query string, limi
 	}
 
 	hasMore := false
-	for _, as := range activeSearchers {
-		o := byName[as.name]
+	for _, name := range names {
+		o := byName[name]
 		if o.err == nil && len(o.res) >= limit {
 			hasMore = true
 			break
