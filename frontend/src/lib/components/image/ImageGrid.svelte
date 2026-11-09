@@ -127,7 +127,7 @@
 		{#each visibleItems as { image, index } (imageKey(image) || index)}
 			{@const transState = transparencyState(image)}
 			<div
-				class="flex flex-col text-left rounded-md overflow-hidden image-card"
+				class="flex flex-col text-left rounded-md overflow-hidden image-card transition-[scale] duration-150 ease-out active:scale-[0.97] active:duration-75"
 				class:col-span-2={span(image) === 'col-span-2'}
 				class:invisible={settings.transparentOnly && transState === undefined}
 				class:hidden={settings.transparentOnly && (transState === false || transState === null)}
@@ -180,12 +180,12 @@
 		text-decoration: underline;
 		text-underline-offset: 3px;
 	}
-	.image-card :global(img:not(.selected-img)) {
+	.image-card :global(img) {
 		transition:
 			opacity 300ms ease-out,
 			transform 150ms ease-out;
 	}
-	.image-card:hover :global(img:not(.selected-img)) {
+	.image-card:hover :global(img) {
 		transform: scale(1.02);
 	}
 </style>
